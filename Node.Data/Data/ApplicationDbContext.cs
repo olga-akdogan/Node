@@ -1,15 +1,14 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Node.Data.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Node.Data.Data;
 
+/// <summary>
+/// De databankcontext van het project, gebaseerd op IdentityDbContext
+/// zodat de Identity-tabellen en de eigen tabellen in
+/// dezelfde databank leven.
+/// </summary>
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -17,32 +16,46 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
     }
 
-    public DbSet<MemberProfile> MemberProfiles => Set<MemberProfile>();
-    public DbSet<AstrologyProfile> AstrologyProfiles => Set<AstrologyProfile>();
+    public DbSet<NatalChart> NatalCharts => Set<NatalChart>();
+    public DbSet<Placement> Placements => Set<Placement>();
     public DbSet<Swipe> Swipes => Set<Swipe>();
     public DbSet<Match> Matches => Set<Match>();
     public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
     public DbSet<Report> Reports => Set<Report>();
-    public DbSet<BlockedUser> BlockedUsers => Set<BlockedUser>();
-    public DbSet<LanguagePreference> LanguagePreferences => Set<LanguagePreference>();
     public DbSet<CookieConsentLog> CookieConsentLogs => Set<CookieConsentLog>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
-        builder.Entity<MemberProfile>()
-            .HasOne(p => p.User)
-            .WithOne(u => u.MemberProfile)
-            .HasForeignKey<MemberProfile>(p => p.UserId)
+        // Horoscoop: 1-op-1 met de gebruiker; verdwijnt mee met het account.
+        builder.Entity<NatalChart>()
+            .HasOne(n => n.User)
+            .WithOne(u => u.NatalChart)
+            .HasForeignKey<NatalChart>(n => n.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Entity<AstrologyProfile>()
-            .HasOne(a => a.User)
-            .WithOne()
-            .HasForeignKey<AstrologyProfile>(a => a.UserId)
+        // Tekens als tekst opslaan zodat de databank leesbaar blijft tijdens de demo.
+        builder.Entity<NatalChart>().Property(n => n.SunSign).HasConversion<string>().HasMaxLength(20);
+        builder.Entity<NatalChart>().Property(n => n.MoonSign).HasConversion<string>().HasMaxLength(20);
+        builder.Entity<NatalChart>().Property(n => n.AscendantSign).HasConversion<string>().HasMaxLength(20);
+
+        // Posities: veel per horoscoop, elk hemellichaam maximaal één keer.
+        builder.Entity<Placement>()
+            .HasOne(p => p.NatalChart)
+            .WithMany(n => n.Placements)
+            .HasForeignKey(p => p.NatalChartId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Entity<Placement>()
+            .HasIndex(p => new { p.NatalChartId, p.Body })
+            .IsUnique();
+
+        builder.Entity<Placement>().Property(p => p.Body).HasConversion<string>().HasMaxLength(20);
+        builder.Entity<Placement>().Property(p => p.Sign).HasConversion<string>().HasMaxLength(20);
+
+        // Swipes: Restrict i.p.v. Cascade omdat SQL Server geen dubbele
+        // cascade-paden naar dezelfde tabel (AspNetUsers) toelaat.
         builder.Entity<Swipe>()
             .HasOne(s => s.SwiperUser)
             .WithMany()
@@ -55,6 +68,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(s => s.TargetUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Eén swipe per combinatie swiper/doelwit.
         builder.Entity<Swipe>()
             .HasIndex(s => new { s.SwiperUserId, s.TargetUserId })
             .IsUnique();
@@ -71,10 +85,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(m => m.User2Id)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Eén match per paar (User1Id < User2Id wordt in de servicelaag afgedwongen).
         builder.Entity<Match>()
             .HasIndex(m => new { m.User1Id, m.User2Id })
             .IsUnique();
 
+        builder.Entity<Match>().Property(m => m.Status).HasConversion<string>().HasMaxLength(20);
+
+        // Chatberichten horen bij een match en verdwijnen mee met de match.
         builder.Entity<ChatMessage>()
             .HasOne(c => c.Match)
             .WithMany(m => m.ChatMessages)
@@ -99,16 +117,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(r => r.ReportedUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Entity<BlockedUser>()
-            .HasOne(b => b.BlockedUserAccount)
+        // Consentlog mag blijven bestaan als het account verdwijnt (bewijslast),
+        // de verwijzing naar de gebruiker wordt dan leeggemaakt.
+        builder.Entity<CookieConsentLog>()
+            .HasOne(c => c.User)
             .WithMany()
-            .HasForeignKey(b => b.BlockedUserId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<BlockedUser>()
-            .HasOne(b => b.BlockedByAdmin)
-            .WithMany()
-            .HasForeignKey(b => b.BlockedByAdminId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(c => c.UserId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }
