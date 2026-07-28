@@ -18,6 +18,12 @@ namespace Node.Web.Controllers
             return View();
         }
 
+        /// <summary>Uitlegpagina "Hoe het werkt" (statische inhoud).</summary>
+        public IActionResult HowItWorks()
+        {
+            return View();
+        }
+
         public IActionResult Privacy()
         {
             return View();

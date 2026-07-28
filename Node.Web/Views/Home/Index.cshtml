@@ -1,8 +1,128 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@* Landingspagina volgens scherm "01 Landing" uit het UI-ontwerp: navy hero
+   met sterrenveld, drie feature-kaarten met serif-glyphs en een salieband
+   met horoscoopwiel. De teksten zijn de eigen (dating-)copy van Node. *@
+@using Microsoft.AspNetCore.Identity
+@using Node.Data.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@{
+    ViewData["Title"] = "Home";
+    ViewData["DonkereNav"] = true;   // Navigatie zweeft transparant over de hero.
+    ViewData["VolleBreedte"] = true; // Secties lopen van rand tot rand.
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="hero-node">
+    <div class="container">
+        <p class="kicker mb-4">Astrologische dating</p>
+        <h1 class="mb-4">Sommige connecties <em>vinden jou</em>.</h1>
+        <p class="lead mb-5">
+            Node vertaalt je exacte geboortemoment naar een levende horoscoop —
+            en matcht je met de mensen die erbij passen.
+        </p>
+        <div class="d-flex flex-wrap gap-3 justify-content-center">
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <a class="btn btn-hero btn-lg" asp-controller="Swipe" asp-action="Index">Ontdek profielen</a>
+                <a class="btn btn-hero-omlijnd btn-lg" asp-controller="Match" asp-action="Index">Mijn matches</a>
+            }
+            else
+            {
+                <a class="btn btn-hero btn-lg" asp-controller="Account" asp-action="Register">Maak je horoscoop &mdash; gratis</a>
+                <a class="btn btn-hero-omlijnd btn-lg" asp-controller="Home" asp-action="HowItWorks">Hoe het werkt</a>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="sectie">
+    <div class="container">
+        <p class="kicker mb-3">Wat Node voor je leest</p>
+        <h2 class="mb-5" style="font-size: clamp(2rem, 3.4vw, 2.9rem);">Drie lenzen op dezelfde hemel</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="kaart-veer">
+                    <div class="glyph">&#9737;</div>
+                    <h3>Jouw horoscoop</h3>
+                    <p>
+                        Je exacte geboortemoment, ontcijferd positie per positie —
+                        van zonneteken tot ascendant, in taal die je echt kan gebruiken.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="kaart-veer">
+                    <div class="glyph glyph-salie">&#9740;</div>
+                    <h3>Synastrie</h3>
+                    <p>
+                        We leggen twee horoscopen over elkaar en zien waar ze zoemen,
+                        waar ze schuren, en waarom. Dat wordt jullie match-score.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="kaart-veer">
+                    <div class="glyph">&#9789;</div>
+                    <h3>Het gesprek</h3>
+                    <p>
+                        Klikt het, dan opent er een gesprek. De sterren brengen jullie
+                        samen &mdash; de rest is aan jullie.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="band-salie">
+    <div class="container">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-6">
+                <h2 class="mb-4">Sommige mensen zijn <em>in je verhaal geschreven</em>.</h2>
+                <p class="mb-4">
+                    Elke match in Node vertelt je uit welke posities de score komt,
+                    zodat je de hemel leert lezen terwijl je zoekt — geen vage
+                    waarzeggerij, wel de juiste mensen op het juiste moment.
+                </p>
+                <a class="band-link" asp-controller="Home" asp-action="HowItWorks">Hoe het werkt &rarr;</a>
+            </div>
+            <div class="col-lg-6 text-center">
+                @* Decoratief horoscoopwiel (zelfde geometrie als de echte
+                   horoscooppagina die later volgt): cirkels, twaalf spaken en
+                   de tekens van de dierenriem. *@
+                <svg viewBox="0 0 480 480" width="380" height="380" role="img" aria-label="Horoscoopwiel">
+                    <circle cx="240" cy="240" r="228" fill="none" stroke="#16324F" stroke-width="1.4" />
+                    <circle cx="240" cy="240" r="180" fill="none" stroke="#0F2420" stroke-opacity="0.45" stroke-width="1" />
+                    <circle cx="240" cy="240" r="120" fill="none" stroke="#0F2420" stroke-opacity="0.3" stroke-width="1" />
+                    <circle cx="240" cy="240" r="46" fill="none" stroke="#0F2420" stroke-opacity="0.3" stroke-width="1" />
+                    @for (var i = 0; i < 12; i++)
+                    {
+                        // Spaak van r=120 naar r=228, om de 30 graden.
+                        var hoek = (i * 30 - 90) * Math.PI / 180;
+                        var x1 = 240 + 120 * Math.Cos(hoek);
+                        var y1 = 240 + 120 * Math.Sin(hoek);
+                        var x2 = 240 + 228 * Math.Cos(hoek);
+                        var y2 = 240 + 228 * Math.Sin(hoek);
+                        <line x1="@x1.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)"
+                              y1="@y1.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)"
+                              x2="@x2.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)"
+                              y2="@y2.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)"
+                              stroke="#0F2420" stroke-opacity="0.35" stroke-width="0.8" />
+                    }
+                    @{
+                        var tekens = new[] { "♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "♑", "♒", "♓" };
+                    }
+                    @for (var i = 0; i < 12; i++)
+                    {
+                        // Teken in het midden van elk segment op r=204.
+                        // Let op: het SVG-element <text> botst met de Razor-tag
+                        // <text>, daarom wordt dit element via Html.Raw gezet.
+                        var hoek = (i * 30 + 15 - 90) * Math.PI / 180;
+                        var x = (240 + 204 * Math.Cos(hoek)).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
+                        var y = (240 + 204 * Math.Sin(hoek) + 7).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
+                        @* &#xFE0E; dwingt tekstweergave af (anders emoji op Windows). *@
+                        @Html.Raw($"<text x=\"{x}\" y=\"{y}\" text-anchor=\"middle\" fill=\"#16324F\" font-size=\"21\" font-family=\"Cormorant Garamond, Segoe UI Symbol, serif\">{tekens[i]}&#xFE0E;</text>")
+                    }
+                </svg>
+            </div>
+        </div>
+    </div>
+</section>
