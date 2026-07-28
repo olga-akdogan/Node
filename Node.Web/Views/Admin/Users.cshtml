@@ -1,0 +1,84 @@
+@* Gebruikersbeheer: rollen toekennen/afnemen en
+   gebruikers (de)blokkeren. Alleen bereikbaar voor de rol Admin. *@
+@model IReadOnlyList<Node.Web.Models.Admin.UserOverviewViewModel>
+@{
+    ViewData["Title"] = "Gebruikersbeheer";
+}
+
+<h1>@ViewData["Title"]</h1>
+<p class="text-muted">@Model.Count gebruikers</p>
+
+<div class="table-responsive">
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Naam</th>
+                <th>E-mailadres</th>
+                <th>Rollen</th>
+                <th>Status</th>
+                <th class="text-end">Acties</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var gebruiker in Model)
+            {
+                <tr>
+                    <td>@gebruiker.DisplayName</td>
+                    <td>
+                        @gebruiker.Email
+                        @if (!gebruiker.EmailConfirmed)
+                        {
+                            <span class="badge text-bg-warning" title="E-mailadres nog niet bevestigd">niet bevestigd</span>
+                        }
+                    </td>
+                    <td>
+                        @foreach (var rol in gebruiker.Roles)
+                        {
+                            <form class="d-inline" asp-action="RemoveRole" method="post"
+                                  onsubmit="return confirm('Rol @rol afnemen van @gebruiker.DisplayName?');">
+                                <input type="hidden" name="id" value="@gebruiker.Id" />
+                                <input type="hidden" name="rol" value="@rol" />
+                                @* Klikken op het kruisje neemt de rol af. *@
+                                <button type="submit" class="btn btn-sm badge text-bg-secondary border-0"
+                                        title="Rol afnemen">
+                                    @rol &times;
+                                </button>
+                            </form>
+                        }
+                        @if (gebruiker.AssignableRoles.Any())
+                        {
+                            <form class="d-inline-flex gap-1 mt-1" asp-action="AddRole" method="post">
+                                <input type="hidden" name="id" value="@gebruiker.Id" />
+                                <select name="rol" class="form-select form-select-sm w-auto" aria-label="Rol kiezen">
+                                    @foreach (var rol in gebruiker.AssignableRoles)
+                                    {
+                                        <option value="@rol">@rol</option>
+                                    }
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Toekennen</button>
+                            </form>
+                        }
+                    </td>
+                    <td>
+                        @if (gebruiker.IsBlocked)
+                        {
+                            <span class="badge text-bg-danger">Geblokkeerd</span>
+                        }
+                        else
+                        {
+                            <span class="badge text-bg-success">Actief</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        <form class="d-inline" asp-action="ToggleBlock" method="post">
+                            <input type="hidden" name="id" value="@gebruiker.Id" />
+                            <button type="submit" class="btn btn-sm @(gebruiker.IsBlocked ? "btn-outline-success" : "btn-outline-danger")">
+                                @(gebruiker.IsBlocked ? "Deblokkeren" : "Blokkeren")
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
