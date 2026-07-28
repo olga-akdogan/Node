@@ -1,0 +1,56 @@
+@* Gebruikersparametrisatie: eigen profielvelden aanpassen. *@
+@model Node.Web.Models.Account.ManageProfileViewModel
+@{
+    ViewData["Title"] = "Mijn profiel";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <h1>@ViewData["Title"]</h1>
+        <p class="text-muted">
+            Pas je je geboortegegevens aan? Dan wordt je horoscoop opnieuw berekend.
+        </p>
+
+        <form asp-action="Index" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="DisplayName" class="form-label"></label>
+                <input asp-for="DisplayName" class="form-control" />
+                <span asp-validation-for="DisplayName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Bio" class="form-label"></label>
+                <textarea asp-for="Bio" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Bio" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="BirthDate" class="form-label"></label>
+                    <input asp-for="BirthDate" class="form-control" type="date" />
+                    <span asp-validation-for="BirthDate" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="BirthTime" class="form-label"></label>
+                    <input asp-for="BirthTime" class="form-control" type="time" />
+                    <span asp-validation-for="BirthTime" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="BirthPlace" class="form-label"></label>
+                <input asp-for="BirthPlace" class="form-control" />
+                <span asp-validation-for="BirthPlace" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Opslaan</button>
+            <a asp-action="ChangePassword" class="btn btn-outline-secondary">Wachtwoord wijzigen</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
