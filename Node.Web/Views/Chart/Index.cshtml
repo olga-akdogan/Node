@@ -1,0 +1,109 @@
+
+@using Node.Web.Models.Chart
+@model HoroscoopViewModel
+@{
+    ViewData["Title"] = "Mijn horoscoop";
+    ViewData["VolleBreedte"] = true;
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+}
+
+<div class="topbalk">
+    <div class="container d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+            <div class="broodkruimel mb-1">
+                <a asp-controller="Home" asp-action="Index">&larr; Home</a>
+            </div>
+            <div class="d-flex flex-wrap align-items-baseline gap-3">
+                <h1>@Model.DisplayName &mdash; Geboortehoroscoop</h1>
+                <span class="text-muted" style="font-weight: 300; font-size: 0.9rem;">@Model.GeboorteInfo</span>
+            </div>
+        </div>
+        <a class="btn btn-outline-secondary" asp-controller="Manage" asp-action="Index">Geboortegegevens bewerken</a>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-4 align-items-start">
+        <div class="col-lg-6">
+            <div class="card p-4 text-center">
+                @* Horoscoopwiel: cirkels en spaken zoals in het ontwerp; de
+                   planeet-glyphs staan op hun echte eclipticale lengte
+                   (tekenindex × 30 + graad). 0° Ram staat bovenaan; de
+                   rotatie op de ascendant volgt in de astrologie-fase. *@
+                <svg viewBox="0 0 480 480" class="img-fluid" style="max-width: 480px;" role="img" aria-label="Horoscoopwiel van @Model.DisplayName">
+                    <circle cx="240" cy="240" r="228" fill="none" stroke="#16324F" stroke-width="1.4" />
+                    <circle cx="240" cy="240" r="180" fill="none" stroke="#8FA5A0" stroke-width="1" />
+                    <circle cx="240" cy="240" r="120" fill="none" stroke="#C7CFCD" stroke-width="1" />
+                    <circle cx="240" cy="240" r="46" fill="none" stroke="#C7CFCD" stroke-width="1" />
+                    @for (var i = 0; i < 12; i++)
+                    {
+                        var hoek = (i * 30 - 90) * Math.PI / 180;
+                        var x1 = (240 + 120 * Math.Cos(hoek)).ToString("0.0", inv);
+                        var y1 = (240 + 120 * Math.Sin(hoek)).ToString("0.0", inv);
+                        var x2 = (240 + 228 * Math.Cos(hoek)).ToString("0.0", inv);
+                        var y2 = (240 + 228 * Math.Sin(hoek)).ToString("0.0", inv);
+                        <line x1="@x1" y1="@y1" x2="@x2" y2="@y2" stroke="#B8C2BF" stroke-width="0.8" />
+                    }
+                    @for (var i = 0; i < 12; i++)
+                    {
+                        @* Dierenriemtekens midden in elk segment op r=204.
+                           SVG-<text> botst met de Razor-tag, vandaar Html.Raw. *@
+                        var hoek = (i * 30 + 15 - 90) * Math.PI / 180;
+                        var x = (240 + 204 * Math.Cos(hoek)).ToString("0.0", inv);
+                        var y = (240 + 204 * Math.Sin(hoek) + 7).ToString("0.0", inv);
+                        var glyph = AstroWeergave.Glyph((Node.Data.Models.Enums.ZodiacSign)i);
+                        @Html.Raw($"<text x=\"{x}\" y=\"{y}\" text-anchor=\"middle\" fill=\"#16324F\" font-size=\"21\" font-family=\"Cormorant Garamond, Segoe UI Symbol, serif\">{glyph}</text>")
+                    }
+                    @foreach (var plaatsing in Model.Placements.Where(p => p.Body != Node.Data.Models.Enums.CelestialBody.Ascendant))
+                    {
+                        @* Planeten op hun eigen lengtegraad, op r=84. *@
+                        var hoek = (plaatsing.LengteGraden - 90) * Math.PI / 180;
+                        var x = (240 + 84 * Math.Cos(hoek)).ToString("0.0", inv);
+                        var y = (240 + 84 * Math.Sin(hoek) + 6).ToString("0.0", inv);
+                        @Html.Raw($"<text x=\"{x}\" y=\"{y}\" text-anchor=\"middle\" fill=\"#0F2E2B\" font-size=\"19\" font-family=\"Cormorant Garamond, Segoe UI Symbol, serif\">{AstroWeergave.Glyph(plaatsing.Body)}</text>")
+                    }
+                    @Html.Raw("<text x=\"240\" y=\"246\" text-anchor=\"middle\" fill=\"#7A8683\" font-size=\"12\" font-family=\"Jost, sans-serif\" letter-spacing=\"2\">NATAL</text>")
+                </svg>
+                <div class="text-muted mt-3" style="font-size: 0.85rem; font-weight: 300;">
+                    Hele-teken-huizen &middot; Tropische dierenriem
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 d-flex flex-column gap-4">
+            <div class="d-flex flex-wrap gap-2">
+                <span class="chip-navy"><span class="glyph">☉</span> Zon &middot; @AstroWeergave.Naam(Model.SunSign)</span>
+                <span class="chip-navy"><span class="glyph">☽</span> Maan &middot; @AstroWeergave.Naam(Model.MoonSign)</span>
+                <span class="chip-navy"><span class="glyph">↑</span> Ascendant &middot; @AstroWeergave.Naam(Model.AscendantSign)</span>
+            </div>
+
+            <div class="card p-4">
+                <p class="kicker mb-3">Plaatsingen</p>
+                <div class="tabel-plaatsingen">
+                    <div class="rij-kop">
+                        <div>Hemellichaam</div><div>Teken</div><div>Huis</div><div class="text-end">Graad</div>
+                    </div>
+                    @foreach (var plaatsing in Model.Placements)
+                    {
+                        <div class="rij">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="glyph-planeet">@AstroWeergave.Glyph(plaatsing.Body)</span>
+                                @AstroWeergave.Naam(plaatsing.Body)
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="glyph-teken">@AstroWeergave.Glyph(plaatsing.Sign)</span>
+                                @AstroWeergave.Naam(plaatsing.Sign)
+                            </div>
+                            <div class="text-muted">@(plaatsing.Huis)e</div>
+                            <div class="text-end text-muted" style="font-weight: 300;">@plaatsing.Graad</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="kaart-signatuur">
+                <p class="kicker mb-2">Signatuur</p>
+                <p><em>@Model.Signatuur</em></p>
+            </div>
+        </div>
+    </div>
+</div>

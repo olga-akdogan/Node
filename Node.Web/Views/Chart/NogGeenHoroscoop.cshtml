@@ -1,0 +1,16 @@
+@* Lege toestand: de horoscoop van deze gebruiker is nog niet berekend. *@
+@{
+    ViewData["Title"] = "Mijn horoscoop";
+}
+
+<div class="mx-auto text-center card p-5" style="max-width: 34rem;">
+    <p class="kicker mb-3">Nog even geduld</p>
+    <h1 style="font-size: 2rem;">Je horoscoop wordt nog berekend</h1>
+    <p class="text-muted mb-4">
+        Zodra je geboortegegevens compleet zijn, verschijnt hier je volledige
+        geboortehoroscoop met wiel en plaatsingen.
+    </p>
+    <div>
+        <a class="btn btn-primary" asp-controller="Manage" asp-action="Index">Controleer mijn geboortegegevens</a>
+    </div>
+</div>

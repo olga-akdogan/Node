@@ -1,0 +1,96 @@
+using System.Globalization;
+using Microsoft.EntityFrameworkCore;
+using Node.Data.Data;
+using Node.Data.Models.Enums;
+using Node.Web.Models.Chart;
+using Node.Web.Services.Interfaces;
+
+namespace Node.Web.Services;
+
+/// <summary>
+/// Stelt de horoscooppagina samen uit de opgeslagen NatalChart en Placements.
+/// </summary>
+public class ChartService : IChartService
+{
+    private readonly ApplicationDbContext _context;
+
+    public ChartService(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<HoroscoopViewModel?> GetHoroscoopAsync(string userId)
+    {
+        var chart = await _context.NatalCharts
+            .Include(n => n.User)
+            .Include(n => n.Placements)
+            .FirstOrDefaultAsync(n => n.UserId == userId);
+
+        if (chart?.User is null)
+        {
+            return null; // Nog geen horoscoop berekend (bv. vers account).
+        }
+
+        var cultuur = CultureInfo.GetCultureInfo("nl-BE");
+
+        return new HoroscoopViewModel
+        {
+            DisplayName = chart.User.DisplayName,
+            GeboorteInfo = string.Join(" · ",
+                chart.User.BirthDate.ToString("d MMM yyyy", cultuur),
+                chart.User.BirthTime.ToString("HH:mm", cultuur),
+                chart.User.BirthPlace),
+            SunSign = chart.SunSign,
+            MoonSign = chart.MoonSign,
+            AscendantSign = chart.AscendantSign,
+            Placements = chart.Placements
+                .OrderBy(p => p.Body) // Vaste volgorde: Zon, Maan, ... Ascendant.
+                .Select(p => new PlaatsingRegel
+                {
+                    Body = p.Body,
+                    Sign = p.Sign,
+                    Huis = p.House,
+                    Graad = FormatteerGraad(p.DegreeInSign),
+                    LengteGraden = (int)p.Sign * 30 + (double)p.DegreeInSign,
+                })
+                .ToList(),
+            Signatuur = BouwSignatuur(chart.SunSign, chart.MoonSign),
+        };
+    }
+
+    /// <summary>Zet 14,5° om naar de klassieke notatie "14°30′".</summary>
+    private static string FormatteerGraad(decimal graadInTeken)
+    {
+        var graden = (int)graadInTeken;
+        var minuten = (int)Math.Round((graadInTeken - graden) * 60);
+        if (minuten == 60)
+        {
+            graden++;
+            minuten = 0;
+        }
+
+        return $"{graden:00}°{minuten:00}′";
+    }
+
+    /// <summary>
+    /// Eén poëtische signatuurregel op basis van de elementen van zon en maan
+    /// (zelfde element-logica als DemoSynastrie).
+    /// </summary>
+    private static string BouwSignatuur(ZodiacSign zon, ZodiacSign maan)
+    {
+        var elementZon = AstroWeergave.Element(zon);
+        var elementMaan = AstroWeergave.Element(maan);
+
+        var slot = (elementZon, elementMaan) switch
+        {
+            var (z, m) when z == m => "alles uit één stuk — wat je voelt, is wat je doet.",
+            ("vuur", "water") or ("water", "vuur") => "je beweegt snel, maar voelt alles onderweg.",
+            ("aarde", "lucht") or ("lucht", "aarde") => "je denkt in ideeën en bouwt ze meteen.",
+            ("vuur", "lucht") or ("lucht", "vuur") => "je vonkt op ideeën en steekt anderen aan.",
+            ("aarde", "water") or ("water", "aarde") => "je draagt zorg als een tweede natuur.",
+            _ => "twee werelden die elkaar in evenwicht houden.",
+        };
+
+        return $"Een {elementZon}-zon met een {elementMaan}-maan — {slot}";
+    }
+}
