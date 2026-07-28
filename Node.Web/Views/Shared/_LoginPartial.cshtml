@@ -1,0 +1,32 @@
+@* Rechterkant van de navigatie, zoals in het ontwerp: "Inloggen" als tekstlink
+   plus een salie-pil als CTA voor bezoekers; naam en afmelden voor leden. *@
+@using Microsoft.AspNetCore.Identity
+@using Node.Data.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<ul class="navbar-nav align-items-sm-center">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        var gebruiker = await UserManager.GetUserAsync(User);
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Manage" asp-action="Index" title="Instellingen">
+                @(gebruiker?.DisplayName ?? User.Identity?.Name)
+            </a>
+        </li>
+        <li class="nav-item">
+            <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post">
+                <button type="submit" class="nav-link btn btn-link">Afmelden</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item me-sm-3">
+            <a class="nav-link" asp-controller="Account" asp-action="Login">Inloggen</a>
+        </li>
+        <li class="nav-item">
+            <a class="btn btn-accent" asp-controller="Account" asp-action="Register">Maak je horoscoop</a>
+        </li>
+    }
+</ul>

@@ -1,0 +1,65 @@
+
+@model Node.Web.Models.Account.RegisterViewModel
+@{
+    ViewData["Title"] = "Account aanmaken";
+    Layout = "_AuthLayout";
+}
+
+<div class="auth-tabs">
+    <a asp-action="Login">Inloggen</a>
+    <span class="auth-tab-actief">Account aanmaken</span>
+</div>
+
+<form asp-action="Register" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" autocomplete="username" placeholder="jij@voorbeeld.be" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6 mb-3">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" class="form-control" autocomplete="new-password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+        <div class="col-sm-6 mb-3">
+            <label asp-for="ConfirmPassword" class="form-label"></label>
+            <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DisplayName" class="form-label"></label>
+        <input asp-for="DisplayName" class="form-control" />
+        <span asp-validation-for="DisplayName" class="text-danger"></span>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6 mb-3">
+            <label asp-for="BirthDate" class="form-label"></label>
+            <input asp-for="BirthDate" class="form-control" type="date" />
+            <span asp-validation-for="BirthDate" class="text-danger"></span>
+        </div>
+        <div class="col-sm-6 mb-3">
+            <label asp-for="BirthTime" class="form-label"></label>
+            <input asp-for="BirthTime" class="form-control" type="time" />
+            <span asp-validation-for="BirthTime" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="BirthPlace" class="form-label"></label>
+        <input asp-for="BirthPlace" class="form-control" placeholder="bv. Antwerpen, België" />
+        <span asp-validation-for="BirthPlace" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Maak je horoscoop</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,38 @@
+@model Node.Web.Models.Account.LoginViewModel
+@{
+    ViewData["Title"] = "Inloggen";
+    Layout = "_AuthLayout";
+}
+
+<div class="auth-tabs">
+    <span class="auth-tab-actief">Inloggen</span>
+    <a asp-action="Register">Account aanmaken</a>
+</div>
+
+<form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+    <div class="mb-4">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" autocomplete="username" placeholder="jij@voorbeeld.be" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Password" class="form-label"></label>
+        <input asp-for="Password" class="form-control" autocomplete="current-password" placeholder="••••••••" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+
+    <div class="mb-4 form-check">
+        <input asp-for="RememberMe" class="form-check-input" />
+        <label asp-for="RememberMe" class="form-check-label small"></label>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Inloggen</button>
+
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
