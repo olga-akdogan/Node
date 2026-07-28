@@ -1,0 +1,51 @@
+@* Eén profielkaart in de stapel. Wordt ook los via AJAX geladen. *@
+@model Node.Web.Models.Swiping.SwipeCardViewModel
+
+<div data-user-id="@Model.UserId">
+    <div class="card">
+        @* Beeldvlak zoals bij Tinder, maar als vlak marineblok met initiaal. *@
+        <div class="kaart-blok">
+            <span class="kaart-initiaal">@Model.DisplayName[0]</span>
+        </div>
+        <div class="card-body p-4">
+            <h2 class="mb-0">@Model.DisplayName, @Model.Age</h2>
+            <p class="kicker mt-1 mb-3">@Model.BirthPlace</p>
+
+            <div class="d-flex align-items-baseline gap-3 border-top border-bottom py-3 my-3">
+                <span class="score-cijfer">@(Model.CompatibilityScore?.ToString() ?? "—")</span>
+                <div>
+                    <p class="kicker mb-1">Match-score</p>
+                    <p class="text-muted small mb-0">
+                        @(Model.CompatibilityExplanation ?? "Score volgt zodra beide horoscopen berekend zijn.")
+                    </p>
+                </div>
+            </div>
+
+            <div class="row text-center mb-3">
+                <div class="col-4">
+                    <p class="kicker mb-1">Zon</p>
+                    <p class="mb-0">@(Model.SunSign ?? "—")</p>
+                </div>
+                <div class="col-4">
+                    <p class="kicker mb-1">Maan</p>
+                    <p class="mb-0">@(Model.MoonSign ?? "—")</p>
+                </div>
+                <div class="col-4">
+                    <p class="kicker mb-1">Ascendant</p>
+                    <p class="mb-0">@(Model.AscendantSign ?? "—")</p>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Bio))
+            {
+                <p class="text-muted mb-0">@Model.Bio</p>
+            }
+        </div>
+    </div>
+
+    @* Pas- en like-knop onder de kaart, zoals bij Tinder. *@
+    <div class="d-flex justify-content-center gap-4 mt-4">
+        <button type="button" class="actieknop actieknop-pass" title="Pas" aria-label="Pas">&times;</button>
+        <button type="button" class="actieknop actieknop-like" title="Like" aria-label="Like">&hearts;</button>
+    </div>
+</div>

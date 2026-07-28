@@ -1,0 +1,78 @@
+@* Ontdek-pagina naar het voorbeeld van Tinder/Bumble: één profielkaart
+   tegelijk met een pas- en like-knop. De volgende kaart en de beoordeling
+   verlopen via AJAX zonder paginaherlaad. *@
+@model Node.Web.Models.Swiping.SwipeCardViewModel?
+@{
+    ViewData["Title"] = "Ontdek";
+}
+
+<div class="deck mx-auto">
+    <p class="kicker text-center mb-4">Ontdek</p>
+
+    @* Antiforgery-token voor de AJAX-POST naar Beoordeel. *@
+    @Html.AntiForgeryToken()
+
+    <div id="kaart-houder">
+        @if (Model is null)
+        {
+            <partial name="_StapelLeeg" />
+        }
+        else
+        {
+            <partial name="_SwipeKaart" model="Model" />
+        }
+    </div>
+
+    @* Matchmelding: verborgen tot er een wederzijdse like is. *@
+    <div id="match-melding" class="match-overlay text-center d-none">
+        <p class="kicker mb-3">Wederzijds</p>
+        <h2>Een match</h2>
+        <p class="mb-4">Jullie horoscopen én jullie keuzes wijzen dezelfde kant op.</p>
+        <a id="match-chat-link" class="btn btn-hero me-3" href="#">Stuur een bericht</a>
+        <a href="#" id="verder-swipen" class="tekstlink">Verder swipen</a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Swipe-logica: beoordeel via AJAX en laad de volgende kaart als
+        // HTML-fragment.
+        (function () {
+            const token = $('input[name="__RequestVerificationToken"]').val();
+
+            // Volgende kaart ophalen (partial view) en tonen.
+            function laadVolgende() {
+                $('#match-melding').addClass('d-none');
+                $('#kaart-houder').removeClass('d-none')
+                    .load('@Url.Action("VolgendeKaart", "Swipe")');
+            }
+
+            // Like of pass doorsturen voor de kaart die nu zichtbaar is.
+            function beoordeel(isLike) {
+                const kaart = $('#kaart-houder [data-user-id]');
+                if (kaart.length === 0) { return; }
+
+                $.post('@Url.Action("Beoordeel", "Swipe")', {
+                    targetUserId: kaart.data('user-id'),
+                    isLike: isLike,
+                    __RequestVerificationToken: token
+                }).done(function (res) {
+                    if (res.isMatch) {
+                        // Matchmelding tonen i.p.v. meteen de volgende kaart.
+                        $('#match-chat-link').attr('href',
+                            '@Url.Action("Chat", "Match")/' + res.matchId);
+                        $('#kaart-houder').addClass('d-none');
+                        $('#match-melding').removeClass('d-none');
+                    } else {
+                        laadVolgende();
+                    }
+                });
+            }
+
+            // Knoppen zitten in de partial en wisselen, dus events op de houder.
+            $('#kaart-houder').on('click', '.actieknop-pass', function () { beoordeel(false); });
+            $('#kaart-houder').on('click', '.actieknop-like', function () { beoordeel(true); });
+            $('#verder-swipen').on('click', function (e) { e.preventDefault(); laadVolgende(); });
+        })();
+    </script>
+}

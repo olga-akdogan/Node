@@ -1,0 +1,68 @@
+@* Chatscherm met tekstballonnen (eigen berichten rechts, zoals bij
+   Tinder/Bumble). Versturen gaat via AJAX: het nieuwe bericht komt als
+   HTML-fragment terug en wordt onderaan toegevoegd zonder paginaherlaad
+   zonder paginaherlaad. *@
+@model Node.Web.Models.Matches.ChatViewModel
+@{
+    ViewData["Title"] = Model.OtherDisplayName;
+}
+
+<div class="mx-auto" style="max-width: 44rem;">
+    <div class="d-flex align-items-baseline justify-content-between border-bottom pb-3 mb-3">
+        <div>
+            <a class="kicker text-decoration-none" asp-action="Index">&larr; Matches</a>
+            <h1 class="mb-0 mt-1">@Model.OtherDisplayName</h1>
+        </div>
+        <div class="text-end">
+            <span class="score-cijfer">@Model.CompatibilityScore</span>
+            <p class="kicker mb-0">Match-score</p>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.CompatibilityExplanation))
+    {
+        <p class="text-muted small mb-4">@Model.CompatibilityExplanation</p>
+    }
+
+    <div id="berichten" class="chat-venster mb-3">
+        @foreach (var bericht in Model.Messages)
+        {
+            <partial name="_ChatBericht" model="bericht" />
+        }
+    </div>
+
+    <form id="chat-formulier" class="d-flex gap-2">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="matchId" value="@Model.MatchId" />
+        <input type="text" name="content" id="chat-invoer" class="form-control"
+               placeholder="Schrijf een bericht" maxlength="1000" autocomplete="off" />
+        <button type="submit" class="btn btn-primary">Verstuur</button>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        // Chat-logica: bericht versturen via AJAX en de teruggegeven ballon
+        // onderaan toevoegen.
+        (function () {
+            const venster = $('#berichten');
+
+            // Bij openen meteen naar het laatste bericht scrollen.
+            venster.scrollTop(venster.prop('scrollHeight'));
+
+            $('#chat-formulier').on('submit', function (e) {
+                e.preventDefault();
+
+                const invoer = $('#chat-invoer');
+                if (invoer.val().trim() === '') { return; }
+
+                $.post('@Url.Action("StuurBericht", "Match")', $(this).serialize())
+                    .done(function (html) {
+                        venster.append(html);
+                        invoer.val('').trigger('focus');
+                        venster.scrollTop(venster.prop('scrollHeight'));
+                    });
+            });
+        })();
+    </script>
+}
