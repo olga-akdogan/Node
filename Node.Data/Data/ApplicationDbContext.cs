@@ -20,7 +20,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Placement> Placements => Set<Placement>();
     public DbSet<Swipe> Swipes => Set<Swipe>();
     public DbSet<Match> Matches => Set<Match>();
-    public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
     public DbSet<Report> Reports => Set<Report>();
     public DbSet<CookieConsentLog> CookieConsentLogs => Set<CookieConsentLog>();
 
@@ -91,19 +90,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .IsUnique();
 
         builder.Entity<Match>().Property(m => m.Status).HasConversion<string>().HasMaxLength(20);
-
-        // Chatberichten horen bij een match en verdwijnen mee met de match.
-        builder.Entity<ChatMessage>()
-            .HasOne(c => c.Match)
-            .WithMany(m => m.ChatMessages)
-            .HasForeignKey(c => c.MatchId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Entity<ChatMessage>()
-            .HasOne(c => c.SenderUser)
-            .WithMany()
-            .HasForeignKey(c => c.SenderUserId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<Report>()
             .HasOne(r => r.ReporterUser)

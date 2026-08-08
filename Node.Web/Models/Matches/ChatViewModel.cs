@@ -1,6 +1,11 @@
 namespace Node.Web.Models.Matches;
 
-/// <summary>Het volledige chatscherm van één match.</summary>
+/// <summary>
+/// Het chatscherm van één match. De berichten zelf staan niet meer in onze
+/// databank: de view verbindt in de browser rechtstreeks met GetStream Chat
+/// via deze gegevens (API-sleutel is publiek, het token is kort geldig en
+/// enkel bruikbaar door de ingelogde gebruiker).
+/// </summary>
 public class ChatViewModel
 {
     public int MatchId { get; set; }
@@ -11,16 +16,13 @@ public class ChatViewModel
 
     public string? CompatibilityExplanation { get; set; }
 
-    public IList<ChatBerichtViewModel> Messages { get; set; } = new List<ChatBerichtViewModel>();
-}
+    /// <summary>GetStream API-sleutel (publiek, geen geheim).</summary>
+    public string StreamApiKey { get; set; } = string.Empty;
 
-/// <summary>Eén chatbericht, klaar voor weergave als tekstballon.</summary>
-public class ChatBerichtViewModel
-{
-    public string Content { get; set; } = string.Empty;
+    /// <summary>Kort geldig GetStream-token voor de ingelogde gebruiker.</summary>
+    public string StreamUserToken { get; set; } = string.Empty;
 
-    public DateTime SentAt { get; set; }
+    public string CurrentUserId { get; set; } = string.Empty;
 
-    /// <summary>True als de ingelogde gebruiker de afzender is (ballon rechts).</summary>
-    public bool IsMine { get; set; }
+    public string OtherUserId { get; set; } = string.Empty;
 }

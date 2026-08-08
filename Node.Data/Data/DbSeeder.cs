@@ -42,7 +42,8 @@ public static class DbSeeder
         var gebruikers = await SeedGebruikersAsync(userManager, logger);
         await SeedHoroscopenAsync(context, gebruikers);
         await SeedSwipesEnMatchesAsync(context, gebruikers);
-        await SeedChatberichtenAsync(context);
+        // Chatgesprekken leven sinds de GetStream-koppeling niet meer in deze
+        // databank en worden dus hier niet geseed.
         await SeedMeldingenAsync(context, gebruikers);
 
         logger.LogInformation("Seeding afgerond.");
@@ -303,56 +304,6 @@ public static class DbSeeder
         {
             context.Swipes.Add(new Swipe { SwiperUserId = perEmail[a].Id, TargetUserId = perEmail[b].Id, IsLike = false, CreatedAt = tijdstip });
             tijdstip = tijdstip.AddHours(5);
-        }
-
-        await context.SaveChangesAsync();
-    }
-
-    /// <summary>Seedt een kort chatgesprek in elke match.</summary>
-    private static async Task SeedChatberichtenAsync(ApplicationDbContext context)
-    {
-        if (await context.ChatMessages.AnyAsync())
-        {
-            return;
-        }
-
-        var matches = await context.Matches.ToListAsync();
-        var openers = new[]
-        {
-            "Hey! Blijkbaar vinden de sterren ons een goed idee.",
-            "Onze score is indrukwekkend. Zullen we dat eens testen met koffie?",
-            "Hallo! Wat zegt jouw ascendant over eerste berichtjes sturen?",
-            "De planeten hebben gesproken, dus hier ben ik.",
-            "Match! Ik beloof dat ik maar drie keer per dag over astrologie begin.",
-        };
-        var antwoorden = new[]
-        {
-            "Haha, wie ben ik om de sterren tegen te spreken?",
-            "Koffie klinkt goed. Ik ken een plek met een terras op het zuiden.",
-            "Mijn ascendant zegt: eerst zien of je grappig bent.",
-            "Dan moeten we de planeten maar niet teleurstellen.",
-            "Drie keer per dag valt mee, mijn vorige match haalde vijf.",
-        };
-
-        for (var i = 0; i < matches.Count; i++)
-        {
-            var match = matches[i];
-            context.ChatMessages.Add(new ChatMessage
-            {
-                MatchId = match.Id,
-                SenderUserId = match.User1Id,
-                Content = openers[i % openers.Length],
-                SentAt = match.MatchedAt.AddHours(1),
-                IsRead = true,
-            });
-            context.ChatMessages.Add(new ChatMessage
-            {
-                MatchId = match.Id,
-                SenderUserId = match.User2Id,
-                Content = antwoorden[i % antwoorden.Length],
-                SentAt = match.MatchedAt.AddHours(3),
-                IsRead = i % 2 == 0, // Enkele berichten bewust ongelezen laten voor de demo.
-            });
         }
 
         await context.SaveChangesAsync();

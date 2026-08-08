@@ -9,16 +9,19 @@ namespace Node.Web.Services;
 
 /// <summary>
 /// Matches en chatgesprekken. Elke methode controleert eerst of de gebruiker
-/// wel deelnemer is van de match (autorisatie op gegevensniveau).
+/// wel deelnemer is van de match (autorisatie op gegevensniveau). De
+/// chatberichten zelf staan bij GetStream Chat, niet in onze databank.
 /// </summary>
 public class MatchService : IMatchService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IStreamChatService _streamChatService;
     private readonly ILogger<MatchService> _logger;
 
-    public MatchService(ApplicationDbContext context, ILogger<MatchService> logger)
+    public MatchService(ApplicationDbContext context, IStreamChatService streamChatService, ILogger<MatchService> logger)
     {
         _context = context;
+        _streamChatService = streamChatService;
         _logger = logger;
     }
 
@@ -27,25 +30,38 @@ public class MatchService : IMatchService
         var matches = await _context.Matches
             .Include(m => m.User1)
             .Include(m => m.User2)
-            .Include(m => m.ChatMessages)
             .Where(m => m.Status == MatchStatus.Active
                         && (m.User1Id == userId || m.User2Id == userId))
             .ToListAsync();
+
+        if (matches.Count == 0)
+        {
+            return [];
+        }
+
+        // GetStream moet de ingelogde gebruiker al kennen vóór er namens haar/hem
+        // gevraagd kan worden naar kanalen; hergebruikt de al geladen matchdata.
+        var ikzelf = (matches[0].User1Id == userId ? matches[0].User1 : matches[0].User2)!;
+        await _streamChatService.ZorgVoorGebruikerAsync(ikzelf);
+
+        // Laatste bericht + ongelezen aantal per gesprek komen bij GetStream vandaan,
+        // opgezocht via de id van de andere gebruiker.
+        var kanaalStatussen = await _streamChatService.GetKanaalStatussenAsync(userId);
 
         return matches
             .Select(m =>
             {
                 var ander = m.User1Id == userId ? m.User2 : m.User1;
-                var laatste = m.ChatMessages.OrderByDescending(c => c.SentAt).FirstOrDefault();
+                kanaalStatussen.TryGetValue(ander?.Id ?? string.Empty, out var status);
 
                 return new MatchOverviewViewModel
                 {
                     MatchId = m.Id,
                     OtherDisplayName = ander?.DisplayName ?? "Onbekend",
                     CompatibilityScore = m.CompatibilityScore,
-                    LastMessagePreview = laatste?.Content,
-                    LastMessageAt = laatste?.SentAt,
-                    UnreadCount = m.ChatMessages.Count(c => c.SenderUserId != userId && !c.IsRead),
+                    LastMessagePreview = status?.LaatsteBerichtTekst,
+                    LastMessageAt = status?.LaatsteBerichtOp,
+                    UnreadCount = status?.OngelezenAantal ?? 0,
                 };
             })
             // Recentste gesprek bovenaan; matches zonder gesprek daaronder.
@@ -56,68 +72,32 @@ public class MatchService : IMatchService
     public async Task<ChatViewModel?> GetChatAsync(int matchId, string userId)
     {
         var match = await ZoekMatchVanDeelnemerAsync(matchId, userId);
-        if (match is null)
+        if (match is null || match.User1 is null || match.User2 is null)
         {
             return null;
         }
 
-        var berichten = await _context.ChatMessages
-            .Where(c => c.MatchId == matchId)
-            .OrderBy(c => c.SentAt)
-            .ToListAsync();
-
-        // Berichten van de ander markeren als gelezen nu ik het gesprek open.
-        foreach (var bericht in berichten.Where(b => b.SenderUserId != userId && !b.IsRead))
-        {
-            bericht.IsRead = true;
-        }
-
-        await _context.SaveChangesAsync();
-
+        var ikzelf = match.User1Id == userId ? match.User1 : match.User2;
         var ander = match.User1Id == userId ? match.User2 : match.User1;
+
+        // Beide gebruikers moeten als GetStream-gebruiker bestaan vóór ze aan
+        // het kanaal kunnen deelnemen (het kanaal zelf maakt de JS-client aan
+        // via de members-lijst, de eerste keer dat iemand het gesprek opent).
+        await _streamChatService.ZorgVoorGebruikerAsync(ikzelf);
+        await _streamChatService.ZorgVoorGebruikerAsync(ander);
+
+        _logger.LogInformation("Chat geopend voor match {MatchId} door {UserId}.", matchId, userId);
 
         return new ChatViewModel
         {
             MatchId = match.Id,
-            OtherDisplayName = ander?.DisplayName ?? "Onbekend",
+            OtherDisplayName = ander.DisplayName,
             CompatibilityScore = match.CompatibilityScore,
             CompatibilityExplanation = match.CompatibilityExplanation,
-            Messages = berichten
-                .Select(b => new ChatBerichtViewModel
-                {
-                    Content = b.Content,
-                    SentAt = b.SentAt,
-                    IsMine = b.SenderUserId == userId,
-                })
-                .ToList(),
-        };
-    }
-
-    public async Task<ChatBerichtViewModel?> StuurBerichtAsync(int matchId, string userId, string content)
-    {
-        var match = await ZoekMatchVanDeelnemerAsync(matchId, userId);
-        if (match is null || match.Status != MatchStatus.Active)
-        {
-            return null;
-        }
-
-        var bericht = new ChatMessage
-        {
-            MatchId = matchId,
-            SenderUserId = userId,
-            Content = content,
-        };
-
-        _context.ChatMessages.Add(bericht);
-        await _context.SaveChangesAsync();
-
-        _logger.LogInformation("Bericht verstuurd in match {MatchId} door {UserId}.", matchId, userId);
-
-        return new ChatBerichtViewModel
-        {
-            Content = bericht.Content,
-            SentAt = bericht.SentAt,
-            IsMine = true,
+            StreamApiKey = _streamChatService.ApiKey,
+            StreamUserToken = _streamChatService.MaakGebruikersToken(userId),
+            CurrentUserId = userId,
+            OtherUserId = ander.Id,
         };
     }
 

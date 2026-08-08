@@ -1,7 +1,7 @@
 @* Chatscherm met tekstballonnen (eigen berichten rechts, zoals bij
-   Tinder/Bumble). Versturen gaat via AJAX: het nieuwe bericht komt als
-   HTML-fragment terug en wordt onderaan toegevoegd zonder paginaherlaad
-   zonder paginaherlaad. *@
+   Tinder/Bumble). De berichten komen niet van onze server: de browser
+   verbindt hier rechtstreeks met GetStream Chat via stream-chat-js en houdt
+   het gesprek live bij (nieuwe berichten verschijnen zonder herladen). *@
 @model Node.Web.Models.Matches.ChatViewModel
 @{
     ViewData["Title"] = Model.OtherDisplayName;
@@ -24,44 +24,91 @@
         <p class="text-muted small mb-4">@Model.CompatibilityExplanation</p>
     }
 
-    <div id="berichten" class="chat-venster mb-3">
-        @foreach (var bericht in Model.Messages)
-        {
-            <partial name="_ChatBericht" model="bericht" />
-        }
-    </div>
+    <div id="chat-app"
+         data-api-key="@Model.StreamApiKey"
+         data-user-token="@Model.StreamUserToken"
+         data-current-user-id="@Model.CurrentUserId"
+         data-other-user-id="@Model.OtherUserId">
+        <div id="berichten" class="chat-venster mb-3">
+            <p class="text-muted small text-center">Gesprek laden&hellip;</p>
+        </div>
 
-    <form id="chat-formulier" class="d-flex gap-2">
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="matchId" value="@Model.MatchId" />
-        <input type="text" name="content" id="chat-invoer" class="form-control"
-               placeholder="Schrijf een bericht" maxlength="1000" autocomplete="off" />
-        <button type="submit" class="btn btn-primary">Verstuur</button>
-    </form>
+        <form id="chat-formulier" class="d-flex gap-2">
+            <input type="text" id="chat-invoer" class="form-control"
+                   placeholder="Schrijf een bericht" maxlength="1000" autocomplete="off" />
+            <button type="submit" class="btn btn-primary">Verstuur</button>
+        </form>
+    </div>
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/stream-chat@8.57.4/dist/browser.full-bundle.min.js"></script>
     <script>
-        // Chat-logica: bericht versturen via AJAX en de teruggegeven ballon
-        // onderaan toevoegen.
-        (function () {
-            const venster = $('#berichten');
+        // Chat-logica met GetStream: verbinden, bestaande berichten tonen en
+        // live meeluisteren naar nieuwe berichten van de andere gebruiker.
+        (async function () {
+            const app = document.getElementById('chat-app');
+            const venster = document.getElementById('berichten');
+            const formulier = document.getElementById('chat-formulier');
+            const invoer = document.getElementById('chat-invoer');
+            const eigenGebruikerId = app.dataset.currentUserId;
 
-            // Bij openen meteen naar het laatste bericht scrollen.
-            venster.scrollTop(venster.prop('scrollHeight'));
+            const client = StreamChat.getInstance(app.dataset.apiKey);
+            await client.connectUser({ id: eigenGebruikerId }, app.dataset.userToken);
 
-            $('#chat-formulier').on('submit', function (e) {
+            // Kanaal zonder expliciete id: GetStream leidt de id af uit de
+            // ledenlijst, zodat dezelfde twee gebruikers altijd hetzelfde
+            // gesprek terugvinden.
+            const channel = client.channel('messaging', {
+                members: [eigenGebruikerId, app.dataset.otherUserId],
+            });
+            await channel.watch();
+            await channel.markRead();
+
+            function toonBericht(bericht) {
+                const isMijn = bericht.user.id === eigenGebruikerId;
+
+                const rij = document.createElement('div');
+                rij.className = 'd-flex ' + (isMijn ? 'justify-content-end' : 'justify-content-start');
+
+                const ballon = document.createElement('div');
+                ballon.className = 'ballon ' + (isMijn ? 'ballon-mijn' : 'ballon-ander');
+
+                const tekst = document.createElement('span');
+                tekst.textContent = bericht.text;
+
+                const tijd = document.createElement('span');
+                tijd.className = 'ballon-tijd';
+                tijd.textContent = new Date(bericht.created_at).toLocaleTimeString('nl-BE', {
+                    hour: '2-digit', minute: '2-digit',
+                });
+
+                ballon.appendChild(tekst);
+                ballon.appendChild(tijd);
+                rij.appendChild(ballon);
+                venster.appendChild(rij);
+                venster.scrollTop = venster.scrollHeight;
+            }
+
+            venster.innerHTML = '';
+            channel.state.messages.forEach(toonBericht);
+            venster.scrollTop = venster.scrollHeight;
+
+            channel.on('message.new', function (event) {
+                toonBericht(event.message);
+                if (event.message.user.id !== eigenGebruikerId) {
+                    channel.markRead();
+                }
+            });
+
+            formulier.addEventListener('submit', async function (e) {
                 e.preventDefault();
-
-                const invoer = $('#chat-invoer');
-                if (invoer.val().trim() === '') { return; }
-
-                $.post('@Url.Action("StuurBericht", "Match")', $(this).serialize())
-                    .done(function (html) {
-                        venster.append(html);
-                        invoer.val('').trigger('focus');
-                        venster.scrollTop(venster.prop('scrollHeight'));
-                    });
+                const tekst = invoer.value.trim();
+                if (!tekst) {
+                    return;
+                }
+                invoer.value = '';
+                await channel.sendMessage({ text: tekst });
             });
         })();
     </script>

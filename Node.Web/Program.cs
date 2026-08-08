@@ -1,3 +1,4 @@
+using GetStream;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Node.Data.Data;
@@ -7,17 +8,14 @@ using Node.Web.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Databankcontext: connection string komt uit appsettings (lokaal) of
-// user-secrets/omgevingsvariabelen (publieke databank, geen geheimen in de repo).
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' ontbreekt.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Identity met rollen en de eigen ApplicationUser.
-// De standaard Identity-UI wordt niet gebruikt: de registratie-, login- en
-// beheerpagina's zijn eigen MVC-controllers en views.
+
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
@@ -27,36 +25,46 @@ builder.Services
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders(); // Nodig voor e-mailbevestigingstokens.
 
-// Paden van de eigen login- en geen-toegang-pagina's.
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/AccessDenied";
 });
 
-// Cookie van een geblokkeerde/gewijzigde gebruiker wordt binnen de vijf
-// minuten ongeldig (de beheerder vernieuwt bij blokkeren de security stamp).
+
 builder.Services.Configure<SecurityStampValidatorOptions>(options =>
     options.ValidationInterval = TimeSpan.FromMinutes(5));
 
-// Eigen services.
+// GetStream Chat
+var streamApiKey = builder.Configuration["Stream:ApiKey"]
+    ?? throw new InvalidOperationException("Configuratie 'Stream:ApiKey' ontbreekt.");
+var streamApiSecret = builder.Configuration["Stream:ApiSecret"]
+    ?? throw new InvalidOperationException("Configuratie 'Stream:ApiSecret' ontbreekt.");
+
+builder.Services.AddSingleton(new StreamClient(streamApiKey, streamApiSecret));
+// ChatClient expects generic GetStream.IClient-interface
+builder.Services.AddSingleton<IClient>(sp => sp.GetRequiredService<StreamClient>());
+builder.Services.AddSingleton<ChatClient>();
+
+
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<ISwipeService, SwipeService>();
 builder.Services.AddScoped<IMatchService, MatchService>();
 builder.Services.AddScoped<IChartService, ChartService>();
+builder.Services.AddScoped<IStreamChatService, StreamChatService>();
 
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// Uitgebreide seeding bij het opstarten van een (gedeeltelijk) lege databank:
-// migraties toepassen en demogegevens aanvullen.
+
 using (var scope = app.Services.CreateScope())
 {
     await DbSeeder.SeedAsync(scope.ServiceProvider);
 }
 
-// HTTP-pijplijn configureren.
+// HTTP-pipeline config
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -66,7 +74,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
-// Eerst vaststellen wie de gebruiker is, daarna pas wat die mag.
+
 app.UseAuthentication();
 app.UseAuthorization();
 

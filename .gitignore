@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Local-only project docs (not for GitHub)
+.claude/
+AI-BRONNEN.md
+CLAUDE.md

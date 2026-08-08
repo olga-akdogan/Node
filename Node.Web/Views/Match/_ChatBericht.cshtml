@@ -1,9 +1,0 @@
-@* Eén tekstballon. Wordt ook los via AJAX teruggegeven na het versturen. *@
-@model Node.Web.Models.Matches.ChatBerichtViewModel
-
-<div class="d-flex @(Model.IsMine ? "justify-content-end" : "justify-content-start")">
-    <div class="ballon @(Model.IsMine ? "ballon-mijn" : "ballon-ander")">
-        <span>@Model.Content</span>
-        <span class="ballon-tijd">@Model.SentAt.ToLocalTime().ToString("HH:mm")</span>
-    </div>
-</div>

@@ -7,8 +7,9 @@ using Node.Web.Services.Interfaces;
 namespace Node.Web.Controllers;
 
 /// <summary>
-/// Matchoverzicht en chat. Berichten worden via AJAX verstuurd en als
-/// HTML-fragment teruggegeven.
+/// Matchoverzicht en chat. Het chatscherm verbindt in de browser rechtstreeks
+/// met GetStream Chat; deze controller levert enkel de matchgegevens en het
+/// GetStream-token om die verbinding op te zetten.
 /// </summary>
 [Authorize]
 public class MatchController : Controller
@@ -42,29 +43,5 @@ public class MatchController : Controller
         }
 
         return View(chat);
-    }
-
-    /// <summary>
-    /// AJAX: verstuurt een bericht en geeft de nieuwe tekstballon terug als
-    /// HTML-fragment dat de pagina onderaan het gesprek plakt.
-    /// </summary>
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> StuurBericht(int matchId, string content)
-    {
-        if (string.IsNullOrWhiteSpace(content) || content.Length > 1000)
-        {
-            return BadRequest();
-        }
-
-        var bericht = await _matchService.StuurBerichtAsync(
-            matchId, _userManager.GetUserId(User)!, content.Trim());
-
-        if (bericht is null)
-        {
-            return NotFound();
-        }
-
-        return PartialView("_ChatBericht", bericht);
     }
 }

@@ -37,7 +37,4 @@ public class Match
     public MatchStatus Status { get; set; } = MatchStatus.Active;
 
     public DateTime MatchedAt { get; set; } = DateTime.UtcNow;
-
-    /// <summary>Chatgesprek dat bij deze match hoort.</summary>
-    public ICollection<ChatMessage> ChatMessages { get; set; } = new List<ChatMessage>();
 }

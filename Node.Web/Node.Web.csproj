@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>3091e566-9ecb-4e3e-a7f0-b360e738a8c3</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,6 +13,7 @@
 
   <ItemGroup>
     <!-- MailKit: versturen van verificatie-e-mails via SMTP. -->
+    <PackageReference Include="getstream-net" Version="15.0.0" />
     <PackageReference Include="MailKit" Version="4.17.0" />
     <!-- Design-time ondersteuning voor "dotnet ef" migraties (startup-project). -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.7">
