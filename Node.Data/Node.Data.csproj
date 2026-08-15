@@ -20,6 +20,8 @@
     <PackageReference Include="GeoTimeZone" Version="6.1.0" />
     <!-- Historisch correcte tijdzone-omrekening (incl. oude DST-regels) via de TZDB. -->
     <PackageReference Include="NodaTime" Version="3.3.3" />
+    <!-- Anthropic Claude API: AI-geschreven matchinterpretaties op basis van beide horoscopen. -->
+    <PackageReference Include="Anthropic" Version="12.40.0" />
   </ItemGroup>
 
 </Project>

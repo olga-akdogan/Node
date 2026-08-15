@@ -1,3 +1,4 @@
+using Anthropic;
 using GetStream;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +49,11 @@ builder.Services.AddSingleton(new StreamClient(streamApiKey, streamApiSecret));
 builder.Services.AddSingleton<IClient>(sp => sp.GetRequiredService<StreamClient>());
 builder.Services.AddSingleton<ChatClient>();
 
+// Claude API (Anthropic): matchinterpretaties op basis van beide horoscopen.
+var anthropicApiKey = builder.Configuration["Anthropic:ApiKey"]
+    ?? throw new InvalidOperationException("Configuratie 'Anthropic:ApiKey' ontbreekt.");
+builder.Services.AddSingleton(new AnthropicClient { ApiKey = anthropicApiKey });
+
 
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<ISwipeService, SwipeService>();
@@ -55,6 +61,7 @@ builder.Services.AddScoped<IMatchService, MatchService>();
 builder.Services.AddScoped<IChartService, ChartService>();
 builder.Services.AddScoped<IStreamChatService, StreamChatService>();
 builder.Services.AddScoped<INatalChartCalculator, NatalChartCalculator>();
+builder.Services.AddScoped<IMatchInterpretationService, MatchInterpretationService>();
 
 // Nominatim (OpenStreetMap) vereist een identificerende User-Agent per gebruiksvoorwaarden.
 builder.Services.AddHttpClient<IGeocodingService, GeocodingService>(client =>

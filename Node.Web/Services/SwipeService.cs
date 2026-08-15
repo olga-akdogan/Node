@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Node.Data.Data;
 using Node.Data.Models;
 using Node.Data.Models.Enums;
+using Node.Data.Services;
 using Node.Web.Models.Swiping;
 using Node.Web.Services.Interfaces;
 
@@ -15,15 +16,18 @@ public class SwipeService : ISwipeService
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IMatchInterpretationService _matchInterpretationService;
     private readonly ILogger<SwipeService> _logger;
 
     public SwipeService(
         ApplicationDbContext context,
         UserManager<ApplicationUser> userManager,
+        IMatchInterpretationService matchInterpretationService,
         ILogger<SwipeService> logger)
     {
         _context = context;
         _userManager = userManager;
+        _matchInterpretationService = matchInterpretationService;
         _logger = logger;
     }
 
@@ -114,18 +118,36 @@ public class SwipeService : ISwipeService
             ? (swiperUserId, targetUserId)
             : (targetUserId, swiperUserId);
 
-        var chart1 = await _context.NatalCharts.FirstOrDefaultAsync(n => n.UserId == eerste);
-        var chart2 = await _context.NatalCharts.FirstOrDefaultAsync(n => n.UserId == tweede);
-        var synastrie = chart1 is not null && chart2 is not null
-            ? DemoSynastrie.Bereken(chart1, chart2)
-            : (Score: 50, Uitleg: "Score volgt zodra beide horoscopen berekend zijn.");
+        var chart1 = await _context.NatalCharts.Include(n => n.Placements).FirstOrDefaultAsync(n => n.UserId == eerste);
+        var chart2 = await _context.NatalCharts.Include(n => n.Placements).FirstOrDefaultAsync(n => n.UserId == tweede);
+
+        int score;
+        string uitleg;
+        if (chart1 is not null && chart2 is not null)
+        {
+            var (berekendeScore, _) = DemoSynastrie.Bereken(chart1, chart2);
+            score = berekendeScore;
+
+            // De uitlegtekst komt van Claude (op basis van de volledige horoscopen);
+            // de score zelf blijft deterministisch berekend hierboven.
+            var gebruiker1 = await _userManager.FindByIdAsync(eerste);
+            var gebruiker2 = await _userManager.FindByIdAsync(tweede);
+            uitleg = gebruiker1 is not null && gebruiker2 is not null
+                ? await _matchInterpretationService.SchrijfInterpretatieAsync(gebruiker1, chart1, gebruiker2, chart2, score)
+                : "Score volgt zodra beide horoscopen berekend zijn.";
+        }
+        else
+        {
+            score = 50;
+            uitleg = "Score volgt zodra beide horoscopen berekend zijn.";
+        }
 
         var match = new Match
         {
             User1Id = eerste,
             User2Id = tweede,
-            CompatibilityScore = synastrie.Score,
-            CompatibilityExplanation = synastrie.Uitleg,
+            CompatibilityScore = score,
+            CompatibilityExplanation = uitleg,
             Status = MatchStatus.Active,
         };
 

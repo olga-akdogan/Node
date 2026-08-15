@@ -38,6 +38,7 @@ public static class DbSeeder
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         var natalChartCalculator = services.GetRequiredService<INatalChartCalculator>();
+        var matchInterpretationService = services.GetRequiredService<IMatchInterpretationService>();
         var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("DbSeeder");
 
         // Openstaande migraties automatisch toepassen zodat de databank
@@ -47,7 +48,7 @@ public static class DbSeeder
         await SeedRollenAsync(roleManager);
         var gebruikers = await SeedGebruikersAsync(userManager, logger);
         await SeedHoroscopenAsync(context, gebruikers, natalChartCalculator);
-        await SeedSwipesEnMatchesAsync(context, gebruikers);
+        await SeedSwipesEnMatchesAsync(context, gebruikers, matchInterpretationService);
         // Chat conversations no longer live in this database since the
         // GetStream integration, so they aren't seeded here.
         await SeedMeldingenAsync(context, gebruikers);
@@ -206,7 +207,8 @@ public static class DbSeeder
     /// publieke figuren verzonnen: Marilyn Monroe en Angelina Jolie blijven
     /// daarom ongekoppeld in deze demo, net als bij een echte swipe-app.
     /// </summary>
-    private static async Task SeedSwipesEnMatchesAsync(ApplicationDbContext context, List<ApplicationUser> gebruikers)
+    private static async Task SeedSwipesEnMatchesAsync(
+        ApplicationDbContext context, List<ApplicationUser> gebruikers, IMatchInterpretationService matchInterpretationService)
     {
         if (await context.Swipes.AnyAsync())
         {
@@ -244,9 +246,13 @@ public static class DbSeeder
             // Afspraak: User1Id alfabetisch vóór User2Id zodat een paar uniek is.
             var (eerste, tweede) = string.CompareOrdinal(userA.Id, userB.Id) < 0 ? (userA, userB) : (userB, userA);
 
-            var chartA = await context.NatalCharts.FirstAsync(n => n.UserId == eerste.Id);
-            var chartB = await context.NatalCharts.FirstAsync(n => n.UserId == tweede.Id);
-            var (score, uitleg) = DemoSynastrie.Bereken(chartA, chartB);
+            var chartA = await context.NatalCharts.Include(n => n.Placements).FirstAsync(n => n.UserId == eerste.Id);
+            var chartB = await context.NatalCharts.Include(n => n.Placements).FirstAsync(n => n.UserId == tweede.Id);
+            var (score, _) = DemoSynastrie.Bereken(chartA, chartB);
+
+            // De uitlegtekst komt van Claude op basis van de volledige horoscopen;
+            // de score zelf blijft hierboven deterministisch berekend.
+            var uitleg = await matchInterpretationService.SchrijfInterpretatieAsync(eerste, chartA, tweede, chartB, score);
 
             context.Matches.Add(new Match
             {
