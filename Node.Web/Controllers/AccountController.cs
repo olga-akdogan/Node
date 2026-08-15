@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Node.Data.Data;
 using Node.Data.Models;
+using Node.Data.Services;
 using Node.Web.Models.Account;
 using Node.Web.Services.Interfaces;
 
@@ -19,17 +20,26 @@ public class AccountController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IEmailService _emailService;
+    private readonly IGeocodingService _geocodingService;
+    private readonly INatalChartCalculator _natalChartCalculator;
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<AccountController> _logger;
 
     public AccountController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         IEmailService emailService,
+        IGeocodingService geocodingService,
+        INatalChartCalculator natalChartCalculator,
+        ApplicationDbContext context,
         ILogger<AccountController> logger)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _emailService = emailService;
+        _geocodingService = geocodingService;
+        _natalChartCalculator = natalChartCalculator;
+        _context = context;
         _logger = logger;
     }
 
@@ -47,6 +57,16 @@ public class AccountController : Controller
             return View(model);
         }
 
+        // Coördinaten van de geboorteplaats zijn nodig voor zowel de historische
+        // tijdzone-omrekening als de Ascendant/huizenberekening.
+        var coordinaten = await _geocodingService.ZoekCoordinatenAsync(model.BirthPlace);
+        if (coordinaten is null)
+        {
+            ModelState.AddModelError(nameof(model.BirthPlace),
+                "Deze geboorteplaats werd niet gevonden. Probeer een preciezere schrijfwijze (bv. \"Antwerpen, België\").");
+            return View(model);
+        }
+
         var gebruiker = new ApplicationUser
         {
             UserName = model.Email,
@@ -57,6 +77,8 @@ public class AccountController : Controller
             BirthDate = model.BirthDate!.Value,
             BirthTime = model.BirthTime!.Value,
             BirthPlace = model.BirthPlace,
+            BirthLatitude = coordinaten.Value.Latitude,
+            BirthLongitude = coordinaten.Value.Longitude,
         };
 
         var resultaat = await _userManager.CreateAsync(gebruiker, model.Password);
@@ -74,6 +96,10 @@ public class AccountController : Controller
         // Elke nieuwe gebruiker krijgt automatisch de rol "Lid".
         await _userManager.AddToRoleAsync(gebruiker, DbSeeder.RolLid);
         _logger.LogInformation("Nieuwe gebruiker geregistreerd: {Email}.", model.Email);
+
+        var horoscoop = _natalChartCalculator.Calculate(gebruiker);
+        _context.NatalCharts.Add(horoscoop);
+        await _context.SaveChangesAsync();
 
         await VerstuurVerificatieEmailAsync(gebruiker);
 

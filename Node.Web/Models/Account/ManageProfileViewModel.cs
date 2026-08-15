@@ -32,4 +32,11 @@ public class ManageProfileViewModel
     [MaxLength(150, ErrorMessage = "De geboorteplaats mag maximaal {1} tekens lang zijn.")]
     [Display(Name = "Geboorteplaats")]
     public string BirthPlace { get; set; } = string.Empty;
+
+    /// <summary>Enkel ingevuld wanneer de gebruiker een nieuwe profielfoto kiest.</summary>
+    [Display(Name = "Profielfoto")]
+    public IFormFile? ProfilePicture { get; set; }
+
+    /// <summary>Huidige foto-URL, enkel voor weergave (niet uit het formulier).</summary>
+    public string? HuidigeProfielFotoUrl { get; set; }
 }

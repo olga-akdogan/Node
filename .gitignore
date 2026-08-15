@@ -366,3 +366,6 @@ FodyWeavers.xsd
 .claude/
 AI-BRONNEN.md
 CLAUDE.md
+
+# Door gebruikers geüploade profielfoto's (lokale opslag onder wwwroot).
+Node.Web/wwwroot/uploads/

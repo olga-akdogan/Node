@@ -37,6 +37,13 @@ public class ApplicationUser : IdentityUser
     [PersonalData]
     public TimeOnly BirthTime { get; set; }
 
+    /// <summary>
+    /// True wanneer de exacte geboortetijd niet gekend is en BirthTime dus een
+    /// conventionele plaatsvervanger is (bv. 12:00). Zon-, maan- en planeettekens
+    /// blijven betrouwbaar; Ascendant en huizen worden dan als onzeker gemarkeerd.
+    /// </summary>
+    public bool BirthTimeIsUnknown { get; set; }
+
     /// <summary>Geboorteplaats zoals de gebruiker ze intypte (bv. "Antwerpen, België").</summary>
     [Required]
     [MaxLength(150)]

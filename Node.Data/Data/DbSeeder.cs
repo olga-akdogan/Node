@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Node.Data.Models;
 using Node.Data.Models.Enums;
+using Node.Data.Services;
 
 namespace Node.Data.Data;
 
@@ -11,11 +12,15 @@ namespace Node.Data.Data;
 /// Uitgebreide seeding bij het opstarten van een (gedeeltelijk) lege databank.
 /// Alles is deterministisch zodat elke run dezelfde
 /// demogegevens oplevert: rollen, gebruikers, horoscopen met posities,
-/// swipes, matches, chatberichten en meldingen.
+/// swipes, matches en meldingen.
 ///
-/// De zontekens worden correct afgeleid uit de geboortedatum; de maan-,
-/// ascendant- en huisposities zijn voorlopige demowaarden totdat de echte
-/// berekening met SwissEphNet gebouwd is (fase "astrologie-engine").
+/// De demo-leden zijn bekende publieke figuren met gepubliceerde geboortegegevens
+/// (naam, datum, tijd, plaats) zodat de horoscoopberekening (Swiss Ephemeris)
+/// tegen bekende, extern verifieerbare horoscopen getest kan worden. Coördinaten
+/// zijn zelf opgezocht op basis van de opgegeven geboorteplaats; enkele plaatsen
+/// waren dubbelzinnig (bv. enkel een staat of provincie) en zijn dan aangevuld
+/// met de meest gedocumenteerde specifieke geboorteplaats van die persoon
+/// (zie de opmerkingen bij Zendaya Coleman en Travis Kelce hieronder).
 /// </summary>
 public static class DbSeeder
 {
@@ -32,6 +37,7 @@ public static class DbSeeder
         var context = services.GetRequiredService<ApplicationDbContext>();
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var natalChartCalculator = services.GetRequiredService<INatalChartCalculator>();
         var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("DbSeeder");
 
         // Openstaande migraties automatisch toepassen zodat de databank
@@ -40,10 +46,10 @@ public static class DbSeeder
 
         await SeedRollenAsync(roleManager);
         var gebruikers = await SeedGebruikersAsync(userManager, logger);
-        await SeedHoroscopenAsync(context, gebruikers);
+        await SeedHoroscopenAsync(context, gebruikers, natalChartCalculator);
         await SeedSwipesEnMatchesAsync(context, gebruikers);
-        // Chatgesprekken leven sinds de GetStream-koppeling niet meer in deze
-        // databank en worden dus hier niet geseed.
+        // Chat conversations no longer live in this database since the
+        // GetStream integration, so they aren't seeded here.
         await SeedMeldingenAsync(context, gebruikers);
 
         logger.LogInformation("Seeding afgerond.");
@@ -61,45 +67,74 @@ public static class DbSeeder
     }
 
     /// <summary>
-    /// Maakt de demo-accounts aan: één beheerder, één moderator en twaalf leden.
+    /// Maakt de demo-accounts aan: één beheerder, één moderator en 24 leden
+    /// (bekende publieke figuren met gepubliceerde geboortegegevens).
     /// E-mail staat meteen op bevestigd zodat de demo-accounts kunnen inloggen
     /// (echte registraties moeten hun e-mail wél eerst bevestigen).
     /// </summary>
     private static async Task<List<ApplicationUser>> SeedGebruikersAsync(
         UserManager<ApplicationUser> userManager, ILogger logger)
     {
-        // (naam, e-mail, geboortedatum, geboortetijd, plaats, lat, lng, bio, rol)
+        // (naam, e-mail, geboortedatum, geboortetijd, plaats, lat, lng, tijd onbekend?, rol)
         var definities = new (string Naam, string Email, DateOnly Datum, TimeOnly Tijd,
-            string Plaats, decimal Lat, decimal Lng, string? Bio, string Rol)[]
+            string Plaats, decimal Lat, decimal Lng, bool TijdOnbekend, string Rol)[]
         {
-            ("Beheerder", "admin@node.be", new(1990, 1, 15), new(8, 30), "Brussel, België", 50.8503m, 4.3517m,
-                null, RolAdmin),
-            ("Mo de Moderator", "moderator@node.be", new(1992, 6, 21), new(14, 0), "Gent, België", 51.0543m, 3.7174m,
-                null, RolModerator),
-            ("Luna", "luna@demo.node.be", new(1998, 3, 12), new(3, 45), "Antwerpen, België", 51.2194m, 4.4025m,
-                "Vissen met een zwak voor oude sterrenkaarten en nachtwandelingen.", RolLid),
-            ("Ceder", "ceder@demo.node.be", new(1996, 7, 30), new(12, 15), "Leuven, België", 50.8798m, 4.7005m,
-                "Leeuw. Ik zoek iemand die mijn vuur kan volgen.", RolLid),
-            ("Yildiz", "yildiz@demo.node.be", new(1999, 11, 2), new(22, 10), "Brussel, België", 50.8503m, 4.3517m,
-                "Schorpioen, dus vraag me niet naar mijn geheimen op de eerste date.", RolLid),
-            ("Stella", "stella@demo.node.be", new(1995, 5, 4), new(6, 50), "Brugge, België", 51.2093m, 3.2247m,
-                "Stier: goed eten, lange wandelingen en geen drama.", RolLid),
-            ("Orion", "orion@demo.node.be", new(1997, 12, 19), new(17, 5), "Hasselt, België", 50.9307m, 5.3378m,
-                "Boogschutter met een caravan en te veel reisplannen.", RolLid),
-            ("Nova", "nova@demo.node.be", new(2000, 2, 8), new(9, 40), "Oostende, België", 51.2154m, 2.9286m,
-                "Waterman. Ik geloof niet in astrologie, maar hier ben ik.", RolLid),
-            ("Kastor", "kastor@demo.node.be", new(1994, 6, 3), new(11, 20), "Mechelen, België", 51.0259m, 4.4776m,
-                "Tweelingen: twee dates voor de prijs van één gesprek.", RolLid),
-            ("Vega", "vega@demo.node.be", new(1993, 9, 14), new(4, 55), "Kortrijk, België", 50.8285m, 3.2649m,
-                "Maagd, maar mijn bureau is een chaos. Niemand is perfect.", RolLid),
-            ("Ariel", "ariel@demo.node.be", new(2001, 4, 2), new(15, 30), "Genk, België", 50.9654m, 5.5006m,
-                "Ram. Eerst doen, dan denken, dan sorry zeggen.", RolLid),
-            ("Selene", "selene@demo.node.be", new(1998, 7, 7), new(1, 25), "Namen, België", 50.4674m, 4.8720m,
-                "Kreeft: ik onthoud alles wat je zegt, ook het lieve.", RolLid),
-            ("Altair", "altair@demo.node.be", new(1996, 10, 12), new(19, 45), "Luik, België", 50.6326m, 5.5797m,
-                "Weegschaal op zoek naar evenwicht (en goede koffie).", RolLid),
-            ("Mira", "mira@demo.node.be", new(1999, 1, 3), new(7, 10), "Turnhout, België", 51.3226m, 4.9447m,
-                "Steenbok: ambitieus, loyaal en altijd vijf minuten te vroeg.", RolLid),
+            ("Beheerder", "admin@node.be", new(1990, 1, 15), new(8, 30), "Brussel, België",
+                50.850300m, 4.351700m, false, RolAdmin),
+            ("Mo de Moderator", "moderator@node.be", new(1992, 6, 21), new(14, 0), "Gent, België",
+                51.054300m, 3.717400m, false, RolModerator),
+
+            ("Meghan Markle", "meghan.markle@demo.node.be", new(1981, 8, 4), new(4, 46),
+                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RolLid),
+            ("Prince Harry", "prince.harry@demo.node.be", new(1984, 9, 15), new(16, 20),
+                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, false, RolLid),
+            ("JFK Jr", "jfk.jr@demo.node.be", new(1960, 11, 25), new(0, 22),
+                "Washington D.C., Verenigde Staten", 38.907192m, -77.036873m, false, RolLid),
+            ("Carolyn Bessette", "carolyn.bessette@demo.node.be", new(1966, 1, 7), new(8, 45),
+                "New York, Verenigde Staten", 40.712776m, -74.005974m, false, RolLid),
+            // Enkel "California" opgegeven (een staat, geen plaats); aangevuld met Oakland,
+            // haar gedocumenteerde geboortestad.
+            ("Zendaya Coleman", "zendaya.coleman@demo.node.be", new(1996, 9, 1), new(18, 1),
+                "Oakland, Californië, Verenigde Staten", 37.804363m, -122.271111m, false, RolLid),
+            ("Tom Holland", "tom.holland@demo.node.be", new(1996, 6, 1), new(12, 0),
+                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, true, RolLid),
+            ("Taylor Swift", "taylor.swift@demo.node.be", new(1989, 12, 13), new(8, 36),
+                "Reading (Pennsylvania), Verenigde Staten", 40.335560m, -75.926880m, false, RolLid),
+            // Geen land opgegeven; Westlake, Ohio is haar/zijn gedocumenteerde geboorteplaats.
+            ("Travis Kelce", "travis.kelce@demo.node.be", new(1989, 10, 5), new(5, 49),
+                "Westlake (Ohio), Verenigde Staten", 41.458401m, -81.918404m, false, RolLid),
+            ("Barack Obama", "barack.obama@demo.node.be", new(1961, 8, 4), new(19, 24),
+                "Honolulu, Verenigde Staten", 21.306944m, -157.858337m, false, RolLid),
+            ("Michelle Obama", "michelle.obama@demo.node.be", new(1964, 1, 17), new(12, 0),
+                "Chicago, Verenigde Staten", 41.878113m, -87.629799m, true, RolLid),
+            ("George Clooney", "george.clooney@demo.node.be", new(1961, 5, 6), new(2, 58),
+                "Lexington (Kentucky), Verenigde Staten", 38.040585m, -84.503716m, false, RolLid),
+            ("Amal Clooney", "amal.clooney@demo.node.be", new(1978, 2, 3), new(12, 0),
+                "Beiroet, Libanon", 33.893891m, 35.501801m, true, RolLid),
+            ("Prince William", "prince.william@demo.node.be", new(1982, 6, 21), new(21, 3),
+                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, false, RolLid),
+            ("Kate Middleton", "kate.middleton@demo.node.be", new(1982, 1, 9), new(19, 0),
+                "Reading, Engeland", 51.454264m, -0.978180m, false, RolLid),
+            ("JFK", "jfk@demo.node.be", new(1917, 5, 29), new(15, 0),
+                "Brookline (Massachusetts), Verenigde Staten", 42.331798m, -71.121269m, false, RolLid),
+            ("Marilyn Monroe", "marilyn.monroe@demo.node.be", new(1926, 6, 1), new(9, 30),
+                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RolLid),
+            ("Jackie Kennedy", "jackie.kennedy@demo.node.be", new(1929, 7, 28), new(14, 30),
+                "New York, Verenigde Staten", 40.712776m, -74.005974m, false, RolLid),
+            ("Ben Affleck", "ben.affleck@demo.node.be", new(1972, 8, 15), new(2, 53),
+                "Berkeley (Californië), Verenigde Staten", 37.871593m, -122.272743m, false, RolLid),
+            ("Jennifer Lopez", "jennifer.lopez@demo.node.be", new(1969, 7, 24), new(12, 0),
+                "The Bronx (New York), Verenigde Staten", 40.844782m, -73.864827m, true, RolLid),
+            ("Brad Pitt", "brad.pitt@demo.node.be", new(1963, 12, 18), new(6, 31),
+                "Shawnee (Oklahoma), Verenigde Staten", 35.327332m, -96.925285m, false, RolLid),
+            ("Jennifer Aniston", "jennifer.aniston@demo.node.be", new(1969, 2, 11), new(22, 22),
+                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RolLid),
+            ("Angelina Jolie", "angelina.jolie@demo.node.be", new(1975, 6, 4), new(9, 9),
+                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RolLid),
+            ("King Charles", "king.charles@demo.node.be", new(1948, 11, 14), new(21, 14),
+                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, false, RolLid),
+            ("Princess Diana", "princess.diana@demo.node.be", new(1961, 7, 1), new(19, 45),
+                "Sandringham, Verenigd Koninkrijk", 52.834721m, 0.505600m, false, RolLid),
         };
 
         var resultaat = new List<ApplicationUser>();
@@ -119,9 +154,9 @@ public static class DbSeeder
                 Email = d.Email,
                 EmailConfirmed = true, // Demo-accounts slaan de e-mailverificatie over.
                 DisplayName = d.Naam,
-                Bio = d.Bio,
                 BirthDate = d.Datum,
                 BirthTime = d.Tijd,
+                BirthTimeIsUnknown = d.TijdOnbekend,
                 BirthPlace = d.Plaats,
                 BirthLatitude = d.Lat,
                 BirthLongitude = d.Lng,
@@ -144,10 +179,11 @@ public static class DbSeeder
     }
 
     /// <summary>
-    /// Maakt voor elk lid een geboortehoroscoop met elf posities
-    /// (Zon t.e.m. Pluto plus Ascendant).
+    /// Berekent en bewaart voor elk lid de echte geboortehoroscoop (Swiss
+    /// Ephemeris) met alle posities (Zon t.e.m. Pluto plus Ascendant).
     /// </summary>
-    private static async Task SeedHoroscopenAsync(ApplicationDbContext context, List<ApplicationUser> gebruikers)
+    private static async Task SeedHoroscopenAsync(
+        ApplicationDbContext context, List<ApplicationUser> gebruikers, INatalChartCalculator calculator)
     {
         if (await context.NatalCharts.AnyAsync())
         {
@@ -156,47 +192,7 @@ public static class DbSeeder
 
         foreach (var gebruiker in gebruikers)
         {
-            var zonneteken = BepaalZonneteken(gebruiker.BirthDate);
-
-            // Deterministische demowaarden per gebruiker: dezelfde invoer geeft
-            // altijd dezelfde "horoscoop". Wordt vervangen door SwissEphNet.
-            var zaad = gebruiker.BirthDate.DayNumber + gebruiker.BirthTime.Hour;
-            var maanteken = (ZodiacSign)((zaad * 7) % 12);
-            var ascendant = (ZodiacSign)((zaad * 11 + gebruiker.BirthTime.Minute) % 12);
-
-            var horoscoop = new NatalChart
-            {
-                UserId = gebruiker.Id,
-                // Demo: België is UTC+1 in de winter, +2 in de zomer; de echte
-                // historische tijdzone-omrekening volgt in de astrologie-fase.
-                BirthMomentUtc = gebruiker.BirthDate
-                    .ToDateTime(gebruiker.BirthTime, DateTimeKind.Unspecified)
-                    .AddHours(-1),
-                SunSign = zonneteken,
-                MoonSign = maanteken,
-                AscendantSign = ascendant,
-                CalculatedAt = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc),
-            };
-
-            var lichamen = Enum.GetValues<CelestialBody>();
-            for (var i = 0; i < lichamen.Length; i++)
-            {
-                var lichaam = lichamen[i];
-                horoscoop.Placements.Add(new Placement
-                {
-                    Body = lichaam,
-                    Sign = lichaam switch
-                    {
-                        CelestialBody.Sun => zonneteken,
-                        CelestialBody.Moon => maanteken,
-                        CelestialBody.Ascendant => ascendant,
-                        _ => (ZodiacSign)((zaad * (i + 3)) % 12),
-                    },
-                    House = (zaad * (i + 5)) % 12 + 1,
-                    DegreeInSign = (zaad * (i + 7)) % 30 + 0.5m,
-                });
-            }
-
+            var horoscoop = calculator.Calculate(gebruiker);
             context.NatalCharts.Add(horoscoop);
         }
 
@@ -204,31 +200,11 @@ public static class DbSeeder
     }
 
     /// <summary>
-    /// Bepaalt het echte zonneteken op basis van de geboortedatum
-    /// (klassieke tropische datumgrenzen).
-    /// </summary>
-    private static ZodiacSign BepaalZonneteken(DateOnly datum)
-    {
-        return (datum.Month, datum.Day) switch
-        {
-            (3, >= 21) or (4, <= 19) => ZodiacSign.Aries,
-            (4, >= 20) or (5, <= 20) => ZodiacSign.Taurus,
-            (5, >= 21) or (6, <= 20) => ZodiacSign.Gemini,
-            (6, >= 21) or (7, <= 22) => ZodiacSign.Cancer,
-            (7, >= 23) or (8, <= 22) => ZodiacSign.Leo,
-            (8, >= 23) or (9, <= 22) => ZodiacSign.Virgo,
-            (9, >= 23) or (10, <= 22) => ZodiacSign.Libra,
-            (10, >= 23) or (11, <= 21) => ZodiacSign.Scorpio,
-            (11, >= 22) or (12, <= 21) => ZodiacSign.Sagittarius,
-            (12, >= 22) or (1, <= 19) => ZodiacSign.Capricorn,
-            (1, >= 20) or (2, <= 18) => ZodiacSign.Aquarius,
-            _ => ZodiacSign.Pisces,
-        };
-    }
-
-    /// <summary>
-    /// Seedt een geloofwaardige swipe-geschiedenis: een aantal wederzijdse likes
-    /// (die matches opleveren), enkele eenzijdige likes en enkele passes.
+    /// Seedt wederzijdse likes (die matches opleveren) enkel voor paren die
+    /// een gedocumenteerde echte relatie hebben (huwelijk of publieke relatie).
+    /// Er wordt bewust geen eenzijdige interesse of afwijzing tussen specifieke
+    /// publieke figuren verzonnen: Marilyn Monroe en Angelina Jolie blijven
+    /// daarom ongekoppeld in deze demo, net als bij een echte swipe-app.
     /// </summary>
     private static async Task SeedSwipesEnMatchesAsync(ApplicationDbContext context, List<ApplicationUser> gebruikers)
     {
@@ -239,29 +215,20 @@ public static class DbSeeder
 
         var perEmail = gebruikers.ToDictionary(g => g.Email!, g => g);
 
-        // Wederzijdse likes: deze paren worden matches.
+        // Wederzijdse likes: gedocumenteerde koppels, worden matches.
         var wederzijds = new[]
         {
-            ("luna@demo.node.be", "orion@demo.node.be"),
-            ("ceder@demo.node.be", "ariel@demo.node.be"),
-            ("yildiz@demo.node.be", "selene@demo.node.be"),
-            ("kastor@demo.node.be", "altair@demo.node.be"),
-            ("stella@demo.node.be", "vega@demo.node.be"),
-        };
-
-        // Eenzijdige likes: nog geen match.
-        var eenzijdig = new[]
-        {
-            ("nova@demo.node.be", "luna@demo.node.be"),
-            ("mira@demo.node.be", "ceder@demo.node.be"),
-            ("orion@demo.node.be", "yildiz@demo.node.be"),
-        };
-
-        // Passes: uitdrukkelijk geen interesse.
-        var passes = new[]
-        {
-            ("luna@demo.node.be", "kastor@demo.node.be"),
-            ("vega@demo.node.be", "nova@demo.node.be"),
+            ("meghan.markle@demo.node.be", "prince.harry@demo.node.be"),
+            ("jfk.jr@demo.node.be", "carolyn.bessette@demo.node.be"),
+            ("zendaya.coleman@demo.node.be", "tom.holland@demo.node.be"),
+            ("taylor.swift@demo.node.be", "travis.kelce@demo.node.be"),
+            ("barack.obama@demo.node.be", "michelle.obama@demo.node.be"),
+            ("george.clooney@demo.node.be", "amal.clooney@demo.node.be"),
+            ("prince.william@demo.node.be", "kate.middleton@demo.node.be"),
+            ("jfk@demo.node.be", "jackie.kennedy@demo.node.be"),
+            ("ben.affleck@demo.node.be", "jennifer.lopez@demo.node.be"),
+            ("brad.pitt@demo.node.be", "jennifer.aniston@demo.node.be"),
+            ("king.charles@demo.node.be", "princess.diana@demo.node.be"),
         };
 
         var tijdstip = new DateTime(2026, 2, 1, 20, 0, 0, DateTimeKind.Utc);
@@ -294,22 +261,14 @@ public static class DbSeeder
             tijdstip = tijdstip.AddDays(1);
         }
 
-        foreach (var (a, b) in eenzijdig)
-        {
-            context.Swipes.Add(new Swipe { SwiperUserId = perEmail[a].Id, TargetUserId = perEmail[b].Id, IsLike = true, CreatedAt = tijdstip });
-            tijdstip = tijdstip.AddHours(5);
-        }
-
-        foreach (var (a, b) in passes)
-        {
-            context.Swipes.Add(new Swipe { SwiperUserId = perEmail[a].Id, TargetUserId = perEmail[b].Id, IsLike = false, CreatedAt = tijdstip });
-            tijdstip = tijdstip.AddHours(5);
-        }
-
         await context.SaveChangesAsync();
     }
 
-    /// <summary>Seedt enkele meldingen zodat het moderatiescherm data heeft.</summary>
+    /// <summary>
+    /// Seedt twee meldingen zodat het moderatiescherm data heeft. De reden is
+    /// bewust neutrale testtekst (geen echte klacht) om geen gedrag toe te
+    /// schrijven aan de publieke figuren die als demogebruiker dienen.
+    /// </summary>
     private static async Task SeedMeldingenAsync(ApplicationDbContext context, List<ApplicationUser> gebruikers)
     {
         if (await context.Reports.AnyAsync())
@@ -321,18 +280,18 @@ public static class DbSeeder
 
         context.Reports.Add(new Report
         {
-            ReporterUserId = perEmail["vega@demo.node.be"].Id,
-            ReportedUserId = perEmail["nova@demo.node.be"].Id,
-            Reason = "Stuurt na een pass toch nog berichten via een ander kanaal.",
+            ReporterUserId = perEmail["marilyn.monroe@demo.node.be"].Id,
+            ReportedUserId = perEmail["angelina.jolie@demo.node.be"].Id,
+            Reason = "Testmelding voor de moderatiedemo (geen echte klacht).",
             IsResolved = false,
             CreatedAt = new DateTime(2026, 2, 20, 9, 30, 0, DateTimeKind.Utc),
         });
 
         context.Reports.Add(new Report
         {
-            ReporterUserId = perEmail["selene@demo.node.be"].Id,
-            ReportedUserId = perEmail["kastor@demo.node.be"].Id,
-            Reason = "Profielfoto is duidelijk geen foto van hemzelf.",
+            ReporterUserId = perEmail["jackie.kennedy@demo.node.be"].Id,
+            ReportedUserId = perEmail["ben.affleck@demo.node.be"].Id,
+            Reason = "Testmelding voor de moderatiedemo (geen echte klacht).",
             IsResolved = true,
             CreatedAt = new DateTime(2026, 2, 25, 18, 45, 0, DateTimeKind.Utc),
         });

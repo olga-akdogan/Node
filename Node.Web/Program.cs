@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Node.Data.Data;
 using Node.Data.Models;
+using Node.Data.Services;
 using Node.Web.Services;
 using Node.Web.Services.Interfaces;
 
@@ -53,6 +54,14 @@ builder.Services.AddScoped<ISwipeService, SwipeService>();
 builder.Services.AddScoped<IMatchService, MatchService>();
 builder.Services.AddScoped<IChartService, ChartService>();
 builder.Services.AddScoped<IStreamChatService, StreamChatService>();
+builder.Services.AddScoped<INatalChartCalculator, NatalChartCalculator>();
+
+// Nominatim (OpenStreetMap) vereist een identificerende User-Agent per gebruiksvoorwaarden.
+builder.Services.AddHttpClient<IGeocodingService, GeocodingService>(client =>
+{
+    client.BaseAddress = new Uri("https://nominatim.openstreetmap.org/");
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Node-astrologie-datingapp/1.0 (examenproject EhB)");
+});
 
 builder.Services.AddControllersWithViews();
 

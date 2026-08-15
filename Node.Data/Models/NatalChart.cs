@@ -39,6 +39,14 @@ public class NatalChart
     [Required]
     public ZodiacSign AscendantSign { get; set; }
 
+    /// <summary>
+    /// True wanneer de gebruiker geen exacte geboortetijd opgaf. De Ascendant en
+    /// de huizen van alle plaatsingen zijn dan berekend op een conventionele
+    /// tijd (bv. 12:00) en dus niet betrouwbaar; de zon-, maan- en planeettekens
+    /// zelf blijven wel correct.
+    /// </summary>
+    public bool AscendantIsApproximate { get; set; }
+
     /// <summary>Tijdstip waarop de horoscoop (her)berekend werd (UTC).</summary>
     public DateTime CalculatedAt { get; set; } = DateTime.UtcNow;
 

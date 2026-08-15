@@ -19,6 +19,13 @@ public class HoroscoopViewModel
 
     public ZodiacSign AscendantSign { get; set; }
 
+    /// <summary>
+    /// True wanneer de exacte geboortetijd onbekend is: de Ascendant en de
+    /// huizen van alle plaatsingen zijn dan berekend op een conventionele tijd
+    /// en dus niet betrouwbaar.
+    /// </summary>
+    public bool AscendantIsApproximate { get; set; }
+
     public IList<PlaatsingRegel> Placements { get; set; } = new List<PlaatsingRegel>();
 
     /// <summary>Signatuurregel op basis van de elementen van zon en maan.</summary>

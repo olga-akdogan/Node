@@ -43,6 +43,7 @@ public class ChartService : IChartService
             SunSign = chart.SunSign,
             MoonSign = chart.MoonSign,
             AscendantSign = chart.AscendantSign,
+            AscendantIsApproximate = chart.AscendantIsApproximate,
             Placements = chart.Placements
                 .OrderBy(p => p.Body) // Vaste volgorde: Zon, Maan, ... Ascendant.
                 .Select(p => new PlaatsingRegel
