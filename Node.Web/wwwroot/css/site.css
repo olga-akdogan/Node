@@ -565,6 +565,21 @@ img.avatar-cirkel {
     opacity: 0.4;
 }
 
+.cookie-banner {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1050;
+    background-color: var(--node-inkt-diep, #1C3B33);
+    color: #fff;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cookie-banner p {
+    color: #fff;
+}
+
 .ongelezen-stip {
     flex: 0 0 auto;
     min-width: 1.5rem;

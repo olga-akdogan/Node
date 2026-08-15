@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Node.Data.Data;
 using Node.Data.Models;
 using Node.Data.Services;
+using Node.Web.Middleware;
 using Node.Web.Resources;
 using Node.Web.Services;
 using Node.Web.Services.Interfaces;
@@ -124,6 +125,11 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Eigen middleware: houdt de cookietoestemming bij (zie CookieConsentLog) en
+// verwerkt de banner-keuze rechtstreeks, zonder controller. Staat na
+// UseAuthentication zodat context.User al ingevuld is voor de log.
+app.UseCookieConsent();
 
 app.MapStaticAssets();
 

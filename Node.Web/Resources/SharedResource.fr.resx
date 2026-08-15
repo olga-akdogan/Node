@@ -565,6 +565,15 @@
   <data name="Identity_WachtwoordHoofdletter" xml:space="preserve">
     <value>Le mot de passe doit contenir au moins une lettre majuscule (« A »-« Z »).</value>
   </data>
+  <data name="Cookie_Tekst" xml:space="preserve">
+    <value>Node utilise un cookie essentiel pour mémoriser ton choix de langue et ta connexion. Es-tu d'accord ?</value>
+  </data>
+  <data name="Cookie_Weigeren" xml:space="preserve">
+    <value>Refuser</value>
+  </data>
+  <data name="Cookie_Accepteren" xml:space="preserve">
+    <value>Accepter</value>
+  </data>
   <data name="Astro_Sun" xml:space="preserve">
     <value>Soleil</value>
   </data>

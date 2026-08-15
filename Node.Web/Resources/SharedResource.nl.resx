@@ -565,6 +565,15 @@
   <data name="Identity_WachtwoordHoofdletter" xml:space="preserve">
     <value>Het wachtwoord moet minstens één hoofdletter ('A'-'Z') bevatten.</value>
   </data>
+  <data name="Cookie_Tekst" xml:space="preserve">
+    <value>Node gebruikt een essentiële cookie om je taalkeuze en aanmelding te onthouden. Ga je akkoord?</value>
+  </data>
+  <data name="Cookie_Weigeren" xml:space="preserve">
+    <value>Weigeren</value>
+  </data>
+  <data name="Cookie_Accepteren" xml:space="preserve">
+    <value>Accepteren</value>
+  </data>
   <data name="Astro_Sun" xml:space="preserve">
     <value>Zon</value>
   </data>

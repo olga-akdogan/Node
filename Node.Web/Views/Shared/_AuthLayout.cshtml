@@ -30,6 +30,11 @@
         </div>
     </div>
 
+    @if (Context.Items["CookieConsentGegeven"] is false)
+    {
+        <partial name="_CookieBanner" />
+    }
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
