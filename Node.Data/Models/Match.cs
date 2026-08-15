@@ -32,6 +32,14 @@ public class Match
     [MaxLength(2000)]
     public string? CompatibilityExplanation { get; set; }
 
+    /// <summary>
+    /// Language (ISO 639-1, e.g. "nl") CompatibilityExplanation is written in.
+    /// When a user views the match in a different language, the explanation
+    /// is regenerated via Claude and this column is updated.
+    /// </summary>
+    [MaxLength(5)]
+    public string? CompatibilityExplanationLanguage { get; set; }
+
     /// <summary>Toestand van de match (actief of beëindigd).</summary>
     [Required]
     public MatchStatus Status { get; set; } = MatchStatus.Active;

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Localization;
 using Node.Data.Data;
 using Node.Data.Models;
+using Node.Data.Models.Enums;
 using Node.Data.Services;
 using Node.Web.Models.Account;
 using Node.Web.Resources;
@@ -57,6 +58,11 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
+        if (!model.LooksForMen && !model.LooksForWomen)
+        {
+            ModelState.AddModelError(string.Empty, _localizer["Valid_KiesMinstensEenVoorkeur"]);
+        }
+
         if (!ModelState.IsValid)
         {
             return View(model);
@@ -83,6 +89,7 @@ public class AccountController : Controller
             BirthPlace = model.BirthPlace,
             BirthLatitude = coordinaten.Value.Latitude,
             BirthLongitude = coordinaten.Value.Longitude,
+            Gender = model.Gender!.Value,
         };
 
         var resultaat = await _userManager.CreateAsync(gebruiker, model.Password);
@@ -100,6 +107,8 @@ public class AccountController : Controller
         // Elke nieuwe gebruiker krijgt automatisch de rol "Lid".
         await _userManager.AddToRoleAsync(gebruiker, DbSeeder.RolLid);
         _logger.LogInformation("Nieuwe gebruiker geregistreerd: {Email}.", model.Email);
+
+        AddPartnerPreferences(gebruiker.Id, model.LooksForMen, model.LooksForWomen);
 
         var horoscoop = _natalChartCalculator.Calculate(gebruiker);
         _context.NatalCharts.Add(horoscoop);
@@ -209,6 +218,20 @@ public class AccountController : Controller
     [HttpGet]
     [AllowAnonymous]
     public IActionResult AccessDenied() => View();
+
+    /// <summary>Adds PartnerPreference rows for the checked genders (context.SaveChangesAsync is called by the caller).</summary>
+    private void AddPartnerPreferences(string userId, bool looksForMen, bool looksForWomen)
+    {
+        if (looksForMen)
+        {
+            _context.PartnerPreferences.Add(new PartnerPreference { UserId = userId, Gender = Gender.Male });
+        }
+
+        if (looksForWomen)
+        {
+            _context.PartnerPreferences.Add(new PartnerPreference { UserId = userId, Gender = Gender.Female });
+        }
+    }
 
     /// <summary>
     /// Genereert de bevestigingstoken, bouwt de absolute link en verstuurt de

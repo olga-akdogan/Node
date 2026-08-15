@@ -103,6 +103,22 @@
                 <p class="kicker mb-2">@Localizer["Chart_Signatuur"]</p>
                 <p><em>@Model.Signatuur</em></p>
             </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Interpretation))
+            {
+                <div class="card p-4">
+                    <p class="kicker mb-3">@Localizer["Chart_Interpretatie"]</p>
+                    <p style="white-space: pre-line;">@Model.Interpretation</p>
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Model.PartnerPreferenceText))
+            {
+                <div class="card p-4">
+                    <p class="kicker mb-3">@Localizer["Chart_WatJeZoekt"]</p>
+                    <p style="white-space: pre-line;">@Model.PartnerPreferenceText</p>
+                </div>
+            }
         </div>
     </div>
 </div>

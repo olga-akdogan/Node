@@ -47,6 +47,7 @@ public static class DbSeeder
 
         await SeedRollenAsync(roleManager);
         var gebruikers = await SeedGebruikersAsync(userManager, logger);
+        await SeedPartnerPreferencesAsync(context, gebruikers);
         await SeedHoroscopenAsync(context, gebruikers, natalChartCalculator);
         await SeedSwipesEnMatchesAsync(context, gebruikers, matchInterpretationService);
         // Chat conversations no longer live in this database since the
@@ -76,66 +77,66 @@ public static class DbSeeder
     private static async Task<List<ApplicationUser>> SeedGebruikersAsync(
         UserManager<ApplicationUser> userManager, ILogger logger)
     {
-        // (naam, e-mail, geboortedatum, geboortetijd, plaats, lat, lng, tijd onbekend?, rol)
+        // (naam, e-mail, geboortedatum, geboortetijd, plaats, lat, lng, tijd onbekend?, rol, gender)
         var definities = new (string Naam, string Email, DateOnly Datum, TimeOnly Tijd,
-            string Plaats, decimal Lat, decimal Lng, bool TijdOnbekend, string Rol)[]
+            string Plaats, decimal Lat, decimal Lng, bool TijdOnbekend, string Rol, Gender Gender)[]
         {
             ("Beheerder", "admin@node.be", new(1990, 1, 15), new(8, 30), "Brussel, België",
-                50.850300m, 4.351700m, false, RolAdmin),
+                50.850300m, 4.351700m, false, RolAdmin, Gender.Male),
             ("Mo de Moderator", "moderator@node.be", new(1992, 6, 21), new(14, 0), "Gent, België",
-                51.054300m, 3.717400m, false, RolModerator),
+                51.054300m, 3.717400m, false, RolModerator, Gender.Female),
 
             ("Meghan Markle", "meghan.markle@demo.node.be", new(1981, 8, 4), new(4, 46),
-                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RolLid),
+                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RolLid, Gender.Female),
             ("Prince Harry", "prince.harry@demo.node.be", new(1984, 9, 15), new(16, 20),
-                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, false, RolLid),
+                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, false, RolLid, Gender.Male),
             ("JFK Jr", "jfk.jr@demo.node.be", new(1960, 11, 25), new(0, 22),
-                "Washington D.C., Verenigde Staten", 38.907192m, -77.036873m, false, RolLid),
+                "Washington D.C., Verenigde Staten", 38.907192m, -77.036873m, false, RolLid, Gender.Male),
             ("Carolyn Bessette", "carolyn.bessette@demo.node.be", new(1966, 1, 7), new(8, 45),
-                "New York, Verenigde Staten", 40.712776m, -74.005974m, false, RolLid),
+                "New York, Verenigde Staten", 40.712776m, -74.005974m, false, RolLid, Gender.Female),
             // Enkel "California" opgegeven (een staat, geen plaats); aangevuld met Oakland,
             // haar gedocumenteerde geboortestad.
             ("Zendaya Coleman", "zendaya.coleman@demo.node.be", new(1996, 9, 1), new(18, 1),
-                "Oakland, Californië, Verenigde Staten", 37.804363m, -122.271111m, false, RolLid),
+                "Oakland, Californië, Verenigde Staten", 37.804363m, -122.271111m, false, RolLid, Gender.Female),
             ("Tom Holland", "tom.holland@demo.node.be", new(1996, 6, 1), new(12, 0),
-                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, true, RolLid),
+                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, true, RolLid, Gender.Male),
             ("Taylor Swift", "taylor.swift@demo.node.be", new(1989, 12, 13), new(8, 36),
-                "Reading (Pennsylvania), Verenigde Staten", 40.335560m, -75.926880m, false, RolLid),
+                "Reading (Pennsylvania), Verenigde Staten", 40.335560m, -75.926880m, false, RolLid, Gender.Female),
             // Geen land opgegeven; Westlake, Ohio is haar/zijn gedocumenteerde geboorteplaats.
             ("Travis Kelce", "travis.kelce@demo.node.be", new(1989, 10, 5), new(5, 49),
-                "Westlake (Ohio), Verenigde Staten", 41.458401m, -81.918404m, false, RolLid),
+                "Westlake (Ohio), Verenigde Staten", 41.458401m, -81.918404m, false, RolLid, Gender.Male),
             ("Barack Obama", "barack.obama@demo.node.be", new(1961, 8, 4), new(19, 24),
-                "Honolulu, Verenigde Staten", 21.306944m, -157.858337m, false, RolLid),
+                "Honolulu, Verenigde Staten", 21.306944m, -157.858337m, false, RolLid, Gender.Male),
             ("Michelle Obama", "michelle.obama@demo.node.be", new(1964, 1, 17), new(12, 0),
-                "Chicago, Verenigde Staten", 41.878113m, -87.629799m, true, RolLid),
+                "Chicago, Verenigde Staten", 41.878113m, -87.629799m, true, RolLid, Gender.Female),
             ("George Clooney", "george.clooney@demo.node.be", new(1961, 5, 6), new(2, 58),
-                "Lexington (Kentucky), Verenigde Staten", 38.040585m, -84.503716m, false, RolLid),
+                "Lexington (Kentucky), Verenigde Staten", 38.040585m, -84.503716m, false, RolLid, Gender.Male),
             ("Amal Clooney", "amal.clooney@demo.node.be", new(1978, 2, 3), new(12, 0),
-                "Beiroet, Libanon", 33.893891m, 35.501801m, true, RolLid),
+                "Beiroet, Libanon", 33.893891m, 35.501801m, true, RolLid, Gender.Female),
             ("Prince William", "prince.william@demo.node.be", new(1982, 6, 21), new(21, 3),
-                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, false, RolLid),
+                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, false, RolLid, Gender.Male),
             ("Kate Middleton", "kate.middleton@demo.node.be", new(1982, 1, 9), new(19, 0),
-                "Reading, Engeland", 51.454264m, -0.978180m, false, RolLid),
+                "Reading, Engeland", 51.454264m, -0.978180m, false, RolLid, Gender.Female),
             ("JFK", "jfk@demo.node.be", new(1917, 5, 29), new(15, 0),
-                "Brookline (Massachusetts), Verenigde Staten", 42.331798m, -71.121269m, false, RolLid),
+                "Brookline (Massachusetts), Verenigde Staten", 42.331798m, -71.121269m, false, RolLid, Gender.Male),
             ("Marilyn Monroe", "marilyn.monroe@demo.node.be", new(1926, 6, 1), new(9, 30),
-                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RolLid),
+                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RolLid, Gender.Female),
             ("Jackie Kennedy", "jackie.kennedy@demo.node.be", new(1929, 7, 28), new(14, 30),
-                "New York, Verenigde Staten", 40.712776m, -74.005974m, false, RolLid),
+                "New York, Verenigde Staten", 40.712776m, -74.005974m, false, RolLid, Gender.Female),
             ("Ben Affleck", "ben.affleck@demo.node.be", new(1972, 8, 15), new(2, 53),
-                "Berkeley (Californië), Verenigde Staten", 37.871593m, -122.272743m, false, RolLid),
+                "Berkeley (Californië), Verenigde Staten", 37.871593m, -122.272743m, false, RolLid, Gender.Male),
             ("Jennifer Lopez", "jennifer.lopez@demo.node.be", new(1969, 7, 24), new(12, 0),
-                "The Bronx (New York), Verenigde Staten", 40.844782m, -73.864827m, true, RolLid),
+                "The Bronx (New York), Verenigde Staten", 40.844782m, -73.864827m, true, RolLid, Gender.Female),
             ("Brad Pitt", "brad.pitt@demo.node.be", new(1963, 12, 18), new(6, 31),
-                "Shawnee (Oklahoma), Verenigde Staten", 35.327332m, -96.925285m, false, RolLid),
+                "Shawnee (Oklahoma), Verenigde Staten", 35.327332m, -96.925285m, false, RolLid, Gender.Male),
             ("Jennifer Aniston", "jennifer.aniston@demo.node.be", new(1969, 2, 11), new(22, 22),
-                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RolLid),
+                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RolLid, Gender.Female),
             ("Angelina Jolie", "angelina.jolie@demo.node.be", new(1975, 6, 4), new(9, 9),
-                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RolLid),
+                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RolLid, Gender.Female),
             ("King Charles", "king.charles@demo.node.be", new(1948, 11, 14), new(21, 14),
-                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, false, RolLid),
+                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, false, RolLid, Gender.Male),
             ("Princess Diana", "princess.diana@demo.node.be", new(1961, 7, 1), new(19, 45),
-                "Sandringham, Verenigd Koninkrijk", 52.834721m, 0.505600m, false, RolLid),
+                "Sandringham, Verenigd Koninkrijk", 52.834721m, 0.505600m, false, RolLid, Gender.Female),
         };
 
         var resultaat = new List<ApplicationUser>();
@@ -145,6 +146,14 @@ public static class DbSeeder
             var bestaande = await userManager.FindByEmailAsync(d.Email);
             if (bestaande is not null)
             {
+                // Backfill accounts from a seeding run before the gender field
+                // existed, so the swipe deck works for them too.
+                if (bestaande.Gender != d.Gender)
+                {
+                    bestaande.Gender = d.Gender;
+                    await userManager.UpdateAsync(bestaande);
+                }
+
                 resultaat.Add(bestaande);
                 continue;
             }
@@ -161,6 +170,7 @@ public static class DbSeeder
                 BirthPlace = d.Plaats,
                 BirthLatitude = d.Lat,
                 BirthLongitude = d.Lng,
+                Gender = d.Gender,
                 CreatedAt = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc),
             };
 
@@ -177,6 +187,26 @@ public static class DbSeeder
         }
 
         return resultaat;
+    }
+
+    /// <summary>
+    /// Sets a partner preference for every demo user: the opposite gender,
+    /// consistent with the seeded couples below (all man-woman).
+    /// </summary>
+    private static async Task SeedPartnerPreferencesAsync(ApplicationDbContext context, List<ApplicationUser> gebruikers)
+    {
+        if (await context.PartnerPreferences.AnyAsync())
+        {
+            return; // Preferences already exist: nothing to do.
+        }
+
+        foreach (var gebruiker in gebruikers)
+        {
+            var oppositeGender = gebruiker.Gender == Gender.Male ? Gender.Female : Gender.Male;
+            context.PartnerPreferences.Add(new PartnerPreference { UserId = gebruiker.Id, Gender = oppositeGender });
+        }
+
+        await context.SaveChangesAsync();
     }
 
     /// <summary>
@@ -252,7 +282,7 @@ public static class DbSeeder
 
             // De uitlegtekst komt van Claude op basis van de volledige horoscopen;
             // de score zelf blijft hierboven deterministisch berekend.
-            var uitleg = await matchInterpretationService.SchrijfInterpretatieAsync(eerste, chartA, tweede, chartB, score);
+            var uitleg = await matchInterpretationService.SchrijfInterpretatieAsync(eerste, chartA, tweede, chartB, score, "nl");
 
             context.Matches.Add(new Match
             {
@@ -260,6 +290,7 @@ public static class DbSeeder
                 User2Id = tweede.Id,
                 CompatibilityScore = score,
                 CompatibilityExplanation = uitleg,
+                CompatibilityExplanationLanguage = "nl",
                 Status = MatchStatus.Active,
                 MatchedAt = tijdstip.AddHours(2),
             });

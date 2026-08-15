@@ -52,4 +52,20 @@ public class NatalChart
 
     /// <summary>Alle berekende posities (planeet per teken/huis/graad).</summary>
     public ICollection<Placement> Placements { get; set; } = new List<Placement>();
+
+    /// <summary>Claude-written interpretation of the full natal chart.</summary>
+    [MaxLength(3000)]
+    public string? InterpretationText { get; set; }
+
+    /// <summary>Claude-written text about what the user looks for in a partner/relationship, based on the chart.</summary>
+    [MaxLength(2000)]
+    public string? PartnerLookingForText { get; set; }
+
+    /// <summary>
+    /// Language (ISO 639-1, e.g. "nl") the texts above are written in. When
+    /// the user's current language selection differs, the texts are
+    /// regenerated via Claude and this column is updated.
+    /// </summary>
+    [MaxLength(5)]
+    public string? InterpretationLanguage { get; set; }
 }

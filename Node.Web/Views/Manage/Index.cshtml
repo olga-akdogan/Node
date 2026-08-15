@@ -55,6 +55,27 @@
                 <span asp-validation-for="BirthPlace" class="text-danger"></span>
             </div>
 
+            <div class="mb-3">
+                <label asp-for="Gender" class="form-label"></label>
+                <select asp-for="Gender" class="form-select">
+                    <option value=""></option>
+                    <option value="Male">@Localizer["Gender_Male"]</option>
+                    <option value="Female">@Localizer["Gender_Female"]</option>
+                </select>
+                <span asp-validation-for="Gender" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <div class="form-check">
+                    <input asp-for="LooksForMen" class="form-check-input" />
+                    <label asp-for="LooksForMen" class="form-check-label"></label>
+                </div>
+                <div class="form-check">
+                    <input asp-for="LooksForWomen" class="form-check-input" />
+                    <label asp-for="LooksForWomen" class="form-check-label"></label>
+                </div>
+            </div>
+
             <button type="submit" class="btn btn-primary">@Localizer["ManageProfile_Opslaan"]</button>
             <a asp-action="ChangePassword" class="btn btn-outline-secondary">@Localizer["ChangePassword_Title"]</a>
         </form>

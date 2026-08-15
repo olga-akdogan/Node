@@ -30,6 +30,12 @@ public class HoroscoopViewModel
 
     /// <summary>Signatuurregel op basis van de elementen van zon en maan.</summary>
     public string Signatuur { get; set; } = string.Empty;
+
+    /// <summary>Claude-written interpretation of the full natal chart.</summary>
+    public string? Interpretation { get; set; }
+
+    /// <summary>Claude-written text about what the user looks for in a partner/relationship.</summary>
+    public string? PartnerPreferenceText { get; set; }
 }
 
 /// <summary>Eén rij in de plaatsingentabel, klaar voor weergave.</summary>

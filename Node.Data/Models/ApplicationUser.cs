@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
+using Node.Data.Models.Enums;
 
 namespace Node.Data.Models;
 
@@ -59,6 +60,14 @@ public class ApplicationUser : IdentityUser
     [Column(TypeName = "decimal(9,6)")]
     [PersonalData]
     public decimal? BirthLongitude { get; set; }
+
+    /// <summary>Own gender; together with <see cref="PartnerPreferences"/> determines who appears in the swipe deck.</summary>
+    [Required]
+    [PersonalData]
+    public Gender Gender { get; set; }
+
+    /// <summary>Gender(s) this user is interested in (at least one).</summary>
+    public ICollection<PartnerPreference> PartnerPreferences { get; set; } = new List<PartnerPreference>();
 
     /// <summary>Door een beheerder geblokkeerd: inloggen wordt geweigerd.</summary>
     public bool IsBlocked { get; set; }

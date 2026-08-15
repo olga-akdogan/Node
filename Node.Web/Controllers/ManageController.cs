@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Node.Data.Data;
 using Node.Data.Models;
+using Node.Data.Models.Enums;
 using Node.Data.Services;
 using Node.Web.Models.Account;
 using Node.Web.Resources;
@@ -67,6 +68,11 @@ public class ManageController : Controller
             return NotFound();
         }
 
+        var preferences = await _context.PartnerPreferences
+            .Where(p => p.UserId == gebruiker.Id)
+            .Select(p => p.Gender)
+            .ToListAsync();
+
         var model = new ManageProfileViewModel
         {
             DisplayName = gebruiker.DisplayName,
@@ -75,6 +81,9 @@ public class ManageController : Controller
             BirthTime = gebruiker.BirthTime,
             BirthPlace = gebruiker.BirthPlace,
             HuidigeProfielFotoUrl = gebruiker.ProfilePictureUrl,
+            Gender = gebruiker.Gender,
+            LooksForMen = preferences.Contains(Gender.Male),
+            LooksForWomen = preferences.Contains(Gender.Female),
         };
 
         return View(model);
@@ -91,6 +100,11 @@ public class ManageController : Controller
         else if (model.ProfilePicture is not null && model.ProfilePicture.Length > MaxFotoGrootteBytes)
         {
             ModelState.AddModelError(nameof(model.ProfilePicture), _localizer["Fout_AfbeeldingGrootte"]);
+        }
+
+        if (!model.LooksForMen && !model.LooksForWomen)
+        {
+            ModelState.AddModelError(string.Empty, _localizer["Valid_KiesMinstensEenVoorkeur"]);
         }
 
         if (!ModelState.IsValid)
@@ -133,6 +147,7 @@ public class ManageController : Controller
         gebruiker.BirthDate = model.BirthDate!.Value;
         gebruiker.BirthTime = model.BirthTime!.Value;
         gebruiker.BirthPlace = model.BirthPlace;
+        gebruiker.Gender = model.Gender!.Value;
 
         if (model.ProfilePicture is not null)
         {
@@ -150,6 +165,8 @@ public class ManageController : Controller
 
             return View(model);
         }
+
+        await ReplacePartnerPreferencesAsync(gebruiker.Id, model.LooksForMen, model.LooksForWomen);
 
         if (geboortegegevensGewijzigd)
         {
@@ -169,6 +186,25 @@ public class ManageController : Controller
         _logger.LogInformation("Gebruiker {Email} paste het eigen profiel aan.", gebruiker.Email);
         TempData["Melding"] = _localizer["Melding_ProfielOpgeslagen"].Value;
         return RedirectToAction(nameof(Index));
+    }
+
+    /// <summary>Removes the existing partner preferences and sets them again based on the checked genders.</summary>
+    private async Task ReplacePartnerPreferencesAsync(string userId, bool looksForMen, bool looksForWomen)
+    {
+        var existing = await _context.PartnerPreferences.Where(p => p.UserId == userId).ToListAsync();
+        _context.PartnerPreferences.RemoveRange(existing);
+
+        if (looksForMen)
+        {
+            _context.PartnerPreferences.Add(new PartnerPreference { UserId = userId, Gender = Gender.Male });
+        }
+
+        if (looksForWomen)
+        {
+            _context.PartnerPreferences.Add(new PartnerPreference { UserId = userId, Gender = Gender.Female });
+        }
+
+        await _context.SaveChangesAsync();
     }
 
     /// <summary>

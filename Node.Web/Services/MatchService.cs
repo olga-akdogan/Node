@@ -1,27 +1,35 @@
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Node.Data.Data;
 using Node.Data.Models;
 using Node.Data.Models.Enums;
+using Node.Data.Services;
 using Node.Web.Models.Matches;
 using Node.Web.Services.Interfaces;
 
 namespace Node.Web.Services;
 
 /// <summary>
-/// Matches en chatgesprekken. Elke methode controleert eerst of de gebruiker
-/// wel deelnemer is van de match (autorisatie op gegevensniveau). De
-/// chatberichten zelf staan bij GetStream Chat, niet in onze databank.
+/// Matches and chat conversations. Every method first checks whether the
+/// user is actually a participant in the match (authorization at the data
+/// level). The chat messages themselves live in GetStream Chat, not in our database.
 /// </summary>
 public class MatchService : IMatchService
 {
     private readonly ApplicationDbContext _context;
     private readonly IStreamChatService _streamChatService;
+    private readonly IMatchInterpretationService _matchInterpretationService;
     private readonly ILogger<MatchService> _logger;
 
-    public MatchService(ApplicationDbContext context, IStreamChatService streamChatService, ILogger<MatchService> logger)
+    public MatchService(
+        ApplicationDbContext context,
+        IStreamChatService streamChatService,
+        IMatchInterpretationService matchInterpretationService,
+        ILogger<MatchService> logger)
     {
         _context = context;
         _streamChatService = streamChatService;
+        _matchInterpretationService = matchInterpretationService;
         _logger = logger;
     }
 
@@ -39,13 +47,13 @@ public class MatchService : IMatchService
             return [];
         }
 
-        // GetStream moet de ingelogde gebruiker al kennen vóór er namens haar/hem
-        // gevraagd kan worden naar kanalen; hergebruikt de al geladen matchdata.
+        // GetStream needs to already know the logged-in user before we can ask
+        // for their channels; reuses the match data already loaded above.
         var ikzelf = (matches[0].User1Id == userId ? matches[0].User1 : matches[0].User2)!;
         await _streamChatService.ZorgVoorGebruikerAsync(ikzelf);
 
-        // Laatste bericht + ongelezen aantal per gesprek komen bij GetStream vandaan,
-        // opgezocht via de id van de andere gebruiker.
+        // Last message + unread count per conversation come from GetStream,
+        // looked up via the other user's id.
         var kanaalStatussen = await _streamChatService.GetKanaalStatussenAsync(userId);
 
         return matches
@@ -65,7 +73,7 @@ public class MatchService : IMatchService
                     UnreadCount = status?.OngelezenAantal ?? 0,
                 };
             })
-            // Recentste gesprek bovenaan; matches zonder gesprek daaronder.
+            // Most recent conversation first; matches without one sink to the bottom.
             .OrderByDescending(v => v.LastMessageAt ?? DateTime.MinValue)
             .ToList();
     }
@@ -81,13 +89,15 @@ public class MatchService : IMatchService
         var ikzelf = match.User1Id == userId ? match.User1 : match.User2;
         var ander = match.User1Id == userId ? match.User2 : match.User1;
 
-        // Beide gebruikers moeten als GetStream-gebruiker bestaan vóór ze aan
-        // het kanaal kunnen deelnemen (het kanaal zelf maakt de JS-client aan
-        // via de members-lijst, de eerste keer dat iemand het gesprek opent).
+        // Both users must exist as GetStream users before they can join the
+        // channel (the JS client creates the channel itself via the members
+        // list, the first time either of them opens the conversation).
         await _streamChatService.ZorgVoorGebruikerAsync(ikzelf);
         await _streamChatService.ZorgVoorGebruikerAsync(ander);
 
-        _logger.LogInformation("Chat geopend voor match {MatchId} door {UserId}.", matchId, userId);
+        await EnsureInterpretationInCurrentLanguageAsync(match);
+
+        _logger.LogInformation("Chat opened for match {MatchId} by {UserId}.", matchId, userId);
 
         return new ChatViewModel
         {
@@ -103,7 +113,33 @@ public class MatchService : IMatchService
     }
 
     /// <summary>
-    /// Zoekt de match, maar alleen wanneer de gebruiker er deelnemer van is.
+    /// If the viewing user's current language differs from the language
+    /// CompatibilityExplanation was written in, the text is regenerated via
+    /// Claude and the match is updated.
+    /// </summary>
+    private async Task EnsureInterpretationInCurrentLanguageAsync(Match match)
+    {
+        var currentLanguage = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+        if (match.CompatibilityExplanation is not null && match.CompatibilityExplanationLanguage == currentLanguage)
+        {
+            return;
+        }
+
+        var chart1 = await _context.NatalCharts.Include(n => n.Placements).FirstOrDefaultAsync(n => n.UserId == match.User1Id);
+        var chart2 = await _context.NatalCharts.Include(n => n.Placements).FirstOrDefaultAsync(n => n.UserId == match.User2Id);
+        if (chart1 is null || chart2 is null || match.User1 is null || match.User2 is null)
+        {
+            return; // Charts not calculated yet: nothing to write the text from.
+        }
+
+        match.CompatibilityExplanation = await _matchInterpretationService.SchrijfInterpretatieAsync(
+            match.User1, chart1, match.User2, chart2, match.CompatibilityScore, currentLanguage);
+        match.CompatibilityExplanationLanguage = currentLanguage;
+        await _context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Looks up the match, but only when the user is a participant in it.
     /// </summary>
     private async Task<Match?> ZoekMatchVanDeelnemerAsync(int matchId, string userId)
     {

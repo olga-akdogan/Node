@@ -11,13 +11,15 @@ namespace Node.Data.Services;
 public interface IMatchInterpretationService
 {
     /// <summary>
-    /// Genereert een korte interpretatietekst voor de match tussen twee
-    /// gebruikers. Wordt één keer per match opgeroepen (bij het ontstaan van
-    /// de match) en het resultaat wordt bewaard op Match.CompatibilityExplanation
-    /// zodat de tekst niet telkens opnieuw opgevraagd moet worden.
+    /// Generates a short interpretation text for the match between two users,
+    /// in the requested language. Called when the match is created, and again
+    /// whenever a user views the match in a language that differs from
+    /// Match.CompatibilityExplanationLanguage.
     /// </summary>
+    /// <param name="language">ISO 639-1 code of the requested language (e.g. "nl", "en", "fr").</param>
     Task<string> SchrijfInterpretatieAsync(
         ApplicationUser gebruikerA, NatalChart chartA,
         ApplicationUser gebruikerB, NatalChart chartB,
-        int compatibiliteitsScore);
+        int compatibiliteitsScore,
+        string language);
 }

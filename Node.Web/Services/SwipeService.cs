@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Node.Data.Data;
@@ -45,13 +46,27 @@ public class SwipeService : ISwipeService
             .Select(s => s.TargetUserId)
             .ToListAsync();
 
+        // Mutual gender preference: I only see candidates of a gender I'm
+        // interested in, who are themselves interested in my gender too.
+        var currentUser = await _context.Users
+            .Include(u => u.PartnerPreferences)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        if (currentUser is null)
+        {
+            return null;
+        }
+
+        var myPreferences = currentUser.PartnerPreferences.Select(p => p.Gender).ToHashSet();
+
         var kandidaat = await _context.Users
             .Include(u => u.NatalChart)
             .Where(u => u.Id != userId
                         && !u.IsBlocked
                         && u.EmailConfirmed
                         && ledenIds.Contains(u.Id)
-                        && !beoordeeldeIds.Contains(u.Id))
+                        && !beoordeeldeIds.Contains(u.Id)
+                        && myPreferences.Contains(u.Gender)
+                        && u.PartnerPreferences.Any(p => p.Gender == currentUser.Gender))
             .OrderBy(u => u.DisplayName) // Deterministische volgorde voor de demo.
             .FirstOrDefaultAsync();
 
@@ -121,6 +136,8 @@ public class SwipeService : ISwipeService
         var chart1 = await _context.NatalCharts.Include(n => n.Placements).FirstOrDefaultAsync(n => n.UserId == eerste);
         var chart2 = await _context.NatalCharts.Include(n => n.Placements).FirstOrDefaultAsync(n => n.UserId == tweede);
 
+        var currentLanguage = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+
         int score;
         string uitleg;
         if (chart1 is not null && chart2 is not null)
@@ -133,7 +150,7 @@ public class SwipeService : ISwipeService
             var gebruiker1 = await _userManager.FindByIdAsync(eerste);
             var gebruiker2 = await _userManager.FindByIdAsync(tweede);
             uitleg = gebruiker1 is not null && gebruiker2 is not null
-                ? await _matchInterpretationService.SchrijfInterpretatieAsync(gebruiker1, chart1, gebruiker2, chart2, score)
+                ? await _matchInterpretationService.SchrijfInterpretatieAsync(gebruiker1, chart1, gebruiker2, chart2, score, currentLanguage)
                 : "Score volgt zodra beide horoscopen berekend zijn.";
         }
         else
@@ -148,6 +165,7 @@ public class SwipeService : ISwipeService
             User2Id = tweede,
             CompatibilityScore = score,
             CompatibilityExplanation = uitleg,
+            CompatibilityExplanationLanguage = currentLanguage,
             Status = MatchStatus.Active,
         };
 

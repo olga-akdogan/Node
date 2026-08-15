@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Node.Data.Models;
+using Node.Data.Models.Enums;
 
 namespace Node.Data.Data;
 
@@ -22,6 +23,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Match> Matches => Set<Match>();
     public DbSet<Report> Reports => Set<Report>();
     public DbSet<CookieConsentLog> CookieConsentLogs => Set<CookieConsentLog>();
+    public DbSet<PartnerPreference> PartnerPreferences => Set<PartnerPreference>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -110,5 +112,23 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(c => c.UserId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        // HasDefaultValue: lets the migration add this new, required column
+        // to a table that already has (seeded) users in it.
+        builder.Entity<ApplicationUser>().Property(u => u.Gender)
+            .HasConversion<string>().HasMaxLength(20).HasDefaultValue(Gender.Male);
+
+        // Partner preference: removed together with the account; multiple genders per user are allowed.
+        builder.Entity<PartnerPreference>()
+            .HasOne(p => p.User)
+            .WithMany(u => u.PartnerPreferences)
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<PartnerPreference>().Property(p => p.Gender).HasConversion<string>().HasMaxLength(20);
+
+        builder.Entity<PartnerPreference>()
+            .HasIndex(p => new { p.UserId, p.Gender })
+            .IsUnique();
     }
 }

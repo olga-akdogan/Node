@@ -66,6 +66,7 @@ builder.Services.AddScoped<IChartService, ChartService>();
 builder.Services.AddScoped<IStreamChatService, StreamChatService>();
 builder.Services.AddScoped<INatalChartCalculator, NatalChartCalculator>();
 builder.Services.AddScoped<IMatchInterpretationService, MatchInterpretationService>();
+builder.Services.AddScoped<IChartInterpretationService, ChartInterpretationService>();
 
 // Nominatim (OpenStreetMap) vereist een identificerende User-Agent per gebruiksvoorwaarden.
 builder.Services.AddHttpClient<IGeocodingService, GeocodingService>(client =>

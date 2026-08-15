@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Node.Data.Models.Enums;
 
 namespace Node.Web.Models.Account;
 
@@ -48,4 +49,15 @@ public class RegisterViewModel
     [DataType(DataType.MultilineText)]
     [Display(Name = "Veld_BioOptioneel")]
     public string? Bio { get; set; }
+
+    [Required(ErrorMessage = "Valid_GeslachtVerplicht")]
+    [Display(Name = "Veld_Geslacht")]
+    public Gender? Gender { get; set; }
+
+    /// <summary>Together with <see cref="LooksForWomen"/>, determines who appears in the swipe deck (at least one required).</summary>
+    [Display(Name = "Veld_ZoektMannen")]
+    public bool LooksForMen { get; set; }
+
+    [Display(Name = "Veld_ZoektVrouwen")]
+    public bool LooksForWomen { get; set; }
 }

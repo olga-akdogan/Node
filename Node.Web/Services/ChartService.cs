@@ -2,6 +2,7 @@ using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Node.Data.Data;
 using Node.Data.Models.Enums;
+using Node.Data.Services;
 using Node.Web.Models.Chart;
 using Node.Web.Services.Interfaces;
 
@@ -13,10 +14,12 @@ namespace Node.Web.Services;
 public class ChartService : IChartService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IChartInterpretationService _chartInterpretationService;
 
-    public ChartService(ApplicationDbContext context)
+    public ChartService(ApplicationDbContext context, IChartInterpretationService chartInterpretationService)
     {
         _context = context;
+        _chartInterpretationService = chartInterpretationService;
     }
 
     public async Task<HoroscoopViewModel?> GetHoroscoopAsync(string userId)
@@ -35,6 +38,20 @@ public class ChartService : IChartService
         // een vast Belgisch-Nederlandse cultuur — zo blijft de pagina ook
         // qua datumformaat consistent in het Engels of Frans.
         var cultuur = CultureInfo.CurrentUICulture;
+        var currentLanguage = cultuur.TwoLetterISOLanguageName;
+
+        // No interpretation yet, or written earlier in a different language
+        // than the current selection: (re)request it from Claude and save it.
+        if (chart.InterpretationText is null || chart.InterpretationLanguage != currentLanguage)
+        {
+            var (interpretation, partnerPreferenceText) =
+                await _chartInterpretationService.WriteInterpretationAsync(chart.User, chart, currentLanguage);
+
+            chart.InterpretationText = interpretation;
+            chart.PartnerLookingForText = partnerPreferenceText;
+            chart.InterpretationLanguage = currentLanguage;
+            await _context.SaveChangesAsync();
+        }
 
         return new HoroscoopViewModel
         {
@@ -59,6 +76,8 @@ public class ChartService : IChartService
                 })
                 .ToList(),
             Signatuur = BouwSignatuur(chart.SunSign, chart.MoonSign),
+            Interpretation = chart.InterpretationText,
+            PartnerPreferenceText = chart.PartnerLookingForText,
         };
     }
 

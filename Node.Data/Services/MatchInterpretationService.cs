@@ -16,14 +16,6 @@ public class MatchInterpretationService : IMatchInterpretationService
 {
     private const string Model = "claude-haiku-4-5";
 
-    private const string SysteemPrompt =
-        "Je bent een warme, beeldende astroloog die synastrie (compatibiliteit tussen twee " +
-        "geboortehoroscopen) uitlegt voor een datingapp. Schrijf in het Nederlands, 3 tot 5 zinnen, " +
-        "in de tweede persoon meervoud ('jullie'). Verwijs concreet naar minstens twee van de " +
-        "opgegeven plaatsingen (bv. \"jouw Maan in Kreeft\"). Wees positief maar eerlijk: benoem " +
-        "gerust een spanning naast de sterke kanten. Antwoord met platte tekst: geen Markdown, geen " +
-        "titel, geen '#'-kopjes, geen opsomming — start meteen met de eerste zin van de uitleg.";
-
     private readonly AnthropicClient _client;
     private readonly ILogger<MatchInterpretationService> _logger;
 
@@ -36,7 +28,8 @@ public class MatchInterpretationService : IMatchInterpretationService
     public async Task<string> SchrijfInterpretatieAsync(
         ApplicationUser gebruikerA, NatalChart chartA,
         ApplicationUser gebruikerB, NatalChart chartB,
-        int compatibiliteitsScore)
+        int compatibiliteitsScore,
+        string language)
     {
         try
         {
@@ -44,7 +37,7 @@ public class MatchInterpretationService : IMatchInterpretationService
             {
                 Model = Model,
                 MaxTokens = 400,
-                System = SysteemPrompt,
+                System = BuildSystemPrompt(language),
                 Messages = [new() { Role = Role.User, Content = BouwPrompt(gebruikerA, chartA, gebruikerB, chartB, compatibiliteitsScore) }],
             });
 
@@ -65,6 +58,27 @@ public class MatchInterpretationService : IMatchInterpretationService
             return Terugval(gebruikerA, gebruikerB);
         }
     }
+
+    /// <summary>
+    /// Builds the system prompt in the requested language. The instruction
+    /// itself stays in Dutch (Claude follows it regardless of the source
+    /// language); only the requested answer language changes.
+    /// </summary>
+    private static string BuildSystemPrompt(string language) =>
+        "Je bent een warme, beeldende astroloog die synastrie (compatibiliteit tussen twee " +
+        "geboortehoroscopen) uitlegt voor een datingapp. Schrijf in het " + LanguageName(language) + ", 3 tot 5 zinnen, " +
+        "in de tweede persoon meervoud ('jullie'). Verwijs concreet naar minstens twee van de " +
+        "opgegeven plaatsingen (bv. \"jouw Maan in Kreeft\"). Wees positief maar eerlijk: benoem " +
+        "gerust een spanning naast de sterke kanten. Antwoord met platte tekst: geen Markdown, geen " +
+        "titel, geen '#'-kopjes, geen opsomming — start meteen met de eerste zin van de uitleg.";
+
+    /// <summary>Maps an ISO 639-1 code to a Dutch language name for the prompt.</summary>
+    internal static string LanguageName(string language) => language switch
+    {
+        "en" => "Engels",
+        "fr" => "Frans",
+        _ => "Nederlands",
+    };
 
     private static string BouwPrompt(
         ApplicationUser gebruikerA, NatalChart chartA,

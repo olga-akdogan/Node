@@ -226,6 +226,12 @@
   <data name="Chart_GeboortehoroscoopTitel" xml:space="preserve">
     <value>Birth Chart</value>
   </data>
+  <data name="Chart_Interpretatie" xml:space="preserve">
+    <value>Your chart interpreted</value>
+  </data>
+  <data name="Chart_WatJeZoekt" xml:space="preserve">
+    <value>What you're looking for in a partner</value>
+  </data>
   <data name="NGH_Kicker" xml:space="preserve">
     <value>Just a moment</value>
   </data>
@@ -430,6 +436,12 @@
   <data name="Valid_GeboorteplaatsMax" xml:space="preserve">
     <value>The birth place can be at most {1} characters long.</value>
   </data>
+  <data name="Valid_GeslachtVerplicht" xml:space="preserve">
+    <value>Choose your gender.</value>
+  </data>
+  <data name="Valid_KiesMinstensEenVoorkeur" xml:space="preserve">
+    <value>Choose at least one preference (men and/or women).</value>
+  </data>
   <data name="Veld_Geboorteplaats" xml:space="preserve">
     <value>Birth place</value>
   </data>
@@ -438,6 +450,21 @@
   </data>
   <data name="Veld_BioOptioneel" xml:space="preserve">
     <value>Bio (optional)</value>
+  </data>
+  <data name="Veld_Geslacht" xml:space="preserve">
+    <value>I am</value>
+  </data>
+  <data name="Gender_Male" xml:space="preserve">
+    <value>Man</value>
+  </data>
+  <data name="Gender_Female" xml:space="preserve">
+    <value>Woman</value>
+  </data>
+  <data name="Veld_ZoektMannen" xml:space="preserve">
+    <value>Looking for men</value>
+  </data>
+  <data name="Veld_ZoektVrouwen" xml:space="preserve">
+    <value>Looking for women</value>
   </data>
   <data name="Veld_Bio" xml:space="preserve">
     <value>Bio</value>
