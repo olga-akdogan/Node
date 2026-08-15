@@ -5,19 +5,19 @@ namespace Node.Web.Models.Account;
 /// <summary>Formulier om het eigen wachtwoord te wijzigen.</summary>
 public class ChangePasswordViewModel
 {
-    [Required(ErrorMessage = "Huidig wachtwoord is verplicht.")]
+    [Required(ErrorMessage = "Valid_HuidigWachtwoordVerplicht")]
     [DataType(DataType.Password)]
-    [Display(Name = "Huidig wachtwoord")]
+    [Display(Name = "Veld_HuidigWachtwoord")]
     public string CurrentPassword { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Nieuw wachtwoord is verplicht.")]
-    [StringLength(100, MinimumLength = 6, ErrorMessage = "Het wachtwoord moet tussen {2} en {1} tekens lang zijn.")]
+    [Required(ErrorMessage = "Valid_NieuwWachtwoordVerplicht")]
+    [StringLength(100, MinimumLength = 6, ErrorMessage = "Valid_WachtwoordLengte")]
     [DataType(DataType.Password)]
-    [Display(Name = "Nieuw wachtwoord")]
+    [Display(Name = "Veld_NieuwWachtwoord")]
     public string NewPassword { get; set; } = string.Empty;
 
     [DataType(DataType.Password)]
-    [Display(Name = "Bevestig nieuw wachtwoord")]
-    [Compare(nameof(NewPassword), ErrorMessage = "De wachtwoorden komen niet overeen.")]
+    [Display(Name = "Veld_BevestigNieuwWachtwoord")]
+    [Compare(nameof(NewPassword), ErrorMessage = "Valid_WachtwoordenKomenNietOvereen")]
     public string ConfirmNewPassword { get; set; } = string.Empty;
 }

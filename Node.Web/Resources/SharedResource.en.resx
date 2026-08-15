@@ -1,0 +1,637 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Nav_HoeHetWerkt" xml:space="preserve">
+    <value>How it works</value>
+  </data>
+  <data name="Nav_Ontdek" xml:space="preserve">
+    <value>Discover</value>
+  </data>
+  <data name="Nav_Matches" xml:space="preserve">
+    <value>Matches</value>
+  </data>
+  <data name="Nav_MijnHoroscoop" xml:space="preserve">
+    <value>My horoscope</value>
+  </data>
+  <data name="Nav_Gebruikersbeheer" xml:space="preserve">
+    <value>User management</value>
+  </data>
+  <data name="Nav_MenuTonenVerbergen" xml:space="preserve">
+    <value>Toggle menu</value>
+  </data>
+  <data name="Nav_Sluiten" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Nav_Instellingen" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Nav_Afmelden" xml:space="preserve">
+    <value>Log out</value>
+  </data>
+  <data name="Nav_Inloggen" xml:space="preserve">
+    <value>Log in</value>
+  </data>
+  <data name="Nav_MaakJeHoroscoop" xml:space="preserve">
+    <value>Create your horoscope</value>
+  </data>
+  <data name="Footer_Privacy" xml:space="preserve">
+    <value>Privacy</value>
+  </data>
+  <data name="Auth_Citaat" xml:space="preserve">
+    <value>Begin where the sky stood when you did.</value>
+  </data>
+  <data name="Auth_Privacyregel" xml:space="preserve">
+    <value>Your data stays yours — always.</value>
+  </data>
+  <data name="Taal_Wijzigen" xml:space="preserve">
+    <value>Change language</value>
+  </data>
+  <data name="Home_Kicker" xml:space="preserve">
+    <value>Astrological dating</value>
+  </data>
+  <data name="Home_Titel" xml:space="preserve">
+    <value>Some connections &lt;em&gt;find you&lt;/em&gt;.</value>
+  </data>
+  <data name="Home_Lead" xml:space="preserve">
+    <value>Node turns your exact birth moment into a living horoscope — and matches you with the people who fit it.</value>
+  </data>
+  <data name="Home_CtaMaakHoroscoop" xml:space="preserve">
+    <value>Create your horoscope — free</value>
+  </data>
+  <data name="Home_SectieKicker" xml:space="preserve">
+    <value>What Node reads for you</value>
+  </data>
+  <data name="Home_SectieTitel" xml:space="preserve">
+    <value>Three lenses on the same sky</value>
+  </data>
+  <data name="Home_KaartHoroscoopTitel" xml:space="preserve">
+    <value>Your horoscope</value>
+  </data>
+  <data name="Home_KaartHoroscoopTekst" xml:space="preserve">
+    <value>Your exact birth moment, decoded position by position — from sun sign to ascendant, in language you can actually use.</value>
+  </data>
+  <data name="Home_KaartSynastrieTitel" xml:space="preserve">
+    <value>Synastry</value>
+  </data>
+  <data name="Home_KaartSynastrieTekst" xml:space="preserve">
+    <value>We overlay two horoscopes and see where they hum, where they clash, and why. That becomes your match score.</value>
+  </data>
+  <data name="Home_KaartGesprekTitel" xml:space="preserve">
+    <value>The conversation</value>
+  </data>
+  <data name="Home_KaartGesprekTekst" xml:space="preserve">
+    <value>If it clicks, a conversation opens. The stars bring you together — the rest is up to you.</value>
+  </data>
+  <data name="Home_BandTitel" xml:space="preserve">
+    <value>Some people are &lt;em&gt;written into your story&lt;/em&gt;.</value>
+  </data>
+  <data name="Home_BandTekst" xml:space="preserve">
+    <value>Every match in Node tells you which positions the score comes from, so you learn to read the sky while you search — no vague fortune-telling, just the right people at the right time.</value>
+  </data>
+  <data name="Home_BandLink" xml:space="preserve">
+    <value>How it works →</value>
+  </data>
+  <data name="Hiw_Titel" xml:space="preserve">
+    <value>The right people appear&lt;br /&gt;at the right time</value>
+  </data>
+  <data name="Hiw_S1Kicker" xml:space="preserve">
+    <value>We get to know you</value>
+  </data>
+  <data name="Hiw_S1Titel" xml:space="preserve">
+    <value>More than a profile</value>
+  </data>
+  <data name="Hiw_S1Tekst1" xml:space="preserve">
+    <value>Your journey starts with a conversation. Your personal Node agent learns who you are, what you value, and what kind of connection you're really looking for.</value>
+  </data>
+  <data name="Hiw_S1Tekst2" xml:space="preserve">
+    <value>Together with your birth chart, that forms a complete picture of you — not just your preferences.</value>
+  </data>
+  <data name="Hiw_S2Kicker" xml:space="preserve">
+    <value>We do the searching</value>
+  </data>
+  <data name="Hiw_S2Titel" xml:space="preserve">
+    <value>No endless scrolling</value>
+  </data>
+  <data name="Hiw_S2Tekst" xml:space="preserve">
+    <value>Where other apps make you scroll through hundreds of profiles, Node works differently. Our matching combines astrological compatibility with your Node agent's insight, and carefully introduces you to people who truly match your energy and intentions.</value>
+  </data>
+  <data name="Hiw_S2Quote" xml:space="preserve">
+    <value>You don't search for matches.&lt;br /&gt;They find you.</value>
+  </data>
+  <data name="Hiw_S3Kicker" xml:space="preserve">
+    <value>When it feels right</value>
+  </data>
+  <data name="Hiw_S3Titel" xml:space="preserve">
+    <value>Introductions with intention</value>
+  </data>
+  <data name="Hiw_S3Tekst1" xml:space="preserve">
+    <value>When a promising connection appears, you both receive a personal introduction.</value>
+  </data>
+  <data name="Hiw_S3Tekst2" xml:space="preserve">
+    <value>No algorithms chasing your attention. No race to collect matches.</value>
+  </data>
+  <data name="Hiw_S3Quote" xml:space="preserve">
+    <value>One meaningful conversation at a time.</value>
+  </data>
+  <data name="Hiw_CtaTitel" xml:space="preserve">
+    <value>Some people are&lt;br /&gt;written into your story</value>
+  </data>
+  <data name="Hiw_CtaBeginVerhaal" xml:space="preserve">
+    <value>Begin your story</value>
+  </data>
+  <data name="Login_TabAccountAanmaken" xml:space="preserve">
+    <value>Create account</value>
+  </data>
+  <data name="Register_PlaceholderGeboorteplaats" xml:space="preserve">
+    <value>e.g. Antwerp, Belgium</value>
+  </data>
+  <data name="RegisterConfirmation_Title" xml:space="preserve">
+    <value>Confirm your email address</value>
+  </data>
+  <data name="RegisterConfirmation_Tekst" xml:space="preserve">
+    <value>We've sent you an email with a confirmation link. Click that link to complete your registration. After that you can log in.</value>
+  </data>
+  <data name="ConfirmEmail_Title" xml:space="preserve">
+    <value>Email confirmation</value>
+  </data>
+  <data name="ConfirmEmail_Succes" xml:space="preserve">
+    <value>Your email address has been confirmed. You can now log in.</value>
+  </data>
+  <data name="ConfirmEmail_NaarInloggen" xml:space="preserve">
+    <value>Go to login</value>
+  </data>
+  <data name="ConfirmEmail_Fout" xml:space="preserve">
+    <value>The confirmation link is invalid or expired. Register again or contact the administrator.</value>
+  </data>
+  <data name="AccessDenied_Title" xml:space="preserve">
+    <value>Access denied</value>
+  </data>
+  <data name="AccessDenied_Tekst" xml:space="preserve">
+    <value>You don't have permission to view this page.</value>
+  </data>
+  <data name="AccessDenied_TerugNaarHome" xml:space="preserve">
+    <value>Back to home</value>
+  </data>
+  <data name="ManageProfile_Title" xml:space="preserve">
+    <value>My profile</value>
+  </data>
+  <data name="ManageProfile_Uitleg" xml:space="preserve">
+    <value>Change your birth details, and your horoscope will be recalculated.</value>
+  </data>
+  <data name="ManageProfile_HuidigeFotoAlt" xml:space="preserve">
+    <value>Current profile picture</value>
+  </data>
+  <data name="ManageProfile_Opslaan" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="ChangePassword_Title" xml:space="preserve">
+    <value>Change password</value>
+  </data>
+  <data name="ChangePassword_Wijzigen" xml:space="preserve">
+    <value>Change</value>
+  </data>
+  <data name="ChangePassword_TerugNaarProfiel" xml:space="preserve">
+    <value>Back to profile</value>
+  </data>
+  <data name="Chart_TerugHome" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Chart_GeboortegegevensBewerken" xml:space="preserve">
+    <value>Edit birth details</value>
+  </data>
+  <data name="Chart_Plaatsingen" xml:space="preserve">
+    <value>Placements</value>
+  </data>
+  <data name="Chart_Hemellichaam" xml:space="preserve">
+    <value>Celestial body</value>
+  </data>
+  <data name="Chart_Teken" xml:space="preserve">
+    <value>Sign</value>
+  </data>
+  <data name="Chart_Huis" xml:space="preserve">
+    <value>House</value>
+  </data>
+  <data name="Chart_Graad" xml:space="preserve">
+    <value>Degree</value>
+  </data>
+  <data name="Chart_HuizenCaption" xml:space="preserve">
+    <value>Whole-sign houses · Tropical zodiac</value>
+  </data>
+  <data name="Chart_Signatuur" xml:space="preserve">
+    <value>Signature</value>
+  </data>
+  <data name="Chart_GeboortehoroscoopTitel" xml:space="preserve">
+    <value>Birth Chart</value>
+  </data>
+  <data name="NGH_Kicker" xml:space="preserve">
+    <value>Just a moment</value>
+  </data>
+  <data name="NGH_Titel" xml:space="preserve">
+    <value>Your horoscope is still being calculated</value>
+  </data>
+  <data name="NGH_Tekst" xml:space="preserve">
+    <value>Once your birth details are complete, your full birth chart with wheel and placements will appear here.</value>
+  </data>
+  <data name="NGH_Knop" xml:space="preserve">
+    <value>Check my birth details</value>
+  </data>
+  <data name="Swipe_MatchKicker" xml:space="preserve">
+    <value>Mutual</value>
+  </data>
+  <data name="Swipe_MatchTitel" xml:space="preserve">
+    <value>A match</value>
+  </data>
+  <data name="Swipe_MatchTekst" xml:space="preserve">
+    <value>Your horoscopes — and your choices — point the same way.</value>
+  </data>
+  <data name="Swipe_StuurBericht" xml:space="preserve">
+    <value>Send a message</value>
+  </data>
+  <data name="Swipe_VerderSwipen" xml:space="preserve">
+    <value>Keep swiping</value>
+  </data>
+  <data name="StapelLeeg_Kicker" xml:space="preserve">
+    <value>That was everyone</value>
+  </data>
+  <data name="StapelLeeg_Titel" xml:space="preserve">
+    <value>The stack is empty</value>
+  </data>
+  <data name="StapelLeeg_Tekst" xml:space="preserve">
+    <value>You've reviewed all the profiles. Come back later, or check your matches.</value>
+  </data>
+  <data name="StapelLeeg_NaarMatches" xml:space="preserve">
+    <value>To my matches</value>
+  </data>
+  <data name="SwipeKaart_MatchScore" xml:space="preserve">
+    <value>Match score</value>
+  </data>
+  <data name="SwipeKaart_ScoreVolgt" xml:space="preserve">
+    <value>Score will follow once both horoscopes are calculated.</value>
+  </data>
+  <data name="SwipeKaart_Zon" xml:space="preserve">
+    <value>Sun</value>
+  </data>
+  <data name="SwipeKaart_Maan" xml:space="preserve">
+    <value>Moon</value>
+  </data>
+  <data name="SwipeKaart_Ascendant" xml:space="preserve">
+    <value>Ascendant</value>
+  </data>
+  <data name="SwipeKaart_Pas" xml:space="preserve">
+    <value>Pass</value>
+  </data>
+  <data name="SwipeKaart_Like" xml:space="preserve">
+    <value>Like</value>
+  </data>
+  <data name="Match_Kicker" xml:space="preserve">
+    <value>Your matches</value>
+  </data>
+  <data name="Match_Titel" xml:space="preserve">
+    <value>Matches</value>
+  </data>
+  <data name="Match_GeenMatches_Titel" xml:space="preserve">
+    <value>No matches yet</value>
+  </data>
+  <data name="Match_GeenMatches_Tekst" xml:space="preserve">
+    <value>Start discovering — when there's a mutual like, the match appears here.</value>
+  </data>
+  <data name="Match_OntdekProfielen" xml:space="preserve">
+    <value>Discover profiles</value>
+  </data>
+  <data name="Match_GeenBerichten" xml:space="preserve">
+    <value>No messages yet — say hello.</value>
+  </data>
+  <data name="Match_OngelezenTitle" xml:space="preserve">
+    <value>{0} unread</value>
+  </data>
+  <data name="Chat_GesprekLaden" xml:space="preserve">
+    <value>Loading conversation…</value>
+  </data>
+  <data name="Chat_SchrijfBericht" xml:space="preserve">
+    <value>Write a message</value>
+  </data>
+  <data name="Chat_Verstuur" xml:space="preserve">
+    <value>Send</value>
+  </data>
+  <data name="Admin_AantalGebruikers" xml:space="preserve">
+    <value>{0} users</value>
+  </data>
+  <data name="Admin_Naam" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Admin_Email" xml:space="preserve">
+    <value>Email address</value>
+  </data>
+  <data name="Admin_Rollen" xml:space="preserve">
+    <value>Roles</value>
+  </data>
+  <data name="Admin_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Admin_Acties" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="Admin_NietBevestigdBadge" xml:space="preserve">
+    <value>not confirmed</value>
+  </data>
+  <data name="Admin_NietBevestigdTitle" xml:space="preserve">
+    <value>Email address not yet confirmed</value>
+  </data>
+  <data name="Admin_RolAfnemenBevestiging" xml:space="preserve">
+    <value>Remove role {0} from {1}?</value>
+  </data>
+  <data name="Admin_RolAfnemenTitle" xml:space="preserve">
+    <value>Remove role</value>
+  </data>
+  <data name="Admin_RolKiezen" xml:space="preserve">
+    <value>Choose role</value>
+  </data>
+  <data name="Admin_Toekennen" xml:space="preserve">
+    <value>Assign</value>
+  </data>
+  <data name="Admin_Geblokkeerd" xml:space="preserve">
+    <value>Blocked</value>
+  </data>
+  <data name="Admin_Actief" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Admin_Deblokkeren" xml:space="preserve">
+    <value>Unblock</value>
+  </data>
+  <data name="Admin_Blokkeren" xml:space="preserve">
+    <value>Block</value>
+  </data>
+  <data name="Error_Boodschap" xml:space="preserve">
+    <value>An error occurred while processing your request.</value>
+  </data>
+  <data name="Error_RequestId" xml:space="preserve">
+    <value>Request ID:</value>
+  </data>
+  <data name="Error_DevMode" xml:space="preserve">
+    <value>Development Mode</value>
+  </data>
+  <data name="Error_DevModeUitleg1" xml:space="preserve">
+    <value>Swapping to Development environment will display more detailed information about the error that occurred.</value>
+  </data>
+  <data name="Error_DevModeUitleg2" xml:space="preserve">
+    <value>The Development environment shouldn't be enabled for deployed applications. It can result in displaying sensitive information from exceptions to end users. For local debugging, enable the Development environment by setting the ASPNETCORE_ENVIRONMENT environment variable to Development and restarting the app.</value>
+  </data>
+  <data name="Valid_EmailVerplicht" xml:space="preserve">
+    <value>Email address is required.</value>
+  </data>
+  <data name="Valid_EmailOngeldig" xml:space="preserve">
+    <value>Enter a valid email address.</value>
+  </data>
+  <data name="Veld_Email" xml:space="preserve">
+    <value>Email address</value>
+  </data>
+  <data name="Valid_WachtwoordVerplicht" xml:space="preserve">
+    <value>Password is required.</value>
+  </data>
+  <data name="Veld_Wachtwoord" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Veld_AangemeldBlijven" xml:space="preserve">
+    <value>Remember me</value>
+  </data>
+  <data name="Veld_BevestigWachtwoord" xml:space="preserve">
+    <value>Confirm password</value>
+  </data>
+  <data name="Valid_WachtwoordenKomenNietOvereen" xml:space="preserve">
+    <value>The passwords don't match.</value>
+  </data>
+  <data name="Valid_WeergavenaamVerplicht" xml:space="preserve">
+    <value>Display name is required.</value>
+  </data>
+  <data name="Valid_WeergavenaamMax" xml:space="preserve">
+    <value>The display name can be at most {1} characters long.</value>
+  </data>
+  <data name="Veld_Weergavenaam" xml:space="preserve">
+    <value>Display name</value>
+  </data>
+  <data name="Valid_GeboortedatumVerplicht" xml:space="preserve">
+    <value>Birth date is required.</value>
+  </data>
+  <data name="Veld_Geboortedatum" xml:space="preserve">
+    <value>Birth date</value>
+  </data>
+  <data name="Valid_GeboortetijdVerplicht" xml:space="preserve">
+    <value>Birth time is required for an accurate horoscope.</value>
+  </data>
+  <data name="Veld_Geboortetijd" xml:space="preserve">
+    <value>Birth time</value>
+  </data>
+  <data name="Valid_GeboorteplaatsVerplicht" xml:space="preserve">
+    <value>Birth place is required.</value>
+  </data>
+  <data name="Valid_GeboorteplaatsMax" xml:space="preserve">
+    <value>The birth place can be at most {1} characters long.</value>
+  </data>
+  <data name="Veld_Geboorteplaats" xml:space="preserve">
+    <value>Birth place</value>
+  </data>
+  <data name="Valid_BioMax" xml:space="preserve">
+    <value>The bio can be at most {1} characters long.</value>
+  </data>
+  <data name="Veld_BioOptioneel" xml:space="preserve">
+    <value>Bio (optional)</value>
+  </data>
+  <data name="Veld_Bio" xml:space="preserve">
+    <value>Bio</value>
+  </data>
+  <data name="Veld_Profielfoto" xml:space="preserve">
+    <value>Profile picture</value>
+  </data>
+  <data name="Valid_HuidigWachtwoordVerplicht" xml:space="preserve">
+    <value>Current password is required.</value>
+  </data>
+  <data name="Veld_HuidigWachtwoord" xml:space="preserve">
+    <value>Current password</value>
+  </data>
+  <data name="Valid_NieuwWachtwoordVerplicht" xml:space="preserve">
+    <value>New password is required.</value>
+  </data>
+  <data name="Valid_WachtwoordLengte" xml:space="preserve">
+    <value>The password must be between {2} and {1} characters long.</value>
+  </data>
+  <data name="Veld_NieuwWachtwoord" xml:space="preserve">
+    <value>New password</value>
+  </data>
+  <data name="Veld_BevestigNieuwWachtwoord" xml:space="preserve">
+    <value>Confirm new password</value>
+  </data>
+  <data name="Veld_AangemeldBlijvenRememberMe" xml:space="preserve">
+    <value>Remember me</value>
+  </data>
+  <data name="Fout_GeboorteplaatsNietGevonden" xml:space="preserve">
+    <value>This birth place could not be found. Try a more precise spelling (e.g. &quot;Antwerp, Belgium&quot;).</value>
+  </data>
+  <data name="Fout_AccountGeblokkeerd" xml:space="preserve">
+    <value>This account has been blocked by an administrator.</value>
+  </data>
+  <data name="Fout_EmailNietBevestigd" xml:space="preserve">
+    <value>Please confirm your email address using the link in your mailbox first.</value>
+  </data>
+  <data name="Fout_TeVeelPogingen" xml:space="preserve">
+    <value>Too many failed attempts. Please try again later.</value>
+  </data>
+  <data name="Fout_OngeldigeInloggegevens" xml:space="preserve">
+    <value>Invalid login credentials.</value>
+  </data>
+  <data name="Fout_AfbeeldingType" xml:space="preserve">
+    <value>Only JPG, PNG or WEBP images are allowed.</value>
+  </data>
+  <data name="Fout_AfbeeldingGrootte" xml:space="preserve">
+    <value>The profile picture may be at most 5 MB.</value>
+  </data>
+  <data name="Melding_ProfielOpgeslagen" xml:space="preserve">
+    <value>Your profile has been saved.</value>
+  </data>
+  <data name="Melding_WachtwoordGewijzigd" xml:space="preserve">
+    <value>Your password has been changed.</value>
+  </data>
+  <data name="Privacy_Tekst1" xml:space="preserve">
+    <value>Node collects your birth details (date, time and place) to calculate your birth chart, and your profile details to match you with other members.</value>
+  </data>
+  <data name="Privacy_Tekst2" xml:space="preserve">
+    <value>We never share this data with third parties for commercial purposes. You can update your data at any time via your profile, or have your account deleted by contacting the administrator.</value>
+  </data>
+  <data name="Identity_OnbekendeFout" xml:space="preserve">
+    <value>An unknown error occurred.</value>
+  </data>
+  <data name="Identity_Concurrency" xml:space="preserve">
+    <value>Optimistic concurrency failure, object has been modified.</value>
+  </data>
+  <data name="Identity_WachtwoordFout" xml:space="preserve">
+    <value>Incorrect password.</value>
+  </data>
+  <data name="Identity_OngeldigToken" xml:space="preserve">
+    <value>Invalid token.</value>
+  </data>
+  <data name="Identity_HerstelcodeFout" xml:space="preserve">
+    <value>Recovery code redemption failed.</value>
+  </data>
+  <data name="Identity_LoginAlBestaat" xml:space="preserve">
+    <value>A user with this login already exists.</value>
+  </data>
+  <data name="Identity_OngeldigeGebruikersnaam" xml:space="preserve">
+    <value>Username '{0}' is invalid, can only contain letters or digits.</value>
+  </data>
+  <data name="Identity_OngeldigEmail" xml:space="preserve">
+    <value>Email '{0}' is invalid.</value>
+  </data>
+  <data name="Identity_GebruikersnaamBestaat" xml:space="preserve">
+    <value>Username '{0}' is already taken.</value>
+  </data>
+  <data name="Identity_EmailBestaat" xml:space="preserve">
+    <value>Email '{0}' is already taken.</value>
+  </data>
+  <data name="Identity_OngeldigeRolnaam" xml:space="preserve">
+    <value>Role name '{0}' is invalid.</value>
+  </data>
+  <data name="Identity_RolnaamBestaat" xml:space="preserve">
+    <value>Role name '{0}' is already taken.</value>
+  </data>
+  <data name="Identity_HeeftAlWachtwoord" xml:space="preserve">
+    <value>User already has a password set.</value>
+  </data>
+  <data name="Identity_LockoutNietIngeschakeld" xml:space="preserve">
+    <value>Lockout is not enabled for this user.</value>
+  </data>
+  <data name="Identity_HeeftAlRol" xml:space="preserve">
+    <value>User already in role '{0}'.</value>
+  </data>
+  <data name="Identity_HeeftRolNiet" xml:space="preserve">
+    <value>User is not in role '{0}'.</value>
+  </data>
+  <data name="Identity_WachtwoordTeKort" xml:space="preserve">
+    <value>Passwords must be at least {0} characters.</value>
+  </data>
+  <data name="Identity_WachtwoordUniekeTekens" xml:space="preserve">
+    <value>Passwords must use at least {0} different characters.</value>
+  </data>
+  <data name="Identity_WachtwoordNietAlfanumeriek" xml:space="preserve">
+    <value>Passwords must have at least one non alphanumeric character.</value>
+  </data>
+  <data name="Identity_WachtwoordCijfer" xml:space="preserve">
+    <value>Passwords must have at least one digit ('0'-'9').</value>
+  </data>
+  <data name="Identity_WachtwoordKleineLetter" xml:space="preserve">
+    <value>Passwords must have at least one lowercase ('a'-'z').</value>
+  </data>
+  <data name="Identity_WachtwoordHoofdletter" xml:space="preserve">
+    <value>Passwords must have at least one uppercase ('A'-'Z').</value>
+  </data>
+  <data name="Astro_Sun" xml:space="preserve">
+    <value>Sun</value>
+  </data>
+  <data name="Astro_Moon" xml:space="preserve">
+    <value>Moon</value>
+  </data>
+  <data name="Astro_Mercury" xml:space="preserve">
+    <value>Mercury</value>
+  </data>
+  <data name="Astro_Venus" xml:space="preserve">
+    <value>Venus</value>
+  </data>
+  <data name="Astro_Mars" xml:space="preserve">
+    <value>Mars</value>
+  </data>
+  <data name="Astro_Jupiter" xml:space="preserve">
+    <value>Jupiter</value>
+  </data>
+  <data name="Astro_Saturn" xml:space="preserve">
+    <value>Saturn</value>
+  </data>
+  <data name="Astro_Uranus" xml:space="preserve">
+    <value>Uranus</value>
+  </data>
+  <data name="Astro_Neptune" xml:space="preserve">
+    <value>Neptune</value>
+  </data>
+  <data name="Astro_Pluto" xml:space="preserve">
+    <value>Pluto</value>
+  </data>
+  <data name="Astro_Ascendant" xml:space="preserve">
+    <value>Ascendant</value>
+  </data>
+  <data name="Astro_Aries" xml:space="preserve">
+    <value>Aries</value>
+  </data>
+  <data name="Astro_Taurus" xml:space="preserve">
+    <value>Taurus</value>
+  </data>
+  <data name="Astro_Gemini" xml:space="preserve">
+    <value>Gemini</value>
+  </data>
+  <data name="Astro_Cancer" xml:space="preserve">
+    <value>Cancer</value>
+  </data>
+  <data name="Astro_Leo" xml:space="preserve">
+    <value>Leo</value>
+  </data>
+  <data name="Astro_Virgo" xml:space="preserve">
+    <value>Virgo</value>
+  </data>
+  <data name="Astro_Libra" xml:space="preserve">
+    <value>Libra</value>
+  </data>
+  <data name="Astro_Scorpio" xml:space="preserve">
+    <value>Scorpio</value>
+  </data>
+  <data name="Astro_Sagittarius" xml:space="preserve">
+    <value>Sagittarius</value>
+  </data>
+  <data name="Astro_Capricorn" xml:space="preserve">
+    <value>Capricorn</value>
+  </data>
+  <data name="Astro_Aquarius" xml:space="preserve">
+    <value>Aquarius</value>
+  </data>
+  <data name="Astro_Pisces" xml:space="preserve">
+    <value>Pisces</value>
+  </data>
+</root>

@@ -1,12 +1,12 @@
 @* Lege stapel: alle kandidaten zijn beoordeeld. *@
 
 <div class="card text-center p-5">
-    <p class="kicker mb-3">Dat was iedereen</p>
-    <h2>De stapel is leeg</h2>
+    <p class="kicker mb-3">@Localizer["StapelLeeg_Kicker"]</p>
+    <h2>@Localizer["StapelLeeg_Titel"]</h2>
     <p class="text-muted mb-4">
-        Je hebt alle profielen beoordeeld. Kom later terug, of bekijk je matches.
+        @Localizer["StapelLeeg_Tekst"]
     </p>
     <div>
-        <a class="btn btn-primary" asp-controller="Match" asp-action="Index">Naar mijn matches</a>
+        <a class="btn btn-primary" asp-controller="Match" asp-action="Index">@Localizer["StapelLeeg_NaarMatches"]</a>
     </div>
 </div>

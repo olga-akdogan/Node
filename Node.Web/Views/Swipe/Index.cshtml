@@ -3,11 +3,11 @@
    verlopen via AJAX zonder paginaherlaad. *@
 @model Node.Web.Models.Swiping.SwipeCardViewModel?
 @{
-    ViewData["Title"] = "Ontdek";
+    ViewData["Title"] = Localizer["Nav_Ontdek"];
 }
 
 <div class="deck mx-auto">
-    <p class="kicker text-center mb-4">Ontdek</p>
+    <p class="kicker text-center mb-4">@Localizer["Nav_Ontdek"]</p>
 
     @* Antiforgery-token voor de AJAX-POST naar Beoordeel. *@
     @Html.AntiForgeryToken()
@@ -25,11 +25,11 @@
 
     @* Matchmelding: verborgen tot er een wederzijdse like is. *@
     <div id="match-melding" class="match-overlay text-center d-none">
-        <p class="kicker mb-3">Wederzijds</p>
-        <h2>Een match</h2>
-        <p class="mb-4">Jullie horoscopen én jullie keuzes wijzen dezelfde kant op.</p>
-        <a id="match-chat-link" class="btn btn-hero me-3" href="#">Stuur een bericht</a>
-        <a href="#" id="verder-swipen" class="tekstlink">Verder swipen</a>
+        <p class="kicker mb-3">@Localizer["Swipe_MatchKicker"]</p>
+        <h2>@Localizer["Swipe_MatchTitel"]</h2>
+        <p class="mb-4">@Localizer["Swipe_MatchTekst"]</p>
+        <a id="match-chat-link" class="btn btn-hero me-3" href="#">@Localizer["Swipe_StuurBericht"]</a>
+        <a href="#" id="verder-swipen" class="tekstlink">@Localizer["Swipe_VerderSwipen"]</a>
     </div>
 </div>
 

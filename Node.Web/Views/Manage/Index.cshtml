@@ -1,14 +1,14 @@
 @* Gebruikersparametrisatie: eigen profielvelden aanpassen. *@
 @model Node.Web.Models.Account.ManageProfileViewModel
 @{
-    ViewData["Title"] = "Mijn profiel";
+    ViewData["Title"] = Localizer["ManageProfile_Title"];
 }
 
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6">
         <h1>@ViewData["Title"]</h1>
         <p class="text-muted">
-            Pas je je geboortegegevens aan? Dan wordt je horoscoop opnieuw berekend.
+            @Localizer["ManageProfile_Uitleg"]
         </p>
 
         <form asp-action="Index" method="post" enctype="multipart/form-data">
@@ -18,7 +18,7 @@
                 <label asp-for="ProfilePicture" class="form-label"></label>
                 @if (!string.IsNullOrEmpty(Model.HuidigeProfielFotoUrl))
                 {
-                    <img src="@Model.HuidigeProfielFotoUrl" alt="Huidige profielfoto" class="d-block mb-2 rounded" style="width: 120px; height: 120px; object-fit: cover;" />
+                    <img src="@Model.HuidigeProfielFotoUrl" alt="@Localizer["ManageProfile_HuidigeFotoAlt"]" class="d-block mb-2 rounded" style="width: 120px; height: 120px; object-fit: cover;" />
                 }
                 <input asp-for="ProfilePicture" class="form-control" type="file" accept="image/jpeg,image/png,image/webp" />
                 <span asp-validation-for="ProfilePicture" class="text-danger"></span>
@@ -55,8 +55,8 @@
                 <span asp-validation-for="BirthPlace" class="text-danger"></span>
             </div>
 
-            <button type="submit" class="btn btn-primary">Opslaan</button>
-            <a asp-action="ChangePassword" class="btn btn-outline-secondary">Wachtwoord wijzigen</a>
+            <button type="submit" class="btn btn-primary">@Localizer["ManageProfile_Opslaan"]</button>
+            <a asp-action="ChangePassword" class="btn btn-outline-secondary">@Localizer["ChangePassword_Title"]</a>
         </form>
     </div>
 </div>

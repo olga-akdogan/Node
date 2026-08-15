@@ -4,48 +4,48 @@ namespace Node.Web.Models.Account;
 
 /// <summary>
 /// Registratieformulier met de extra profielvelden van ApplicationUser.
-/// De teksten worden in de meertaligheidsfase naar resource-bestanden verplaatst.
+/// De teksten zelf komen uit de gedeelde resource-bestanden (meertaligheid).
 /// </summary>
 public class RegisterViewModel
 {
-    [Required(ErrorMessage = "E-mailadres is verplicht.")]
-    [EmailAddress(ErrorMessage = "Geef een geldig e-mailadres op.")]
-    [Display(Name = "E-mailadres")]
+    [Required(ErrorMessage = "Valid_EmailVerplicht")]
+    [EmailAddress(ErrorMessage = "Valid_EmailOngeldig")]
+    [Display(Name = "Veld_Email")]
     public string Email { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Wachtwoord is verplicht.")]
-    [StringLength(100, MinimumLength = 6, ErrorMessage = "Het wachtwoord moet tussen {2} en {1} tekens lang zijn.")]
+    [Required(ErrorMessage = "Valid_WachtwoordVerplicht")]
+    [StringLength(100, MinimumLength = 6, ErrorMessage = "Valid_WachtwoordLengte")]
     [DataType(DataType.Password)]
-    [Display(Name = "Wachtwoord")]
+    [Display(Name = "Veld_Wachtwoord")]
     public string Password { get; set; } = string.Empty;
 
     [DataType(DataType.Password)]
-    [Display(Name = "Bevestig wachtwoord")]
-    [Compare(nameof(Password), ErrorMessage = "De wachtwoorden komen niet overeen.")]
+    [Display(Name = "Veld_BevestigWachtwoord")]
+    [Compare(nameof(Password), ErrorMessage = "Valid_WachtwoordenKomenNietOvereen")]
     public string ConfirmPassword { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Weergavenaam is verplicht.")]
-    [MaxLength(80, ErrorMessage = "De weergavenaam mag maximaal {1} tekens lang zijn.")]
-    [Display(Name = "Weergavenaam")]
+    [Required(ErrorMessage = "Valid_WeergavenaamVerplicht")]
+    [MaxLength(80, ErrorMessage = "Valid_WeergavenaamMax")]
+    [Display(Name = "Veld_Weergavenaam")]
     public string DisplayName { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Geboortedatum is verplicht.")]
+    [Required(ErrorMessage = "Valid_GeboortedatumVerplicht")]
     [DataType(DataType.Date)]
-    [Display(Name = "Geboortedatum")]
+    [Display(Name = "Veld_Geboortedatum")]
     public DateOnly? BirthDate { get; set; }
 
-    [Required(ErrorMessage = "Geboortetijd is verplicht voor een correcte horoscoop.")]
+    [Required(ErrorMessage = "Valid_GeboortetijdVerplicht")]
     [DataType(DataType.Time)]
-    [Display(Name = "Geboortetijd")]
+    [Display(Name = "Veld_Geboortetijd")]
     public TimeOnly? BirthTime { get; set; }
 
-    [Required(ErrorMessage = "Geboorteplaats is verplicht.")]
-    [MaxLength(150, ErrorMessage = "De geboorteplaats mag maximaal {1} tekens lang zijn.")]
-    [Display(Name = "Geboorteplaats")]
+    [Required(ErrorMessage = "Valid_GeboorteplaatsVerplicht")]
+    [MaxLength(150, ErrorMessage = "Valid_GeboorteplaatsMax")]
+    [Display(Name = "Veld_Geboorteplaats")]
     public string BirthPlace { get; set; } = string.Empty;
 
-    [MaxLength(1000, ErrorMessage = "De bio mag maximaal {1} tekens lang zijn.")]
+    [MaxLength(1000, ErrorMessage = "Valid_BioMax")]
     [DataType(DataType.MultilineText)]
-    [Display(Name = "Bio (optioneel)")]
+    [Display(Name = "Veld_BioOptioneel")]
     public string? Bio { get; set; }
 }

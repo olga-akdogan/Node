@@ -12,22 +12,21 @@
 
 <section class="hero-node">
     <div class="container">
-        <p class="kicker mb-4">Astrologische dating</p>
-        <h1 class="mb-4">Sommige connecties <em>vinden jou</em>.</h1>
+        <p class="kicker mb-4">@Localizer["Home_Kicker"]</p>
+        <h1 class="mb-4">@Html.Raw(Localizer["Home_Titel"])</h1>
         <p class="lead mb-5">
-            Node vertaalt je exacte geboortemoment naar een levende horoscoop —
-            en matcht je met de mensen die erbij passen.
+            @Localizer["Home_Lead"]
         </p>
         <div class="d-flex flex-wrap gap-3 justify-content-center">
             @if (SignInManager.IsSignedIn(User))
             {
-                <a class="btn btn-hero btn-lg" asp-controller="Swipe" asp-action="Index">Ontdek profielen</a>
-                <a class="btn btn-hero-omlijnd btn-lg" asp-controller="Match" asp-action="Index">Mijn matches</a>
+                <a class="btn btn-hero btn-lg" asp-controller="Swipe" asp-action="Index">@Localizer["Nav_Ontdek"]</a>
+                <a class="btn btn-hero-omlijnd btn-lg" asp-controller="Match" asp-action="Index">@Localizer["Match_Kicker"]</a>
             }
             else
             {
-                <a class="btn btn-hero btn-lg" asp-controller="Account" asp-action="Register">Maak je horoscoop &mdash; gratis</a>
-                <a class="btn btn-hero-omlijnd btn-lg" asp-controller="Home" asp-action="HowItWorks">Hoe het werkt</a>
+                <a class="btn btn-hero btn-lg" asp-controller="Account" asp-action="Register">@Localizer["Home_CtaMaakHoroscoop"]</a>
+                <a class="btn btn-hero-omlijnd btn-lg" asp-controller="Home" asp-action="HowItWorks">@Localizer["Nav_HoeHetWerkt"]</a>
             }
         </div>
     </div>
@@ -35,36 +34,33 @@
 
 <section class="sectie">
     <div class="container">
-        <p class="kicker mb-3">Wat Node voor je leest</p>
-        <h2 class="mb-5" style="font-size: clamp(2rem, 3.4vw, 2.9rem);">Drie lenzen op dezelfde hemel</h2>
+        <p class="kicker mb-3">@Localizer["Home_SectieKicker"]</p>
+        <h2 class="mb-5" style="font-size: clamp(2rem, 3.4vw, 2.9rem);">@Localizer["Home_SectieTitel"]</h2>
         <div class="row g-4">
             <div class="col-md-4">
                 <div class="kaart-veer">
                     <div class="glyph">&#9737;</div>
-                    <h3>Jouw horoscoop</h3>
+                    <h3>@Localizer["Home_KaartHoroscoopTitel"]</h3>
                     <p>
-                        Je exacte geboortemoment, ontcijferd positie per positie —
-                        van zonneteken tot ascendant, in taal die je echt kan gebruiken.
+                        @Localizer["Home_KaartHoroscoopTekst"]
                     </p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="kaart-veer">
                     <div class="glyph glyph-salie">&#9740;</div>
-                    <h3>Synastrie</h3>
+                    <h3>@Localizer["Home_KaartSynastrieTitel"]</h3>
                     <p>
-                        We leggen twee horoscopen over elkaar en zien waar ze zoemen,
-                        waar ze schuren, en waarom. Dat wordt jullie match-score.
+                        @Localizer["Home_KaartSynastrieTekst"]
                     </p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="kaart-veer">
                     <div class="glyph">&#9789;</div>
-                    <h3>Het gesprek</h3>
+                    <h3>@Localizer["Home_KaartGesprekTitel"]</h3>
                     <p>
-                        Klikt het, dan opent er een gesprek. De sterren brengen jullie
-                        samen &mdash; de rest is aan jullie.
+                        @Localizer["Home_KaartGesprekTekst"]
                     </p>
                 </div>
             </div>
@@ -76,13 +72,11 @@
     <div class="container">
         <div class="row g-5 align-items-center">
             <div class="col-lg-6">
-                <h2 class="mb-4">Sommige mensen zijn <em>in je verhaal geschreven</em>.</h2>
+                <h2 class="mb-4">@Html.Raw(Localizer["Home_BandTitel"])</h2>
                 <p class="mb-4">
-                    Elke match in Node vertelt je uit welke posities de score komt,
-                    zodat je de hemel leert lezen terwijl je zoekt — geen vage
-                    waarzeggerij, wel de juiste mensen op het juiste moment.
+                    @Localizer["Home_BandTekst"]
                 </p>
-                <a class="band-link" asp-controller="Home" asp-action="HowItWorks">Hoe het werkt &rarr;</a>
+                <a class="band-link" asp-controller="Home" asp-action="HowItWorks">@Localizer["Home_BandLink"]</a>
             </div>
             <div class="col-lg-6 text-center">
                 @* Decoratief horoscoopwiel (zelfde geometrie als de echte

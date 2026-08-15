@@ -31,7 +31,10 @@ public class ChartService : IChartService
             return null; // Nog geen horoscoop berekend (bv. vers account).
         }
 
-        var cultuur = CultureInfo.GetCultureInfo("nl-BE");
+        // Datumnotatie volgt de taal die de gebruiker koos (taalkiezer), niet
+        // een vast Belgisch-Nederlandse cultuur — zo blijft de pagina ook
+        // qua datumformaat consistent in het Engels of Frans.
+        var cultuur = CultureInfo.CurrentUICulture;
 
         return new HoroscoopViewModel
         {

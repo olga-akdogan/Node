@@ -1,10 +1,12 @@
 using Anthropic;
 using GetStream;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Node.Data.Data;
 using Node.Data.Models;
 using Node.Data.Services;
+using Node.Web.Resources;
 using Node.Web.Services;
 using Node.Web.Services.Interfaces;
 
@@ -25,7 +27,8 @@ builder.Services
         options.SignIn.RequireConfirmedEmail = true;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders(); // Nodig voor e-mailbevestigingstokens.
+    .AddDefaultTokenProviders() // Nodig voor e-mailbevestigingstokens.
+    .AddErrorDescriber<LokaleIdentityErrorDescriber>(); // Meertalige Identity-foutmeldingen.
 
 
 builder.Services.ConfigureApplicationCookie(options =>
@@ -70,7 +73,30 @@ builder.Services.AddHttpClient<IGeocodingService, GeocodingService>(client =>
     client.DefaultRequestHeaders.UserAgent.ParseAdd("Node-astrologie-datingapp/1.0 (examenproject EhB)");
 });
 
-builder.Services.AddControllersWithViews();
+// Meertaligheid: nl en en volledig vertaald, fr grotendeels; nl is de standaardtaal.
+// Geen ResourcesPath instellen: SharedResource.cs staat zelf al in de map
+// Resources/, en de .resx-bestanden staan ernaast in diezelfde map — dat is
+// exact de standaardconventie (resx-pad volgt de naamruimte van de klasse).
+// ResourcesPath = "Resources" zou hier een dubbele Resources/Resources/-map
+// verwachten en de vertalingen dus niet meer vinden.
+builder.Services.AddLocalization();
+
+builder.Services
+    .AddControllersWithViews()
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization(options =>
+    {
+        // Alle validatieattributen ([Required], [Display], ...) halen hun
+        // vertaalde tekst uit dezelfde gedeelde resource-bestanden, in plaats
+        // van een apart resx-bestand per ViewModel te vereisen.
+        options.DataAnnotationLocalizerProvider = (_, factory) => factory.Create(typeof(SharedResource));
+    });
+
+var ondersteundeTalen = new[] { "nl", "en", "fr" };
+var localisatieOpties = new RequestLocalizationOptions()
+    .SetDefaultCulture("nl")
+    .AddSupportedCultures(ondersteundeTalen)
+    .AddSupportedUICultures(ondersteundeTalen);
 
 var app = builder.Build();
 
@@ -88,6 +114,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Cultuur van het verzoek: eerst het cookie dat de taalkiezer zet, anders
+// (bij een eerste bezoek) de taalvoorkeur van de browser, met nl als terugval.
+app.UseRequestLocalization(localisatieOpties);
+
 app.UseRouting();
 
 

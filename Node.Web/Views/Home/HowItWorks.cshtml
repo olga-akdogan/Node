@@ -3,70 +3,62 @@
 @using Node.Data.Models
 @inject SignInManager<ApplicationUser> SignInManager
 @{
-    ViewData["Title"] = "Hoe het werkt";
+    ViewData["Title"] = Localizer["Nav_HoeHetWerkt"];
 }
 
 <div class="mx-auto" style="max-width: 40rem;">
-    <p class="kicker text-center mb-2">Hoe het werkt</p>
-    <h1 class="text-center mb-5">De juiste mensen verschijnen<br />op het juiste moment</h1>
+    <p class="kicker text-center mb-2">@Localizer["Nav_HoeHetWerkt"]</p>
+    <h1 class="text-center mb-5">@Html.Raw(Localizer["Hiw_Titel"])</h1>
 
     <section class="rubriek mb-5 pb-2">
         <span class="rubriek-nummer">01</span>
-        <p class="kicker mb-3">We leren je kennen</p>
-        <h2>Meer dan een profiel</h2>
+        <p class="kicker mb-3">@Localizer["Hiw_S1Kicker"]</p>
+        <h2>@Localizer["Hiw_S1Titel"]</h2>
         <p class="text-muted">
-            Je reis begint met een gesprek. Je persoonlijke Node-agent leert wie
-            je bent, wat je waardevol vindt en naar welke connectie je echt op
-            zoek bent.
+            @Localizer["Hiw_S1Tekst1"]
         </p>
         <p class="text-muted mb-0">
-            Samen met je geboortehoroscoop vormt dat een volledig beeld van jou
-            &mdash; niet alleen van je voorkeuren.
+            @Localizer["Hiw_S1Tekst2"]
         </p>
     </section>
 
     <section class="rubriek mb-5 pb-2">
         <span class="rubriek-nummer">02</span>
-        <p class="kicker mb-3">Wij doen het zoekwerk</p>
-        <h2>Geen eindeloos scrollen</h2>
+        <p class="kicker mb-3">@Localizer["Hiw_S2Kicker"]</p>
+        <h2>@Localizer["Hiw_S2Titel"]</h2>
         <p class="text-muted">
-            Waar andere apps je door honderden profielen laten bladeren, werkt
-            Node anders. Onze matching combineert astrologische compatibiliteit
-            met het inzicht van je Node-agent, en stelt je zorgvuldig voor aan
-            mensen die echt bij je energie en intenties passen.
+            @Localizer["Hiw_S2Tekst"]
         </p>
         <p class="pull-quote mb-0">
-            Jij zoekt geen matches.<br />Zij vinden jou.
+            @Html.Raw(Localizer["Hiw_S2Quote"])
         </p>
     </section>
 
     <section class="rubriek mb-5 pb-2">
         <span class="rubriek-nummer">03</span>
-        <p class="kicker mb-3">Als het goed voelt</p>
-        <h2>Introducties met intentie</h2>
+        <p class="kicker mb-3">@Localizer["Hiw_S3Kicker"]</p>
+        <h2>@Localizer["Hiw_S3Titel"]</h2>
         <p class="text-muted">
-            Wanneer er een veelbelovende connectie verschijnt, krijgen jullie
-            allebei een persoonlijke introductie.
+            @Localizer["Hiw_S3Tekst1"]
         </p>
         <p class="text-muted">
-            Geen algoritmes die op je aandacht jagen.
-            Geen race om matches te verzamelen.
+            @Localizer["Hiw_S3Tekst2"]
         </p>
         <p class="pull-quote mb-0">
-            Eén betekenisvol gesprek tegelijk.
+            @Localizer["Hiw_S3Quote"]
         </p>
     </section>
 </div>
 
 <section class="hero-node blok-klein text-center">
     <p class="kicker mb-3">Node</p>
-    <h2 class="hero-titel-klein">Sommige mensen zijn<br />in je verhaal geschreven</h2>
+    <h2 class="hero-titel-klein">@Html.Raw(Localizer["Hiw_CtaTitel"])</h2>
     @if (!SignInManager.IsSignedIn(User))
     {
-        <a class="btn btn-hero mt-4" asp-controller="Account" asp-action="Register">Begin je verhaal</a>
+        <a class="btn btn-hero mt-4" asp-controller="Account" asp-action="Register">@Localizer["Hiw_CtaBeginVerhaal"]</a>
     }
     else
     {
-        <a class="btn btn-hero mt-4" asp-controller="Swipe" asp-action="Index">Ontdek profielen</a>
+        <a class="btn btn-hero mt-4" asp-controller="Swipe" asp-action="Index">@Localizer["Nav_Ontdek"]</a>
     }
 </section>

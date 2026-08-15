@@ -5,16 +5,16 @@ namespace Node.Web.Models.Account;
 /// <summary>Inlogformulier.</summary>
 public class LoginViewModel
 {
-    [Required(ErrorMessage = "E-mailadres is verplicht.")]
-    [EmailAddress(ErrorMessage = "Geef een geldig e-mailadres op.")]
-    [Display(Name = "E-mailadres")]
+    [Required(ErrorMessage = "Valid_EmailVerplicht")]
+    [EmailAddress(ErrorMessage = "Valid_EmailOngeldig")]
+    [Display(Name = "Veld_Email")]
     public string Email { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Wachtwoord is verplicht.")]
+    [Required(ErrorMessage = "Valid_WachtwoordVerplicht")]
     [DataType(DataType.Password)]
-    [Display(Name = "Wachtwoord")]
+    [Display(Name = "Veld_Wachtwoord")]
     public string Password { get; set; } = string.Empty;
 
-    [Display(Name = "Aangemeld blijven")]
+    [Display(Name = "Veld_AangemeldBlijven")]
     public bool RememberMe { get; set; }
 }

@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "E-mailbevestiging";
+    ViewData["Title"] = Localizer["ConfirmEmail_Title"];
     var gelukt = ViewData["Gelukt"] as bool? ?? false;
 }
 
@@ -8,14 +8,13 @@
         <h1>@ViewData["Title"]</h1>
         @if (gelukt)
         {
-            <p>Je e-mailadres is bevestigd. Je kan nu inloggen.</p>
-            <a asp-action="Login" class="btn btn-primary">Naar inloggen</a>
+            <p>@Localizer["ConfirmEmail_Succes"]</p>
+            <a asp-action="Login" class="btn btn-primary">@Localizer["ConfirmEmail_NaarInloggen"]</a>
         }
         else
         {
             <p class="text-danger">
-                De bevestigingslink is ongeldig of verlopen. Registreer opnieuw of
-                neem contact op met de beheerder.
+                @Localizer["ConfirmEmail_Fout"]
             </p>
         }
     </div>

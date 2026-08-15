@@ -2,21 +2,21 @@
    het laatste bericht en het aantal ongelezen berichten. *@
 @model IReadOnlyList<Node.Web.Models.Matches.MatchOverviewViewModel>
 @{
-    ViewData["Title"] = "Matches";
+    ViewData["Title"] = Localizer["Match_Titel"];
 }
 
 <div class="mx-auto" style="max-width: 44rem;">
-    <p class="kicker mb-1">Jouw matches</p>
-    <h1 class="mb-4">Matches</h1>
+    <p class="kicker mb-1">@Localizer["Match_Kicker"]</p>
+    <h1 class="mb-4">@Localizer["Match_Titel"]</h1>
 
     @if (Model.Count == 0)
     {
         <div class="card text-center p-5">
-            <p class="kicker mb-3">Nog even geduld</p>
-            <h2>Nog geen matches</h2>
-            <p class="text-muted mb-4">Begin met ontdekken — bij een wederzijdse like verschijnt de match hier.</p>
+            <p class="kicker mb-3">@Localizer["NGH_Kicker"]</p>
+            <h2>@Localizer["Match_GeenMatches_Titel"]</h2>
+            <p class="text-muted mb-4">@Localizer["Match_GeenMatches_Tekst"]</p>
             <div>
-                <a class="btn btn-primary" asp-controller="Swipe" asp-action="Index">Ontdek profielen</a>
+                <a class="btn btn-primary" asp-controller="Swipe" asp-action="Index">@Localizer["Match_OntdekProfielen"]</a>
             </div>
         </div>
     }
@@ -29,7 +29,7 @@
                    asp-action="Chat" asp-route-id="@match.MatchId">
                     @if (!string.IsNullOrEmpty(match.OtherProfilePictureUrl))
                     {
-                        <img src="@match.OtherProfilePictureUrl" alt="Profielfoto van @match.OtherDisplayName" class="avatar-cirkel" />
+                        <img src="@match.OtherProfilePictureUrl" alt="@match.OtherDisplayName" class="avatar-cirkel" />
                     }
                     else
                     {
@@ -38,12 +38,12 @@
                     <span class="flex-grow-1 min-w-0">
                         <span class="d-block match-naam">@match.OtherDisplayName</span>
                         <span class="d-block text-muted small text-truncate">
-                            @(match.LastMessagePreview ?? "Nog geen berichten — zeg hallo.")
+                            @(match.LastMessagePreview ?? Localizer["Match_GeenBerichten"])
                         </span>
                     </span>
                     @if (match.UnreadCount > 0)
                     {
-                        <span class="ongelezen-stip" title="@match.UnreadCount ongelezen">@match.UnreadCount</span>
+                        <span class="ongelezen-stip" title="@string.Format(Localizer["Match_OngelezenTitle"], match.UnreadCount)">@match.UnreadCount</span>
                     }
                     <span class="kicker">@match.CompatibilityScore</span>
                 </a>

@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Localization;
 using Node.Data.Data;
 using Node.Data.Models;
 using Node.Data.Services;
 using Node.Web.Models.Account;
+using Node.Web.Resources;
 using Node.Web.Services.Interfaces;
 
 namespace Node.Web.Controllers;
@@ -23,6 +25,7 @@ public class AccountController : Controller
     private readonly IGeocodingService _geocodingService;
     private readonly INatalChartCalculator _natalChartCalculator;
     private readonly ApplicationDbContext _context;
+    private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly ILogger<AccountController> _logger;
 
     public AccountController(
@@ -32,6 +35,7 @@ public class AccountController : Controller
         IGeocodingService geocodingService,
         INatalChartCalculator natalChartCalculator,
         ApplicationDbContext context,
+        IStringLocalizer<SharedResource> localizer,
         ILogger<AccountController> logger)
     {
         _userManager = userManager;
@@ -40,6 +44,7 @@ public class AccountController : Controller
         _geocodingService = geocodingService;
         _natalChartCalculator = natalChartCalculator;
         _context = context;
+        _localizer = localizer;
         _logger = logger;
     }
 
@@ -62,8 +67,7 @@ public class AccountController : Controller
         var coordinaten = await _geocodingService.ZoekCoordinatenAsync(model.BirthPlace);
         if (coordinaten is null)
         {
-            ModelState.AddModelError(nameof(model.BirthPlace),
-                "Deze geboorteplaats werd niet gevonden. Probeer een preciezere schrijfwijze (bv. \"Antwerpen, België\").");
+            ModelState.AddModelError(nameof(model.BirthPlace), _localizer["Fout_GeboorteplaatsNietGevonden"]);
             return View(model);
         }
 
@@ -161,7 +165,7 @@ public class AccountController : Controller
         if (gebruiker is not null && gebruiker.IsBlocked)
         {
             _logger.LogWarning("Geblokkeerde gebruiker probeerde in te loggen: {Email}.", model.Email);
-            ModelState.AddModelError(string.Empty, "Dit account is geblokkeerd door een beheerder.");
+            ModelState.AddModelError(string.Empty, _localizer["Fout_AccountGeblokkeerd"]);
             return View(model);
         }
 
@@ -177,18 +181,18 @@ public class AccountController : Controller
         if (resultaat.IsNotAllowed)
         {
             // E-mail nog niet bevestigd: inloggen is nog niet toegestaan.
-            ModelState.AddModelError(string.Empty, "Bevestig eerst je e-mailadres via de link in je mailbox.");
+            ModelState.AddModelError(string.Empty, _localizer["Fout_EmailNietBevestigd"]);
             return View(model);
         }
 
         if (resultaat.IsLockedOut)
         {
             _logger.LogWarning("Account tijdelijk vergrendeld na mislukte pogingen: {Email}.", model.Email);
-            ModelState.AddModelError(string.Empty, "Te veel mislukte pogingen. Probeer het later opnieuw.");
+            ModelState.AddModelError(string.Empty, _localizer["Fout_TeVeelPogingen"]);
             return View(model);
         }
 
-        ModelState.AddModelError(string.Empty, "Ongeldige inloggegevens.");
+        ModelState.AddModelError(string.Empty, _localizer["Fout_OngeldigeInloggegevens"]);
         return View(model);
     }
 

@@ -14,24 +14,24 @@
             <div class="d-flex align-items-baseline gap-3 border-top border-bottom py-3 my-3">
                 <span class="score-cijfer">@(Model.CompatibilityScore?.ToString() ?? "—")</span>
                 <div>
-                    <p class="kicker mb-1">Match-score</p>
+                    <p class="kicker mb-1">@Localizer["SwipeKaart_MatchScore"]</p>
                     <p class="text-muted small mb-0">
-                        @(Model.CompatibilityExplanation ?? "Score volgt zodra beide horoscopen berekend zijn.")
+                        @(Model.CompatibilityExplanation ?? Localizer["SwipeKaart_ScoreVolgt"])
                     </p>
                 </div>
             </div>
 
             <div class="row text-center mb-3">
                 <div class="col-4">
-                    <p class="kicker mb-1">Zon</p>
+                    <p class="kicker mb-1">@Localizer["SwipeKaart_Zon"]</p>
                     <p class="mb-0">@(Model.SunSign ?? "—")</p>
                 </div>
                 <div class="col-4">
-                    <p class="kicker mb-1">Maan</p>
+                    <p class="kicker mb-1">@Localizer["SwipeKaart_Maan"]</p>
                     <p class="mb-0">@(Model.MoonSign ?? "—")</p>
                 </div>
                 <div class="col-4">
-                    <p class="kicker mb-1">Ascendant</p>
+                    <p class="kicker mb-1">@Localizer["SwipeKaart_Ascendant"]</p>
                     <p class="mb-0">@(Model.AscendantSign ?? "—")</p>
                 </div>
             </div>
@@ -45,7 +45,7 @@
 
     @* Pas- en like-knop onder de kaart, zoals bij Tinder. *@
     <div class="d-flex justify-content-center gap-4 mt-4">
-        <button type="button" class="actieknop actieknop-pass" title="Pas" aria-label="Pas">&times;</button>
-        <button type="button" class="actieknop actieknop-like" title="Like" aria-label="Like">&hearts;</button>
+        <button type="button" class="actieknop actieknop-pass" title="@Localizer["SwipeKaart_Pas"]" aria-label="@Localizer["SwipeKaart_Pas"]">&times;</button>
+        <button type="button" class="actieknop actieknop-like" title="@Localizer["SwipeKaart_Like"]" aria-label="@Localizer["SwipeKaart_Like"]">&hearts;</button>
     </div>
 </div>

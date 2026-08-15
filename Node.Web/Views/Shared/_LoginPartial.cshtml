@@ -10,23 +10,23 @@
     {
         var gebruiker = await UserManager.GetUserAsync(User);
         <li class="nav-item">
-            <a class="nav-link" asp-controller="Manage" asp-action="Index" title="Instellingen">
+            <a class="nav-link" asp-controller="Manage" asp-action="Index" title="@Localizer["Nav_Instellingen"]">
                 @(gebruiker?.DisplayName ?? User.Identity?.Name)
             </a>
         </li>
         <li class="nav-item">
             <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post">
-                <button type="submit" class="nav-link btn btn-link">Afmelden</button>
+                <button type="submit" class="nav-link btn btn-link">@Localizer["Nav_Afmelden"]</button>
             </form>
         </li>
     }
     else
     {
         <li class="nav-item me-sm-3">
-            <a class="nav-link" asp-controller="Account" asp-action="Login">Inloggen</a>
+            <a class="nav-link" asp-controller="Account" asp-action="Login">@Localizer["Nav_Inloggen"]</a>
         </li>
         <li class="nav-item">
-            <a class="btn btn-accent" asp-controller="Account" asp-action="Register">Maak je horoscoop</a>
+            <a class="btn btn-accent" asp-controller="Account" asp-action="Register">@Localizer["Nav_MaakJeHoroscoop"]</a>
         </li>
     }
 </ul>

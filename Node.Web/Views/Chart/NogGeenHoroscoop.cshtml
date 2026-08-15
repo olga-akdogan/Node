@@ -1,16 +1,15 @@
 @* Lege toestand: de horoscoop van deze gebruiker is nog niet berekend. *@
 @{
-    ViewData["Title"] = "Mijn horoscoop";
+    ViewData["Title"] = Localizer["Nav_MijnHoroscoop"];
 }
 
 <div class="mx-auto text-center card p-5" style="max-width: 34rem;">
-    <p class="kicker mb-3">Nog even geduld</p>
-    <h1 style="font-size: 2rem;">Je horoscoop wordt nog berekend</h1>
+    <p class="kicker mb-3">@Localizer["NGH_Kicker"]</p>
+    <h1 style="font-size: 2rem;">@Localizer["NGH_Titel"]</h1>
     <p class="text-muted mb-4">
-        Zodra je geboortegegevens compleet zijn, verschijnt hier je volledige
-        geboortehoroscoop met wiel en plaatsingen.
+        @Localizer["NGH_Tekst"]
     </p>
     <div>
-        <a class="btn btn-primary" asp-controller="Manage" asp-action="Index">Controleer mijn geboortegegevens</a>
+        <a class="btn btn-primary" asp-controller="Manage" asp-action="Index">@Localizer["NGH_Knop"]</a>
     </div>
 </div>

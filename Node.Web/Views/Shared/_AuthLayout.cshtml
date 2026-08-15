@@ -2,7 +2,7 @@
    een donker paneel links en het formulier rechts — zonder navigatiebalk
    en voettekst. *@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,15 +17,19 @@
     <div class="auth-scherm">
         <div class="auth-paneel-donker">
             <a class="logo-woordmerk" asp-controller="Home" asp-action="Index">n<span class="logo-o"></span>de</a>
-            <div class="auth-citaat">Begin waar de hemel stond toen jij begon.</div>
-            <div class="auth-privacyregel">Je gegevens blijven van jou &mdash; altijd.</div>
+            <div class="auth-citaat">@Localizer["Auth_Citaat"]</div>
+            <div class="auth-privacyregel">@Localizer["Auth_Privacyregel"]</div>
         </div>
         <div class="auth-paneel-vorm">
+            <div class="d-flex justify-content-end mb-2">
+                <partial name="_TaalKiezer" />
+            </div>
             <main role="main" class="auth-vorm">
                 @RenderBody()
             </main>
         </div>
     </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)

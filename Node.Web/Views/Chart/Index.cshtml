@@ -1,8 +1,7 @@
-
 @using Node.Web.Models.Chart
 @model HoroscoopViewModel
 @{
-    ViewData["Title"] = "Mijn horoscoop";
+    ViewData["Title"] = Localizer["Nav_MijnHoroscoop"];
     ViewData["VolleBreedte"] = true;
     var inv = System.Globalization.CultureInfo.InvariantCulture;
 }
@@ -11,14 +10,14 @@
     <div class="container d-flex flex-wrap align-items-center justify-content-between gap-3">
         <div>
             <div class="broodkruimel mb-1">
-                <a asp-controller="Home" asp-action="Index">&larr; Home</a>
+                <a asp-controller="Home" asp-action="Index">&larr; @Localizer["Chart_TerugHome"]</a>
             </div>
             <div class="d-flex flex-wrap align-items-baseline gap-3">
-                <h1>@Model.DisplayName &mdash; Geboortehoroscoop</h1>
+                <h1>@Model.DisplayName &mdash; @Localizer["Chart_GeboortehoroscoopTitel"]</h1>
                 <span class="text-muted" style="font-weight: 300; font-size: 0.9rem;">@Model.GeboorteInfo</span>
             </div>
         </div>
-        <a class="btn btn-outline-secondary" asp-controller="Manage" asp-action="Index">Geboortegegevens bewerken</a>
+        <a class="btn btn-outline-secondary" asp-controller="Manage" asp-action="Index">@Localizer["Chart_GeboortegegevensBewerken"]</a>
     </div>
 </div>
 
@@ -65,35 +64,35 @@
                     @Html.Raw("<text x=\"240\" y=\"246\" text-anchor=\"middle\" fill=\"#7A8683\" font-size=\"12\" font-family=\"Jost, sans-serif\" letter-spacing=\"2\">NATAL</text>")
                 </svg>
                 <div class="text-muted mt-3" style="font-size: 0.85rem; font-weight: 300;">
-                    Hele-teken-huizen &middot; Tropische dierenriem
+                    @Localizer["Chart_HuizenCaption"]
                 </div>
             </div>
         </div>
         <div class="col-lg-6 d-flex flex-column gap-4">
             <div class="d-flex flex-wrap gap-2">
-                <span class="chip-navy"><span class="glyph">☉</span> Zon &middot; @AstroWeergave.Naam(Model.SunSign)</span>
-                <span class="chip-navy"><span class="glyph">☽</span> Maan &middot; @AstroWeergave.Naam(Model.MoonSign)</span>
-                <span class="chip-navy"><span class="glyph">↑</span> Ascendant &middot; @AstroWeergave.Naam(Model.AscendantSign)</span>
+                <span class="chip-navy"><span class="glyph">☉</span> @Localizer["SwipeKaart_Zon"] &middot; @AstroWeergave.Naam(Model.SunSign, Localizer)</span>
+                <span class="chip-navy"><span class="glyph">☽</span> @Localizer["SwipeKaart_Maan"] &middot; @AstroWeergave.Naam(Model.MoonSign, Localizer)</span>
+                <span class="chip-navy"><span class="glyph">↑</span> @Localizer["SwipeKaart_Ascendant"] &middot; @AstroWeergave.Naam(Model.AscendantSign, Localizer)</span>
             </div>
 
             <div class="card p-4">
-                <p class="kicker mb-3">Plaatsingen</p>
+                <p class="kicker mb-3">@Localizer["Chart_Plaatsingen"]</p>
                 <div class="tabel-plaatsingen">
                     <div class="rij-kop">
-                        <div>Hemellichaam</div><div>Teken</div><div>Huis</div><div class="text-end">Graad</div>
+                        <div>@Localizer["Chart_Hemellichaam"]</div><div>@Localizer["Chart_Teken"]</div><div>@Localizer["Chart_Huis"]</div><div class="text-end">@Localizer["Chart_Graad"]</div>
                     </div>
                     @foreach (var plaatsing in Model.Placements)
                     {
                         <div class="rij">
                             <div class="d-flex align-items-center gap-2">
                                 <span class="glyph-planeet">@AstroWeergave.Glyph(plaatsing.Body)</span>
-                                @AstroWeergave.Naam(plaatsing.Body)
+                                @AstroWeergave.Naam(plaatsing.Body, Localizer)
                             </div>
                             <div class="d-flex align-items-center gap-2">
                                 <span class="glyph-teken">@AstroWeergave.Glyph(plaatsing.Sign)</span>
-                                @AstroWeergave.Naam(plaatsing.Sign)
+                                @AstroWeergave.Naam(plaatsing.Sign, Localizer)
                             </div>
-                            <div class="text-muted">@(plaatsing.Huis)e</div>
+                            <div class="text-muted">@AstroWeergave.HuisOrdinaal(plaatsing.Huis)</div>
                             <div class="text-end text-muted" style="font-weight: 300;">@plaatsing.Graad</div>
                         </div>
                     }
@@ -101,7 +100,7 @@
             </div>
 
             <div class="kaart-signatuur">
-                <p class="kicker mb-2">Signatuur</p>
+                <p class="kicker mb-2">@Localizer["Chart_Signatuur"]</p>
                 <p><em>@Model.Signatuur</em></p>
             </div>
         </div>

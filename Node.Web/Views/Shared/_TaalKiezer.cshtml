@@ -1,0 +1,14 @@
+@* Taalkiezer: post naar CultuurController.Wijzig en komt terug op dezelfde pagina.
+   Staat los van de Localizer, want taalnamen worden altijd in hun eigen taal getoond. *@
+@{
+    var huidigeUrl = Context.Request.Path + Context.Request.QueryString;
+    var huidigeTaal = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+}
+<form asp-controller="Cultuur" asp-action="Wijzig" method="post" class="taal-kiezer d-flex align-items-center gap-1">
+    <input type="hidden" name="terugUrl" value="@huidigeUrl" />
+    <button type="submit" name="cultuur" value="nl" class="taal-knop @(huidigeTaal == "nl" ? "taal-actief" : "")">NL</button>
+    <span class="taal-scheiding">&middot;</span>
+    <button type="submit" name="cultuur" value="en" class="taal-knop @(huidigeTaal == "en" ? "taal-actief" : "")">EN</button>
+    <span class="taal-scheiding">&middot;</span>
+    <button type="submit" name="cultuur" value="fr" class="taal-knop @(huidigeTaal == "fr" ? "taal-actief" : "")">FR</button>
+</form>

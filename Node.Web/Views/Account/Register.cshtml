@@ -1,13 +1,13 @@
 
 @model Node.Web.Models.Account.RegisterViewModel
 @{
-    ViewData["Title"] = "Account aanmaken";
+    ViewData["Title"] = Localizer["Nav_MaakJeHoroscoop"];
     Layout = "_AuthLayout";
 }
 
 <div class="auth-tabs">
-    <a asp-action="Login">Inloggen</a>
-    <span class="auth-tab-actief">Account aanmaken</span>
+    <a asp-action="Login">@Localizer["Nav_Inloggen"]</a>
+    <span class="auth-tab-actief">@Localizer["Login_TabAccountAanmaken"]</span>
 </div>
 
 <form asp-action="Register" method="post">
@@ -53,11 +53,11 @@
 
     <div class="mb-3">
         <label asp-for="BirthPlace" class="form-label"></label>
-        <input asp-for="BirthPlace" class="form-control" placeholder="bv. Antwerpen, België" />
+        <input asp-for="BirthPlace" class="form-control" placeholder="@Localizer["Register_PlaceholderGeboorteplaats"]" />
         <span asp-validation-for="BirthPlace" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-primary w-100">Maak je horoscoop</button>
+    <button type="submit" class="btn btn-primary w-100">@Localizer["Nav_MaakJeHoroscoop"]</button>
 </form>
 
 @section Scripts {

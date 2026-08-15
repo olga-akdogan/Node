@@ -2,10 +2,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Node.Data.Data;
 using Node.Data.Models;
 using Node.Data.Services;
 using Node.Web.Models.Account;
+using Node.Web.Resources;
 using Node.Web.Services.Interfaces;
 
 namespace Node.Web.Controllers;
@@ -33,6 +35,7 @@ public class ManageController : Controller
     private readonly INatalChartCalculator _natalChartCalculator;
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _omgeving;
+    private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly ILogger<ManageController> _logger;
 
     public ManageController(
@@ -42,6 +45,7 @@ public class ManageController : Controller
         INatalChartCalculator natalChartCalculator,
         ApplicationDbContext context,
         IWebHostEnvironment omgeving,
+        IStringLocalizer<SharedResource> localizer,
         ILogger<ManageController> logger)
     {
         _userManager = userManager;
@@ -50,6 +54,7 @@ public class ManageController : Controller
         _natalChartCalculator = natalChartCalculator;
         _context = context;
         _omgeving = omgeving;
+        _localizer = localizer;
         _logger = logger;
     }
 
@@ -81,11 +86,11 @@ public class ManageController : Controller
     {
         if (model.ProfilePicture is not null && !ToegestaneAfbeeldingTypes.ContainsKey(model.ProfilePicture.ContentType))
         {
-            ModelState.AddModelError(nameof(model.ProfilePicture), "Enkel JPG, PNG of WEBP-afbeeldingen zijn toegelaten.");
+            ModelState.AddModelError(nameof(model.ProfilePicture), _localizer["Fout_AfbeeldingType"]);
         }
         else if (model.ProfilePicture is not null && model.ProfilePicture.Length > MaxFotoGrootteBytes)
         {
-            ModelState.AddModelError(nameof(model.ProfilePicture), "De profielfoto mag maximaal 5 MB groot zijn.");
+            ModelState.AddModelError(nameof(model.ProfilePicture), _localizer["Fout_AfbeeldingGrootte"]);
         }
 
         if (!ModelState.IsValid)
@@ -115,8 +120,7 @@ public class ManageController : Controller
             var coordinaten = await _geocodingService.ZoekCoordinatenAsync(model.BirthPlace);
             if (coordinaten is null)
             {
-                ModelState.AddModelError(nameof(model.BirthPlace),
-                    "Deze geboorteplaats werd niet gevonden. Probeer een preciezere schrijfwijze (bv. \"Antwerpen, België\").");
+                ModelState.AddModelError(nameof(model.BirthPlace), _localizer["Fout_GeboorteplaatsNietGevonden"]);
                 return View(model);
             }
 
@@ -163,7 +167,7 @@ public class ManageController : Controller
         }
 
         _logger.LogInformation("Gebruiker {Email} paste het eigen profiel aan.", gebruiker.Email);
-        TempData["Melding"] = "Je profiel is opgeslagen.";
+        TempData["Melding"] = _localizer["Melding_ProfielOpgeslagen"].Value;
         return RedirectToAction(nameof(Index));
     }
 
@@ -222,7 +226,7 @@ public class ManageController : Controller
         await _signInManager.RefreshSignInAsync(gebruiker);
         _logger.LogInformation("Gebruiker {Email} wijzigde het wachtwoord.", gebruiker.Email);
 
-        TempData["Melding"] = "Je wachtwoord is gewijzigd.";
+        TempData["Melding"] = _localizer["Melding_WachtwoordGewijzigd"].Value;
         return RedirectToAction(nameof(Index));
     }
 }

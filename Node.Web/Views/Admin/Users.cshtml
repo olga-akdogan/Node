@@ -2,21 +2,21 @@
    gebruikers (de)blokkeren. Alleen bereikbaar voor de rol Admin. *@
 @model IReadOnlyList<Node.Web.Models.Admin.UserOverviewViewModel>
 @{
-    ViewData["Title"] = "Gebruikersbeheer";
+    ViewData["Title"] = Localizer["Nav_Gebruikersbeheer"];
 }
 
 <h1>@ViewData["Title"]</h1>
-<p class="text-muted">@Model.Count gebruikers</p>
+<p class="text-muted">@string.Format(Localizer["Admin_AantalGebruikers"], Model.Count)</p>
 
 <div class="table-responsive">
     <table class="table table-striped align-middle">
         <thead>
             <tr>
-                <th>Naam</th>
-                <th>E-mailadres</th>
-                <th>Rollen</th>
-                <th>Status</th>
-                <th class="text-end">Acties</th>
+                <th>@Localizer["Admin_Naam"]</th>
+                <th>@Localizer["Admin_Email"]</th>
+                <th>@Localizer["Admin_Rollen"]</th>
+                <th>@Localizer["Admin_Status"]</th>
+                <th class="text-end">@Localizer["Admin_Acties"]</th>
             </tr>
         </thead>
         <tbody>
@@ -28,19 +28,19 @@
                         @gebruiker.Email
                         @if (!gebruiker.EmailConfirmed)
                         {
-                            <span class="badge text-bg-warning" title="E-mailadres nog niet bevestigd">niet bevestigd</span>
+                            <span class="badge text-bg-warning" title="@Localizer["Admin_NietBevestigdTitle"]">@Localizer["Admin_NietBevestigdBadge"]</span>
                         }
                     </td>
                     <td>
                         @foreach (var rol in gebruiker.Roles)
                         {
                             <form class="d-inline" asp-action="RemoveRole" method="post"
-                                  onsubmit="return confirm('Rol @rol afnemen van @gebruiker.DisplayName?');">
+                                  onsubmit="return confirm('@string.Format(Localizer["Admin_RolAfnemenBevestiging"], rol, gebruiker.DisplayName)');">
                                 <input type="hidden" name="id" value="@gebruiker.Id" />
                                 <input type="hidden" name="rol" value="@rol" />
                                 @* Klikken op het kruisje neemt de rol af. *@
                                 <button type="submit" class="btn btn-sm badge text-bg-secondary border-0"
-                                        title="Rol afnemen">
+                                        title="@Localizer["Admin_RolAfnemenTitle"]">
                                     @rol &times;
                                 </button>
                             </form>
@@ -49,31 +49,31 @@
                         {
                             <form class="d-inline-flex gap-1 mt-1" asp-action="AddRole" method="post">
                                 <input type="hidden" name="id" value="@gebruiker.Id" />
-                                <select name="rol" class="form-select form-select-sm w-auto" aria-label="Rol kiezen">
+                                <select name="rol" class="form-select form-select-sm w-auto" aria-label="@Localizer["Admin_RolKiezen"]">
                                     @foreach (var rol in gebruiker.AssignableRoles)
                                     {
                                         <option value="@rol">@rol</option>
                                     }
                                 </select>
-                                <button type="submit" class="btn btn-sm btn-outline-primary">Toekennen</button>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">@Localizer["Admin_Toekennen"]</button>
                             </form>
                         }
                     </td>
                     <td>
                         @if (gebruiker.IsBlocked)
                         {
-                            <span class="badge text-bg-danger">Geblokkeerd</span>
+                            <span class="badge text-bg-danger">@Localizer["Admin_Geblokkeerd"]</span>
                         }
                         else
                         {
-                            <span class="badge text-bg-success">Actief</span>
+                            <span class="badge text-bg-success">@Localizer["Admin_Actief"]</span>
                         }
                     </td>
                     <td class="text-end">
                         <form class="d-inline" asp-action="ToggleBlock" method="post">
                             <input type="hidden" name="id" value="@gebruiker.Id" />
                             <button type="submit" class="btn btn-sm @(gebruiker.IsBlocked ? "btn-outline-success" : "btn-outline-danger")">
-                                @(gebruiker.IsBlocked ? "Deblokkeren" : "Blokkeren")
+                                @(gebruiker.IsBlocked ? Localizer["Admin_Deblokkeren"] : Localizer["Admin_Blokkeren"])
                             </button>
                         </form>
                     </td>
