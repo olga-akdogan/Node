@@ -10,6 +10,9 @@ public class MatchOverviewViewModel
 
     public string OtherDisplayName { get; set; } = string.Empty;
 
+    /// <summary>Profielfoto van de ander; null = nog geen foto geüpload (letter-avatar als terugval).</summary>
+    public string? OtherProfilePictureUrl { get; set; }
+
     public int CompatibilityScore { get; set; }
 
     /// <summary>Voorbeeld van het laatste bericht in het gesprek (null = nog geen berichten).</summary>

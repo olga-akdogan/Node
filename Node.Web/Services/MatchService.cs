@@ -58,6 +58,7 @@ public class MatchService : IMatchService
                 {
                     MatchId = m.Id,
                     OtherDisplayName = ander?.DisplayName ?? "Onbekend",
+                    OtherProfilePictureUrl = ander?.ProfilePictureUrl,
                     CompatibilityScore = m.CompatibilityScore,
                     LastMessagePreview = status?.LaatsteBerichtTekst,
                     LastMessageAt = status?.LaatsteBerichtOp,

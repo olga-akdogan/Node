@@ -533,6 +533,10 @@ a:hover {
     justify-content: center;
 }
 
+img.avatar-cirkel {
+    object-fit: cover;
+}
+
 .ongelezen-stip {
     flex: 0 0 auto;
     min-width: 1.5rem;

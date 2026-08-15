@@ -27,7 +27,14 @@
             {
                 <a class="match-rij d-flex align-items-center gap-3 text-decoration-none"
                    asp-action="Chat" asp-route-id="@match.MatchId">
-                    <span class="avatar-cirkel">@match.OtherDisplayName[0]</span>
+                    @if (!string.IsNullOrEmpty(match.OtherProfilePictureUrl))
+                    {
+                        <img src="@match.OtherProfilePictureUrl" alt="Profielfoto van @match.OtherDisplayName" class="avatar-cirkel" />
+                    }
+                    else
+                    {
+                        <span class="avatar-cirkel">@match.OtherDisplayName[0]</span>
+                    }
                     <span class="flex-grow-1 min-w-0">
                         <span class="d-block match-naam">@match.OtherDisplayName</span>
                         <span class="d-block text-muted small text-truncate">
