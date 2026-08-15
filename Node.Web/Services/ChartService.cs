@@ -1,9 +1,10 @@
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Node.Data.Data;
-using Node.Data.Models.Enums;
 using Node.Data.Services;
 using Node.Web.Models.Chart;
+using Node.Web.Resources;
 using Node.Web.Services.Interfaces;
 
 namespace Node.Web.Services;
@@ -15,11 +16,16 @@ public class ChartService : IChartService
 {
     private readonly ApplicationDbContext _context;
     private readonly IChartInterpretationService _chartInterpretationService;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
-    public ChartService(ApplicationDbContext context, IChartInterpretationService chartInterpretationService)
+    public ChartService(
+        ApplicationDbContext context,
+        IChartInterpretationService chartInterpretationService,
+        IStringLocalizer<SharedResource> localizer)
     {
         _context = context;
         _chartInterpretationService = chartInterpretationService;
+        _localizer = localizer;
     }
 
     public async Task<HoroscoopViewModel?> GetHoroscoopAsync(string userId)
@@ -75,7 +81,7 @@ public class ChartService : IChartService
                     LengteGraden = (int)p.Sign * 30 + (double)p.DegreeInSign,
                 })
                 .ToList(),
-            Signatuur = BouwSignatuur(chart.SunSign, chart.MoonSign),
+            Signatuur = AstroWeergave.Signatuur(chart.SunSign, chart.MoonSign, _localizer),
             Interpretation = chart.InterpretationText,
             PartnerPreferenceText = chart.PartnerLookingForText,
         };
@@ -93,27 +99,5 @@ public class ChartService : IChartService
         }
 
         return $"{graden:00}°{minuten:00}′";
-    }
-
-    /// <summary>
-    /// Eén poëtische signatuurregel op basis van de elementen van zon en maan
-    /// (zelfde element-logica als DemoSynastrie).
-    /// </summary>
-    private static string BouwSignatuur(ZodiacSign zon, ZodiacSign maan)
-    {
-        var elementZon = AstroWeergave.Element(zon);
-        var elementMaan = AstroWeergave.Element(maan);
-
-        var slot = (elementZon, elementMaan) switch
-        {
-            var (z, m) when z == m => "alles uit één stuk — wat je voelt, is wat je doet.",
-            ("vuur", "water") or ("water", "vuur") => "je beweegt snel, maar voelt alles onderweg.",
-            ("aarde", "lucht") or ("lucht", "aarde") => "je denkt in ideeën en bouwt ze meteen.",
-            ("vuur", "lucht") or ("lucht", "vuur") => "je vonkt op ideeën en steekt anderen aan.",
-            ("aarde", "water") or ("water", "aarde") => "je draagt zorg als een tweede natuur.",
-            _ => "twee werelden die elkaar in evenwicht houden.",
-        };
-
-        return $"Een {elementZon}-zon met een {elementMaan}-maan — {slot}";
     }
 }

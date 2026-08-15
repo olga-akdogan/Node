@@ -86,16 +86,40 @@ public static class AstroWeergave
     }];
 
     /// <summary>
-    /// Nederlandse naam van het element van een teken (vuur/aarde/lucht/water).
+    /// Element-index van een teken (0 = vuur, 1 = aarde, 2 = lucht, 3 = water).
     /// Zelfde rekenregel als in DemoSynastrie: tekenindex modulo 4.
     /// </summary>
-    public static string Element(ZodiacSign teken) => ((int)teken % 4) switch
+    private static int ElementIndex(ZodiacSign teken) => (int)teken % 4;
+
+    private static readonly string[] ElementNaamSleutels =
+        ["Astro_Element_Vuur", "Astro_Element_Aarde", "Astro_Element_Lucht", "Astro_Element_Water"];
+
+    /// <summary>Meertalige naam van het element (vuur/aarde/lucht/water) van een teken.</summary>
+    public static string ElementNaam(ZodiacSign teken, IStringLocalizer<SharedResource> localizer) =>
+        localizer[ElementNaamSleutels[ElementIndex(teken)]];
+
+    /// <summary>
+    /// Poëtische signatuurregel op de horoscooppagina, op basis van de
+    /// elementen van zon en maan (zelfde rekenregel als DemoSynastrie).
+    /// </summary>
+    public static string Signatuur(ZodiacSign zon, ZodiacSign maan, IStringLocalizer<SharedResource> localizer)
     {
-        0 => "vuur",
-        1 => "aarde",
-        2 => "lucht",
-        _ => "water",
-    };
+        var (elementZon, elementMaan) = (ElementIndex(zon), ElementIndex(maan));
+
+        var slotSleutel = (elementZon, elementMaan) switch
+        {
+            var (a, b) when a == b => "Chart_Signatuur_ZelfdeElement",
+            (0, 3) or (3, 0) => "Chart_Signatuur_VuurWater",
+            (1, 2) or (2, 1) => "Chart_Signatuur_AardeLucht",
+            (0, 2) or (2, 0) => "Chart_Signatuur_VuurLucht",
+            (1, 3) or (3, 1) => "Chart_Signatuur_AardeWater",
+            _ => "Chart_Signatuur_Neutraal",
+        };
+
+        return string.Format(
+            localizer["Chart_Signatuur_Sjabloon"],
+            ElementNaam(zon, localizer), ElementNaam(maan, localizer), localizer[slotSleutel]);
+    }
 
     /// <summary>
     /// Rangtelwoord van een huisnummer (1-12) in de huidige UI-taal: "8e" (nl/fr),

@@ -37,14 +37,8 @@
   <data name="Nav_MaakJeHoroscoop" xml:space="preserve">
     <value>Maak je horoscoop</value>
   </data>
-  <data name="Footer_Privacy" xml:space="preserve">
-    <value>Privacy</value>
-  </data>
   <data name="Auth_Citaat" xml:space="preserve">
     <value>Begin waar de hemel stond toen jij begon.</value>
-  </data>
-  <data name="Auth_Privacyregel" xml:space="preserve">
-    <value>Je gegevens blijven van jou — altijd.</value>
   </data>
   <data name="Taal_Wijzigen" xml:space="preserve">
     <value>Taal wijzigen</value>
@@ -223,6 +217,39 @@
   <data name="Chart_Signatuur" xml:space="preserve">
     <value>Signatuur</value>
   </data>
+  <data name="Astro_Element_Vuur" xml:space="preserve">
+    <value>Vuur</value>
+  </data>
+  <data name="Astro_Element_Aarde" xml:space="preserve">
+    <value>Aarde</value>
+  </data>
+  <data name="Astro_Element_Lucht" xml:space="preserve">
+    <value>Lucht</value>
+  </data>
+  <data name="Astro_Element_Water" xml:space="preserve">
+    <value>Water</value>
+  </data>
+  <data name="Chart_Signatuur_Sjabloon" xml:space="preserve">
+    <value>Een {0}-zon met een {1}-maan — {2}</value>
+  </data>
+  <data name="Chart_Signatuur_ZelfdeElement" xml:space="preserve">
+    <value>alles uit één stuk — wat je voelt, is wat je doet.</value>
+  </data>
+  <data name="Chart_Signatuur_VuurWater" xml:space="preserve">
+    <value>je beweegt snel, maar voelt alles onderweg.</value>
+  </data>
+  <data name="Chart_Signatuur_AardeLucht" xml:space="preserve">
+    <value>je denkt in ideeën en bouwt ze meteen.</value>
+  </data>
+  <data name="Chart_Signatuur_VuurLucht" xml:space="preserve">
+    <value>je vonkt op ideeën en steekt anderen aan.</value>
+  </data>
+  <data name="Chart_Signatuur_AardeWater" xml:space="preserve">
+    <value>je draagt zorg als een tweede natuur.</value>
+  </data>
+  <data name="Chart_Signatuur_Neutraal" xml:space="preserve">
+    <value>twee werelden die elkaar in evenwicht houden.</value>
+  </data>
   <data name="Chart_GeboortehoroscoopTitel" xml:space="preserve">
     <value>Geboortehoroscoop</value>
   </data>
@@ -292,6 +319,15 @@
   <data name="SwipeKaart_Like" xml:space="preserve">
     <value>Like</value>
   </data>
+  <data name="Synastry_HighAffinity" xml:space="preserve">
+    <value>Veel gedeelde elementen — jullie spreken dezelfde taal.</value>
+  </data>
+  <data name="Synastry_Complementary" xml:space="preserve">
+    <value>Complementaire elementen die elkaar versterken.</value>
+  </data>
+  <data name="Synastry_Different" xml:space="preserve">
+    <value>Verschillende elementen — genoeg om van elkaar te leren.</value>
+  </data>
   <data name="Match_Kicker" xml:space="preserve">
     <value>Jouw matches</value>
   </data>
@@ -312,6 +348,21 @@
   </data>
   <data name="Match_OngelezenTitle" xml:space="preserve">
     <value>{0} ongelezen</value>
+  </data>
+  <data name="Notification_Titel" xml:space="preserve">
+    <value>Meldingen</value>
+  </data>
+  <data name="Notification_Kicker" xml:space="preserve">
+    <value>Wie interesse toonde</value>
+  </data>
+  <data name="Notification_Leeg" xml:space="preserve">
+    <value>Nog geen meldingen.</value>
+  </data>
+  <data name="Notification_Like" xml:space="preserve">
+    <value>{0} vindt jou leuk!</value>
+  </data>
+  <data name="Notification_Message" xml:space="preserve">
+    <value>{0} stuurde je een bericht.</value>
   </data>
   <data name="Chat_GesprekLaden" xml:space="preserve">
     <value>Gesprek laden…</value>
@@ -519,12 +570,6 @@
   </data>
   <data name="Melding_WachtwoordGewijzigd" xml:space="preserve">
     <value>Je wachtwoord is gewijzigd.</value>
-  </data>
-  <data name="Privacy_Tekst1" xml:space="preserve">
-    <value>Node verzamelt je geboortegegevens (datum, tijd en plaats) om je geboortehoroscoop te berekenen, en je profielgegevens om je te matchen met andere leden.</value>
-  </data>
-  <data name="Privacy_Tekst2" xml:space="preserve">
-    <value>We delen deze gegevens nooit met derden voor commerciële doeleinden. Je kan je gegevens op elk moment aanpassen via je profiel, of je account laten verwijderen door de beheerder te contacteren.</value>
   </data>
   <data name="Identity_OnbekendeFout" xml:space="preserve">
     <value>Er is een onbekende fout opgetreden.</value>

@@ -3,9 +3,17 @@
 
 <div data-user-id="@Model.UserId">
     <div class="card">
-        @* Beeldvlak zoals bij Tinder, maar als vlak marineblok met initiaal. *@
+        @* Beeldvlak zoals bij Tinder: de profielfoto indien geüpload, anders
+           een marineblok met initiaal als terugval. *@
         <div class="kaart-blok">
-            <span class="kaart-initiaal">@Model.DisplayName[0]</span>
+            @if (!string.IsNullOrEmpty(Model.ProfilePictureUrl))
+            {
+                <img src="@Model.ProfilePictureUrl" alt="@Model.DisplayName" />
+            }
+            else
+            {
+                <span class="kaart-initiaal">@Model.DisplayName[0]</span>
+            }
         </div>
         <div class="card-body p-4">
             <h2 class="mb-0">@Model.DisplayName, @Model.Age</h2>
@@ -18,21 +26,6 @@
                     <p class="text-muted small mb-0">
                         @(Model.CompatibilityExplanation ?? Localizer["SwipeKaart_ScoreVolgt"])
                     </p>
-                </div>
-            </div>
-
-            <div class="row text-center mb-3">
-                <div class="col-4">
-                    <p class="kicker mb-1">@Localizer["SwipeKaart_Zon"]</p>
-                    <p class="mb-0">@(Model.SunSign ?? "—")</p>
-                </div>
-                <div class="col-4">
-                    <p class="kicker mb-1">@Localizer["SwipeKaart_Maan"]</p>
-                    <p class="mb-0">@(Model.MoonSign ?? "—")</p>
-                </div>
-                <div class="col-4">
-                    <p class="kicker mb-1">@Localizer["SwipeKaart_Ascendant"]</p>
-                    <p class="mb-0">@(Model.AscendantSign ?? "—")</p>
                 </div>
             </div>
 

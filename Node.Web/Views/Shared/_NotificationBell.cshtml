@@ -1,0 +1,25 @@
+@* Bell icon in the navbar: links to the notifications page and shows the
+   unread count. Renders nothing when the user isn't signed in. *@
+@using Microsoft.AspNetCore.Identity
+@using Node.Data.Models
+@using Node.Web.Services.Interfaces
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject INotificationService NotificationService
+
+@if (SignInManager.IsSignedIn(User))
+{
+    var userId = UserManager.GetUserId(User)!;
+    var unreadCount = await NotificationService.GetUnreadCountAsync(userId);
+
+    <a class="nav-link d-flex align-items-center gap-1" asp-controller="Notification" asp-action="Index"
+       title="@Localizer["Notification_Titel"]" aria-label="@Localizer["Notification_Titel"]">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M8 16a1.5 1.5 0 0 0 1.5-1.5h-3A1.5 1.5 0 0 0 8 16zM8 1.5c-.966 0-1.75.784-1.75 1.75v.174C4.243 3.856 3 5.523 3 7.5v2.19c0 .38-.152.744-.422 1.014L1.5 11.78c-.32.32-.5.754-.5 1.207V13.5a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-.513c0-.453-.18-.887-.5-1.207l-1.078-1.076A1.434 1.434 0 0 1 13 9.69V7.5c0-1.977-1.243-3.644-3.25-4.076V3.25c0-.966-.784-1.75-1.75-1.75z" />
+        </svg>
+        @if (unreadCount > 0)
+        {
+            <span class="ongelezen-stip">@unreadCount</span>
+        }
+    </a>
+}

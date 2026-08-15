@@ -14,7 +14,7 @@ namespace Node.Data.Data;
 /// </summary>
 public static class DemoSynastrie
 {
-    public static (int Score, string Uitleg) Bereken(NatalChart a, NatalChart b)
+    public static (int Score, SynastryConclusion Conclusion) Bereken(NatalChart a, NatalChart b)
     {
         // De tekens staan in klassieke volgorde, dus teken modulo 4 geeft het
         // element: 0 = vuur, 1 = aarde, 2 = lucht, 3 = water.
@@ -36,12 +36,13 @@ public static class DemoSynastrie
         var ascendantScore = ScoorPaar(a.AscendantSign, b.AscendantSign);
         var score = (int)Math.Round((zonScore + maanScore + ascendantScore) / 3.0);
 
-        var uitleg = $"Zon {a.SunSign}/{b.SunSign}, maan {a.MoonSign}/{b.MoonSign}, " +
-                     $"ascendant {a.AscendantSign}/{b.AscendantSign}: " +
-                     (score >= 85 ? "veel gedeelde elementen, jullie spreken dezelfde taal."
-                      : score >= 70 ? "complementaire elementen die elkaar versterken."
-                      : "verschillende elementen, dus genoeg om van elkaar te leren.");
+        // De ruwe tekens worden bewust niet in de conclusie opgenomen: die
+        // wordt in de weblaag vertaald naar de meertalige, essentiële tekst
+        // die de gebruiker te zien krijgt (zie de Synastry_* resx-sleutels).
+        var conclusion = score >= 85 ? SynastryConclusion.HighAffinity
+            : score >= 70 ? SynastryConclusion.Complementary
+            : SynastryConclusion.Different;
 
-        return (score, uitleg);
+        return (score, conclusion);
     }
 }

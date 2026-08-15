@@ -1,0 +1,71 @@
+@* Notifications page: likes and unread chat messages. Viewing this page
+   marks the like-notifications as read (see NotificationController.Index);
+   message entries stay until the conversation itself is opened, since their
+   read state lives in GetStream, not our database. *@
+@using Node.Data.Models.Enums
+@model IReadOnlyList<Node.Web.Models.Notifications.NotificationViewModel>
+@{
+    ViewData["Title"] = Localizer["Notification_Titel"];
+}
+
+<div class="mx-auto" style="max-width: 44rem;">
+    <p class="kicker mb-1">@Localizer["Notification_Kicker"]</p>
+    <h1 class="mb-4">@Localizer["Notification_Titel"]</h1>
+
+    @if (Model.Count == 0)
+    {
+        <div class="card text-center p-5">
+            <p class="text-muted mb-0">@Localizer["Notification_Leeg"]</p>
+        </div>
+    }
+    else
+    {
+        <div class="match-lijst">
+            @foreach (var notification in Model)
+            {
+                var tekst = notification.Type == NotificationType.Message
+                    ? string.Format(Localizer["Notification_Message"].Value, notification.ActorDisplayName)
+                    : string.Format(Localizer["Notification_Like"].Value, notification.ActorDisplayName);
+                var achtergrond = !notification.IsRead ? "background-color: var(--node-salie-tint);" : "";
+
+                @if (notification.Type == NotificationType.Message)
+                {
+                    // Message notifications link straight to the conversation.
+                    <a class="match-rij d-flex align-items-center gap-3 text-decoration-none" style="@achtergrond"
+                       asp-controller="Match" asp-action="Chat" asp-route-id="@notification.MatchId">
+                        @if (!string.IsNullOrEmpty(notification.ActorProfilePictureUrl))
+                        {
+                            <img src="@notification.ActorProfilePictureUrl" alt="@notification.ActorDisplayName" class="avatar-cirkel" />
+                        }
+                        else
+                        {
+                            <span class="avatar-cirkel">@notification.ActorDisplayName[0]</span>
+                        }
+                        <span class="flex-grow-1 min-w-0">
+                            <span class="d-block">@tekst</span>
+                            <span class="d-block text-muted small">@notification.CreatedAt.ToString("d MMM yyyy · HH:mm", System.Globalization.CultureInfo.CurrentUICulture)</span>
+                        </span>
+                    </a>
+                }
+                else
+                {
+                    // Like notifications have no natural page to link to.
+                    <div class="match-rij d-flex align-items-center gap-3" style="@achtergrond">
+                        @if (!string.IsNullOrEmpty(notification.ActorProfilePictureUrl))
+                        {
+                            <img src="@notification.ActorProfilePictureUrl" alt="@notification.ActorDisplayName" class="avatar-cirkel" />
+                        }
+                        else
+                        {
+                            <span class="avatar-cirkel">@notification.ActorDisplayName[0]</span>
+                        }
+                        <span class="flex-grow-1 min-w-0">
+                            <span class="d-block">@tekst</span>
+                            <span class="d-block text-muted small">@notification.CreatedAt.ToString("d MMM yyyy · HH:mm", System.Globalization.CultureInfo.CurrentUICulture)</span>
+                        </span>
+                    </div>
+                }
+            }
+        </div>
+    }
+</div>

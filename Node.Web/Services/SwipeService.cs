@@ -1,11 +1,13 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Node.Data.Data;
 using Node.Data.Models;
 using Node.Data.Models.Enums;
 using Node.Data.Services;
 using Node.Web.Models.Swiping;
+using Node.Web.Resources;
 using Node.Web.Services.Interfaces;
 
 namespace Node.Web.Services;
@@ -18,17 +20,23 @@ public class SwipeService : ISwipeService
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IMatchInterpretationService _matchInterpretationService;
+    private readonly INotificationService _notificationService;
+    private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly ILogger<SwipeService> _logger;
 
     public SwipeService(
         ApplicationDbContext context,
         UserManager<ApplicationUser> userManager,
         IMatchInterpretationService matchInterpretationService,
+        INotificationService notificationService,
+        IStringLocalizer<SharedResource> localizer,
         ILogger<SwipeService> logger)
     {
         _context = context;
         _userManager = userManager;
         _matchInterpretationService = matchInterpretationService;
+        _notificationService = notificationService;
+        _localizer = localizer;
         _logger = logger;
     }
 
@@ -77,7 +85,7 @@ public class SwipeService : ISwipeService
 
         // Score alleen berekenbaar wanneer beide horoscopen bestaan.
         var mijnChart = await _context.NatalCharts.FirstOrDefaultAsync(n => n.UserId == userId);
-        (int Score, string Uitleg)? synastrie = mijnChart is not null && kandidaat.NatalChart is not null
+        (int Score, SynastryConclusion Conclusion)? synastrie = mijnChart is not null && kandidaat.NatalChart is not null
             ? DemoSynastrie.Bereken(mijnChart, kandidaat.NatalChart)
             : null;
 
@@ -85,16 +93,22 @@ public class SwipeService : ISwipeService
         {
             UserId = kandidaat.Id,
             DisplayName = kandidaat.DisplayName,
+            ProfilePictureUrl = kandidaat.ProfilePictureUrl,
             Age = BerekenLeeftijd(kandidaat.BirthDate),
             Bio = kandidaat.Bio,
             BirthPlace = kandidaat.BirthPlace,
-            SunSign = kandidaat.NatalChart?.SunSign.ToString(),
-            MoonSign = kandidaat.NatalChart?.MoonSign.ToString(),
-            AscendantSign = kandidaat.NatalChart?.AscendantSign.ToString(),
             CompatibilityScore = synastrie?.Score,
-            CompatibilityExplanation = synastrie?.Uitleg,
+            CompatibilityExplanation = synastrie is null ? null : ConclusieTekst(synastrie.Value.Conclusion),
         };
     }
+
+    /// <summary>Maps the deterministic synastry conclusion to its localized, sign-free one-liner.</summary>
+    private string ConclusieTekst(SynastryConclusion conclusion) => conclusion switch
+    {
+        SynastryConclusion.HighAffinity => _localizer["Synastry_HighAffinity"],
+        SynastryConclusion.Complementary => _localizer["Synastry_Complementary"],
+        _ => _localizer["Synastry_Different"],
+    };
 
     public async Task<(bool IsMatch, int? MatchId)> BeoordeelAsync(string swiperUserId, string targetUserId, bool isLike)
     {
@@ -118,6 +132,9 @@ public class SwipeService : ISwipeService
             await _context.SaveChangesAsync();
             return (false, null);
         }
+
+        await _context.SaveChangesAsync();
+        await _notificationService.NotifyLikeAsync(recipientUserId: targetUserId, actorUserId: swiperUserId);
 
         // Wederzijdse like? Dan ontstaat er een match.
         var wederzijds = await _context.Swipes.AnyAsync(

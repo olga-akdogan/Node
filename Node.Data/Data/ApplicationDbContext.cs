@@ -24,6 +24,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Report> Reports => Set<Report>();
     public DbSet<CookieConsentLog> CookieConsentLogs => Set<CookieConsentLog>();
     public DbSet<PartnerPreference> PartnerPreferences => Set<PartnerPreference>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -130,5 +131,23 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<PartnerPreference>()
             .HasIndex(p => new { p.UserId, p.Gender })
             .IsUnique();
+
+        // Notification: two FKs to AspNetUsers (recipient + actor), both
+        // Restrict for the same reason as Swipe/Match above.
+        builder.Entity<Notification>()
+            .HasOne(n => n.User)
+            .WithMany()
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Notification>()
+            .HasOne(n => n.ActorUser)
+            .WithMany()
+            .HasForeignKey(n => n.ActorUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Notification>().Property(n => n.Type).HasConversion<string>().HasMaxLength(20);
+
+        builder.Entity<Notification>().HasIndex(n => new { n.UserId, n.IsRead });
     }
 }

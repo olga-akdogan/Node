@@ -10,6 +10,9 @@ public class SwipeCardViewModel
 
     public string DisplayName { get; set; } = string.Empty;
 
+    /// <summary>Profile picture of the candidate; null = no photo uploaded yet (initial-letter avatar as fallback).</summary>
+    public string? ProfilePictureUrl { get; set; }
+
     /// <summary>Leeftijd, berekend uit de geboortedatum.</summary>
     public int Age { get; set; }
 
@@ -17,15 +20,9 @@ public class SwipeCardViewModel
 
     public string BirthPlace { get; set; } = string.Empty;
 
-    /// <summary>Zon-, maan- en ascendantteken; null zolang er geen horoscoop is.</summary>
-    public string? SunSign { get; set; }
-
-    public string? MoonSign { get; set; }
-
-    public string? AscendantSign { get; set; }
-
     /// <summary>Compatibiliteitsscore met de ingelogde gebruiker (null = nog niet berekenbaar).</summary>
     public int? CompatibilityScore { get; set; }
 
+    /// <summary>The most essential synastry conclusion, already localized (see DemoSynastrie/SwipeService).</summary>
     public string? CompatibilityExplanation { get; set; }
 }

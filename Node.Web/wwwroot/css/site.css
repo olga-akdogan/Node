@@ -430,6 +430,13 @@ a:hover {
     align-items: center;
     justify-content: center;
     border-radius: 12px 12px 0 0;
+    overflow: hidden;
+}
+
+.kaart-blok img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .kaart-initiaal {
@@ -693,13 +700,6 @@ img.avatar-cirkel {
     max-width: 27rem;
 }
 
-.auth-privacyregel {
-    font-size: 0.8rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: rgba(242, 244, 243, 0.5);
-}
-
 /* Rechterpaneel: warm licht vlak met het formulier. */
 .auth-paneel-vorm {
     flex: 1;
@@ -708,6 +708,15 @@ img.avatar-cirkel {
     align-items: center;
     justify-content: center;
     padding: 3rem 1.5rem;
+    position: relative;
+}
+
+/* Taalkiezer op het auth-scherm: vast in de hoek i.p.v. mee te centreren
+   met het formulier (dat zou de knoppen midden op de pagina zetten). */
+.auth-taalkiezer-hoek {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
 }
 
 .auth-vorm {

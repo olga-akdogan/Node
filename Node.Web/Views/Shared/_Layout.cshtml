@@ -53,6 +53,7 @@
                     </ul>
                     <div class="d-flex align-items-center gap-3">
                         <partial name="_TaalKiezer" />
+                        <partial name="_NotificationBell" />
                         <partial name="_LoginPartial" />
                     </div>
                 </div>
@@ -101,7 +102,6 @@
             <span class="logo-woordmerk">n<span class="logo-o"></span>de</span>
             <span class="d-flex gap-4">
                 <a asp-controller="Home" asp-action="HowItWorks">@Localizer["Nav_HoeHetWerkt"]</a>
-                <a asp-controller="Home" asp-action="Privacy">@Localizer["Footer_Privacy"]</a>
             </span>
             <span>&copy; 2026 Node</span>
         </div>

@@ -37,14 +37,8 @@
   <data name="Nav_MaakJeHoroscoop" xml:space="preserve">
     <value>Crée ton horoscope</value>
   </data>
-  <data name="Footer_Privacy" xml:space="preserve">
-    <value>Confidentialité</value>
-  </data>
   <data name="Auth_Citaat" xml:space="preserve">
     <value>Commence là où le ciel se trouvait quand tu es né(e).</value>
-  </data>
-  <data name="Auth_Privacyregel" xml:space="preserve">
-    <value>Tes données restent les tiennes — toujours.</value>
   </data>
   <data name="Taal_Wijzigen" xml:space="preserve">
     <value>Changer de langue</value>
@@ -223,6 +217,39 @@
   <data name="Chart_Signatuur" xml:space="preserve">
     <value>Signature</value>
   </data>
+  <data name="Astro_Element_Vuur" xml:space="preserve">
+    <value>Feu</value>
+  </data>
+  <data name="Astro_Element_Aarde" xml:space="preserve">
+    <value>Terre</value>
+  </data>
+  <data name="Astro_Element_Lucht" xml:space="preserve">
+    <value>Air</value>
+  </data>
+  <data name="Astro_Element_Water" xml:space="preserve">
+    <value>Eau</value>
+  </data>
+  <data name="Chart_Signatuur_Sjabloon" xml:space="preserve">
+    <value>Un Soleil {0}, une Lune {1} — {2}</value>
+  </data>
+  <data name="Chart_Signatuur_ZelfdeElement" xml:space="preserve">
+    <value>tout d'une pièce — ce que tu ressens, c'est ce que tu fais.</value>
+  </data>
+  <data name="Chart_Signatuur_VuurWater" xml:space="preserve">
+    <value>tu bouges vite, mais tu ressens tout en chemin.</value>
+  </data>
+  <data name="Chart_Signatuur_AardeLucht" xml:space="preserve">
+    <value>tu penses en idées et tu les concrétises aussitôt.</value>
+  </data>
+  <data name="Chart_Signatuur_VuurLucht" xml:space="preserve">
+    <value>tu t'enflammes pour des idées et tu entraînes les autres.</value>
+  </data>
+  <data name="Chart_Signatuur_AardeWater" xml:space="preserve">
+    <value>prendre soin des autres est une seconde nature chez toi.</value>
+  </data>
+  <data name="Chart_Signatuur_Neutraal" xml:space="preserve">
+    <value>deux mondes qui s'équilibrent l'un l'autre.</value>
+  </data>
   <data name="Chart_GeboortehoroscoopTitel" xml:space="preserve">
     <value>Thème natal</value>
   </data>
@@ -292,6 +319,15 @@
   <data name="SwipeKaart_Like" xml:space="preserve">
     <value>J'aime</value>
   </data>
+  <data name="Synastry_HighAffinity" xml:space="preserve">
+    <value>Beaucoup d'éléments partagés — vous parlez le même langage.</value>
+  </data>
+  <data name="Synastry_Complementary" xml:space="preserve">
+    <value>Des éléments complémentaires qui se renforcent.</value>
+  </data>
+  <data name="Synastry_Different" xml:space="preserve">
+    <value>Des éléments différents — de quoi apprendre l'un de l'autre.</value>
+  </data>
   <data name="Match_Kicker" xml:space="preserve">
     <value>Tes matchs</value>
   </data>
@@ -312,6 +348,21 @@
   </data>
   <data name="Match_OngelezenTitle" xml:space="preserve">
     <value>{0} non lu(s)</value>
+  </data>
+  <data name="Notification_Titel" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="Notification_Kicker" xml:space="preserve">
+    <value>Qui s'intéresse à toi</value>
+  </data>
+  <data name="Notification_Leeg" xml:space="preserve">
+    <value>Pas encore de notifications.</value>
+  </data>
+  <data name="Notification_Like" xml:space="preserve">
+    <value>{0} t'a aimé·e !</value>
+  </data>
+  <data name="Notification_Message" xml:space="preserve">
+    <value>{0} t'a envoyé un message.</value>
   </data>
   <data name="Chat_GesprekLaden" xml:space="preserve">
     <value>Chargement de la conversation…</value>
@@ -519,12 +570,6 @@
   </data>
   <data name="Melding_WachtwoordGewijzigd" xml:space="preserve">
     <value>Ton mot de passe a été modifié.</value>
-  </data>
-  <data name="Privacy_Tekst1" xml:space="preserve">
-    <value>Node recueille tes données de naissance (date, heure et lieu) pour calculer ton thème natal, ainsi que les données de ton profil pour te mettre en relation avec d'autres membres.</value>
-  </data>
-  <data name="Privacy_Tekst2" xml:space="preserve">
-    <value>Nous ne partageons jamais ces données avec des tiers à des fins commerciales. Tu peux modifier tes données à tout moment via ton profil, ou faire supprimer ton compte en contactant l'administrateur.</value>
   </data>
   <data name="Identity_OnbekendeFout" xml:space="preserve">
     <value>Une erreur inconnue s'est produite.</value>
