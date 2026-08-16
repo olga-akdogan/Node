@@ -23,6 +23,9 @@ public class SwipeCardViewModel
     /// <summary>Compatibiliteitsscore met de ingelogde gebruiker (null = nog niet berekenbaar).</summary>
     public int? CompatibilityScore { get; set; }
 
-    /// <summary>The most essential synastry conclusion, already localized (see DemoSynastrie/SwipeService).</summary>
+    /// <summary>Claude-written playful "compatibility test" blurb for this candidate (see ISwipeTeaserService).</summary>
     public string? CompatibilityExplanation { get; set; }
+
+    /// <summary>Claude-written first-date suggestion that ties back to the compatibility test above.</summary>
+    public string? DateIdea { get; set; }
 }

@@ -99,6 +99,7 @@ builder.Services.AddScoped<IChartService, ChartService>();
 builder.Services.AddScoped<IStreamChatService, StreamChatService>();
 builder.Services.AddScoped<INatalChartCalculator, NatalChartCalculator>();
 builder.Services.AddScoped<IMatchInterpretationService, MatchInterpretationService>();
+builder.Services.AddScoped<ISwipeTeaserService, SwipeTeaserService>();
 builder.Services.AddScoped<IChartInterpretationService, ChartInterpretationService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IProfilePictureService, ProfilePictureService>();

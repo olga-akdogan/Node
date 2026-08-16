@@ -29,6 +29,14 @@
                 </div>
             </div>
 
+            @if (!string.IsNullOrWhiteSpace(Model.DateIdea))
+            {
+                <div class="mb-3">
+                    <p class="kicker mb-1">@Localizer["SwipeKaart_EersteAfspraakje"]</p>
+                    <p class="text-muted small mb-0">@Model.DateIdea</p>
+                </div>
+            }
+
             @if (!string.IsNullOrWhiteSpace(Model.Bio))
             {
                 <p class="text-muted mb-0">@Model.Bio</p>

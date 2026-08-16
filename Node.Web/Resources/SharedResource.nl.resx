@@ -319,14 +319,8 @@
   <data name="SwipeKaart_Like" xml:space="preserve">
     <value>Like</value>
   </data>
-  <data name="Synastry_HighAffinity" xml:space="preserve">
-    <value>Veel gedeelde elementen — jullie spreken dezelfde taal.</value>
-  </data>
-  <data name="Synastry_Complementary" xml:space="preserve">
-    <value>Complementaire elementen die elkaar versterken.</value>
-  </data>
-  <data name="Synastry_Different" xml:space="preserve">
-    <value>Verschillende elementen — genoeg om van elkaar te leren.</value>
+  <data name="SwipeKaart_EersteAfspraakje" xml:space="preserve">
+    <value>Eerste afspraakje</value>
   </data>
   <data name="Match_Kicker" xml:space="preserve">
     <value>Jouw matches</value>
