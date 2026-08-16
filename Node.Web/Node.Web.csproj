@@ -15,6 +15,7 @@
     <!-- MailKit: versturen van verificatie-e-mails via SMTP. -->
     <PackageReference Include="getstream-net" Version="15.0.0" />
     <PackageReference Include="MailKit" Version="4.17.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.7" />
     <!-- Design-time ondersteuning voor "dotnet ef" migraties (startup-project). -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.7">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

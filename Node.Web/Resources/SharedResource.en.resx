@@ -499,6 +499,12 @@
   <data name="Valid_BioMax" xml:space="preserve">
     <value>The bio can be at most {1} characters long.</value>
   </data>
+  <data name="Valid_RedenVerplicht" xml:space="preserve">
+    <value>Reason is required.</value>
+  </data>
+  <data name="Valid_RedenMax" xml:space="preserve">
+    <value>The reason can be at most {1} characters long.</value>
+  </data>
   <data name="Veld_BioOptioneel" xml:space="preserve">
     <value>Bio (optional)</value>
   </data>
@@ -549,6 +555,9 @@
   </data>
   <data name="Fout_AccountGeblokkeerd" xml:space="preserve">
     <value>This account has been blocked by an administrator.</value>
+  </data>
+  <data name="Fout_KanZichzelfNietRapporteren" xml:space="preserve">
+    <value>You can't report yourself.</value>
   </data>
   <data name="Fout_EmailNietBevestigd" xml:space="preserve">
     <value>Please confirm your email address using the link in your mailbox first.</value>

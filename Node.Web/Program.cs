@@ -1,8 +1,11 @@
+using System.Text;
 using Anthropic;
 using GetStream;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Node.Data.Data;
 using Node.Data.Models;
 using Node.Data.Services;
@@ -42,6 +45,36 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.Configure<SecurityStampValidatorOptions>(options =>
     options.ValidationInterval = TimeSpan.FromMinutes(5));
 
+// JWT bearer scheme for the REST API (used by the MAUI companion app), next
+// to the cookie scheme AddIdentity() above already set up for the MVC site.
+// AddJwtBearer only registers a second handler here; it does not change the
+// default scheme, so web pages keep using the cookie unless a controller
+// explicitly opts into "Bearer" via [Authorize(AuthenticationSchemes = ...)].
+var jwtSleutel = builder.Configuration["Jwt:Key"]
+    ?? throw new InvalidOperationException("Configuratie 'Jwt:Key' ontbreekt.");
+var jwtIssuer = builder.Configuration["Jwt:Issuer"]
+    ?? throw new InvalidOperationException("Configuratie 'Jwt:Issuer' ontbreekt.");
+var jwtAudience = builder.Configuration["Jwt:Audience"]
+    ?? throw new InvalidOperationException("Configuratie 'Jwt:Audience' ontbreekt.");
+
+builder.Services
+    .AddAuthentication()
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtIssuer,
+            ValidateAudience = true,
+            ValidAudience = jwtAudience,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSleutel)),
+        };
+    });
+
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+
 // GetStream Chat
 var streamApiKey = builder.Configuration["Stream:ApiKey"]
     ?? throw new InvalidOperationException("Configuratie 'Stream:ApiKey' ontbreekt.");
@@ -68,6 +101,7 @@ builder.Services.AddScoped<INatalChartCalculator, NatalChartCalculator>();
 builder.Services.AddScoped<IMatchInterpretationService, MatchInterpretationService>();
 builder.Services.AddScoped<IChartInterpretationService, ChartInterpretationService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IProfilePictureService, ProfilePictureService>();
 
 // Nominatim (OpenStreetMap) vereist een identificerende User-Agent per gebruiksvoorwaarden.
 builder.Services.AddHttpClient<IGeocodingService, GeocodingService>(client =>
