@@ -1,0 +1,71 @@
+@* Meldingenwachtrij: gerapporteerde gebruikers bekijken en afhandelen.
+   Bereikbaar voor de rollen Moderator en Admin. *@
+@model IReadOnlyList<Node.Web.Models.Moderation.ReportOverviewViewModel>
+@{
+    ViewData["Title"] = Localizer["Nav_Moderatie"];
+    var alleenOnopgelost = (bool)(ViewData["AlleenOnopgelost"] ?? true);
+}
+
+<h1>@ViewData["Title"]</h1>
+<p class="text-muted">@string.Format(Localizer["Moderation_AantalMeldingen"], Model.Count)</p>
+
+<form method="get" class="mb-3">
+    <div class="form-check">
+        <input type="checkbox" id="alleenOnopgelost" name="alleenOnopgelost" value="true" class="form-check-input"
+               checked="@(alleenOnopgelost ? "checked" : null)" onchange="this.form.submit()" />
+        <label for="alleenOnopgelost" class="form-check-label">@Localizer["Moderation_AlleenOnopgelost"]</label>
+    </div>
+</form>
+
+@if (Model.Count == 0)
+{
+    <p class="text-muted">@Localizer["Moderation_GeenMeldingen"]</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>@Localizer["Moderation_Melder"]</th>
+                    <th>@Localizer["Moderation_Gerapporteerde"]</th>
+                    <th>@Localizer["Moderation_Reden"]</th>
+                    <th>@Localizer["Moderation_Datum"]</th>
+                    <th>@Localizer["Admin_Status"]</th>
+                    <th class="text-end">@Localizer["Admin_Acties"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var melding in Model)
+                {
+                    <tr>
+                        <td>@melding.ReporterDisplayName</td>
+                        <td>@melding.ReportedDisplayName</td>
+                        <td>@melding.Reason</td>
+                        <td>@melding.CreatedAt.ToString("d")</td>
+                        <td>
+                            @if (melding.IsResolved)
+                            {
+                                <span class="badge text-bg-success">@Localizer["Moderation_Afgehandeld"]</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-warning">@Localizer["Moderation_Onopgelost"]</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            @if (!melding.IsResolved)
+                            {
+                                <form asp-action="Resolve" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@melding.Id" />
+                                    <input type="hidden" name="alleenOnopgelost" value="@alleenOnopgelost" />
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">@Localizer["Moderation_AlsAfgehandeldMarkeren"]</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

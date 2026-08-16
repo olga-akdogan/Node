@@ -19,6 +19,9 @@
   <data name="Nav_Gebruikersbeheer" xml:space="preserve">
     <value>Gestion des utilisateurs</value>
   </data>
+  <data name="Nav_Moderatie" xml:space="preserve">
+    <value>Modération</value>
+  </data>
   <data name="Nav_MenuTonenVerbergen" xml:space="preserve">
     <value>Afficher/masquer le menu</value>
   </data>
@@ -456,6 +459,39 @@
   </data>
   <data name="Admin_FilterWissen" xml:space="preserve">
     <value>Réinitialiser</value>
+  </data>
+  <data name="Moderation_AantalMeldingen" xml:space="preserve">
+    <value>{0} signalements</value>
+  </data>
+  <data name="Moderation_AlleenOnopgelost" xml:space="preserve">
+    <value>Afficher uniquement les signalements non résolus</value>
+  </data>
+  <data name="Moderation_GeenMeldingen" xml:space="preserve">
+    <value>Aucun signalement.</value>
+  </data>
+  <data name="Moderation_Melder" xml:space="preserve">
+    <value>Signalé par</value>
+  </data>
+  <data name="Moderation_Gerapporteerde" xml:space="preserve">
+    <value>Utilisateur signalé</value>
+  </data>
+  <data name="Moderation_Reden" xml:space="preserve">
+    <value>Raison</value>
+  </data>
+  <data name="Moderation_Datum" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Moderation_Afgehandeld" xml:space="preserve">
+    <value>Résolu</value>
+  </data>
+  <data name="Moderation_Onopgelost" xml:space="preserve">
+    <value>Non résolu</value>
+  </data>
+  <data name="Moderation_AlsAfgehandeldMarkeren" xml:space="preserve">
+    <value>Marquer comme résolu</value>
+  </data>
+  <data name="Moderation_AfgehandeldMelding" xml:space="preserve">
+    <value>Signalement marqué comme résolu.</value>
   </data>
   <data name="Error_Boodschap" xml:space="preserve">
     <value>Une erreur s'est produite lors du traitement de ta demande.</value>

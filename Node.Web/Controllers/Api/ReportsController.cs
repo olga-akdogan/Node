@@ -7,6 +7,7 @@ using Microsoft.Extensions.Localization;
 using Node.Data.Data;
 using Node.Data.Models;
 using Node.Web.Models.Api.Reports;
+using Node.Web.Models.Moderation;
 using Node.Web.Resources;
 
 namespace Node.Web.Controllers.Api;
@@ -71,13 +72,13 @@ public class ReportsController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = $"{DbSeeder.RolModerator},{DbSeeder.RolAdmin}")]
-    public async Task<ActionResult<List<ReportDto>>> GetQueue()
+    public async Task<ActionResult<List<ReportOverviewViewModel>>> GetQueue()
     {
         var meldingen = await _context.Reports
             .Include(r => r.ReporterUser)
             .Include(r => r.ReportedUser)
             .OrderByDescending(r => r.CreatedAt)
-            .Select(r => new ReportDto
+            .Select(r => new ReportOverviewViewModel
             {
                 Id = r.Id,
                 ReporterDisplayName = r.ReporterUser!.DisplayName,

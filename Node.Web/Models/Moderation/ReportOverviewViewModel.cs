@@ -1,7 +1,7 @@
-namespace Node.Web.Models.Api.Reports;
+namespace Node.Web.Models.Moderation;
 
-/// <summary>One row in the moderation queue (Moderator/Admin only).</summary>
-public class ReportDto
+/// <summary>One row in the moderation queue (Moderator/Admin only). Shared by the web page and the REST API.</summary>
+public class ReportOverviewViewModel
 {
     public int Id { get; set; }
 
