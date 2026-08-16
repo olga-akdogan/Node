@@ -7,7 +7,7 @@ using Node.Data.Models;
 namespace Node.Data.Services;
 
 /// <summary>
-/// Calls the Claude API (Anthropic) for the two "My chart" interpretation
+/// Calls the Claude API for the two "My chart" interpretation
 /// texts. Both texts come from a single answer, separated by a fixed
 /// delimiter, so only one API call is needed per (re)generation.
 /// </summary>

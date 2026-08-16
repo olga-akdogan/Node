@@ -1,18 +1,18 @@
-@* Eén profielkaart in de stapel. Wordt ook los via AJAX geladen. *@
+@* One profile card in the stack. Also loaded standalone via AJAX. *@
 @model Node.Web.Models.Swiping.SwipeCardViewModel
 
 <div data-user-id="@Model.UserId">
     <div class="card">
-        @* Beeldvlak zoals bij Tinder: de profielfoto indien geüpload, anders
-           een marineblok met initiaal als terugval. *@
-        <div class="kaart-blok">
+        @* Image area like Tinder: the profile picture if uploaded, otherwise
+           a navy block with an initial as fallback. *@
+        <div class="card-image">
             @if (!string.IsNullOrEmpty(Model.ProfilePictureUrl))
             {
                 <img src="@Model.ProfilePictureUrl" alt="@Model.DisplayName" />
             }
             else
             {
-                <span class="kaart-initiaal">@Model.DisplayName[0]</span>
+                <span class="card-initial">@Model.DisplayName[0]</span>
             }
         </div>
         <div class="card-body p-4">
@@ -20,11 +20,11 @@
             <p class="kicker mt-1 mb-3">@Model.BirthPlace</p>
 
             <div class="d-flex align-items-baseline gap-3 border-top border-bottom py-3 my-3">
-                <span class="score-cijfer">@(Model.CompatibilityScore?.ToString() ?? "—")</span>
+                <span class="score-number">@(Model.CompatibilityScore?.ToString() ?? "—")</span>
                 <div>
-                    <p class="kicker mb-1">@Localizer["SwipeKaart_MatchScore"]</p>
+                    <p class="kicker mb-1">@Localizer["SwipeCard_MatchScore"]</p>
                     <p class="text-muted small mb-0">
-                        @(Model.CompatibilityExplanation ?? Localizer["SwipeKaart_ScoreVolgt"])
+                        @(Model.CompatibilityExplanation ?? Localizer["SwipeCard_ScorePending"])
                     </p>
                 </div>
             </div>
@@ -32,7 +32,7 @@
             @if (!string.IsNullOrWhiteSpace(Model.DateIdea))
             {
                 <div class="mb-3">
-                    <p class="kicker mb-1">@Localizer["SwipeKaart_EersteAfspraakje"]</p>
+                    <p class="kicker mb-1">@Localizer["SwipeCard_FirstDate"]</p>
                     <p class="text-muted small mb-0">@Model.DateIdea</p>
                 </div>
             }
@@ -40,16 +40,16 @@
             @if (!string.IsNullOrWhiteSpace(Model.Bio))
             {
                 <div class="border-top pt-3">
-                    <p class="kicker mb-1">@Localizer["Veld_Bio"]</p>
+                    <p class="kicker mb-1">@Localizer["Field_Bio"]</p>
                     <p class="mb-0">@Model.Bio</p>
                 </div>
             }
         </div>
     </div>
 
-    @* Pas- en like-knop onder de kaart, zoals bij Tinder. *@
+    @* Pass and like button below the card, like Tinder. *@
     <div class="d-flex justify-content-center gap-4 mt-4">
-        <button type="button" class="actieknop actieknop-pass" title="@Localizer["SwipeKaart_Pas"]" aria-label="@Localizer["SwipeKaart_Pas"]">&times;</button>
-        <button type="button" class="actieknop actieknop-like" title="@Localizer["SwipeKaart_Like"]" aria-label="@Localizer["SwipeKaart_Like"]">&hearts;</button>
+        <button type="button" class="action-button action-button-pass" title="@Localizer["SwipeCard_Pass"]" aria-label="@Localizer["SwipeCard_Pass"]">&times;</button>
+        <button type="button" class="action-button action-button-like" title="@Localizer["SwipeCard_Like"]" aria-label="@Localizer["SwipeCard_Like"]">&hearts;</button>
     </div>
 </div>

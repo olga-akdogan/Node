@@ -1,23 +1,23 @@
-@* Cookiebanner: post rechtstreeks naar het middleware-pad /cookieconsent/kies
-   (geen controller-actie) — zie CookieConsentMiddleware. *@
+@* Cookie banner: posts directly to the middleware path /cookieconsent/choose
+   (no controller action) — see CookieConsentMiddleware. *@
 @{
-    var huidigeUrl = Context.Request.Path + Context.Request.QueryString;
+    var currentUrl = Context.Request.Path + Context.Request.QueryString;
 }
 <div class="cookie-banner">
     <div class="container d-flex flex-wrap align-items-center justify-content-between gap-3 py-3">
-        <p class="mb-0 small">@Localizer["Cookie_Tekst"]</p>
+        <p class="mb-0 small">@Localizer["Cookie_Text"]</p>
         <div class="d-flex gap-2 flex-shrink-0">
-            <form method="post" action="/cookieconsent/kies" class="d-inline">
+            <form method="post" action="/cookieconsent/choose" class="d-inline">
                 @Html.AntiForgeryToken()
-                <input type="hidden" name="terugUrl" value="@huidigeUrl" />
-                <input type="hidden" name="keuze" value="weigeren" />
-                <button type="submit" class="btn btn-sm btn-outline-secondary">@Localizer["Cookie_Weigeren"]</button>
+                <input type="hidden" name="returnUrl" value="@currentUrl" />
+                <input type="hidden" name="choice" value="decline" />
+                <button type="submit" class="btn btn-sm btn-outline-secondary">@Localizer["Cookie_Decline"]</button>
             </form>
-            <form method="post" action="/cookieconsent/kies" class="d-inline">
+            <form method="post" action="/cookieconsent/choose" class="d-inline">
                 @Html.AntiForgeryToken()
-                <input type="hidden" name="terugUrl" value="@huidigeUrl" />
-                <input type="hidden" name="keuze" value="accepteren" />
-                <button type="submit" class="btn btn-sm btn-primary">@Localizer["Cookie_Accepteren"]</button>
+                <input type="hidden" name="returnUrl" value="@currentUrl" />
+                <input type="hidden" name="choice" value="accept" />
+                <button type="submit" class="btn btn-sm btn-primary">@Localizer["Cookie_Accept"]</button>
             </form>
         </div>
     </div>

@@ -1,66 +1,66 @@
-@* Landingspagina volgens scherm "01 Landing" uit het UI-ontwerp: navy hero
-   met sterrenveld, drie feature-kaarten met serif-glyphs en een salieband
-   met horoscoopwiel. De teksten zijn de eigen (dating-)copy van Node. *@
+@* Landing page per screen "01 Landing" from the UI design: navy hero
+   with starfield, three feature cards with serif glyphs and a sage band
+   with a horoscope wheel. The copy is Node's own (dating) copy. *@
 @using Microsoft.AspNetCore.Identity
 @using Node.Data.Models
 @inject SignInManager<ApplicationUser> SignInManager
 @{
     ViewData["Title"] = "Home";
-    ViewData["DonkereNav"] = true;   // Navigatie zweeft transparant over de hero.
-    ViewData["VolleBreedte"] = true; // Secties lopen van rand tot rand.
+    ViewData["DarkNav"] = true;   // Nav floats transparently over the hero.
+    ViewData["FullWidth"] = true; // Sections run edge to edge.
 }
 
 <section class="hero-node">
     <div class="container">
         <p class="kicker mb-4">@Localizer["Home_Kicker"]</p>
-        <h1 class="mb-4">@Html.Raw(Localizer["Home_Titel"])</h1>
+        <h1 class="mb-4">@Html.Raw(Localizer["Home_Title"])</h1>
         <p class="lead mb-5">
             @Localizer["Home_Lead"]
         </p>
         <div class="d-flex flex-wrap gap-3 justify-content-center">
             @if (SignInManager.IsSignedIn(User))
             {
-                <a class="btn btn-hero btn-lg" asp-controller="Swipe" asp-action="Index">@Localizer["Nav_Ontdek"]</a>
-                <a class="btn btn-hero-omlijnd btn-lg" asp-controller="Match" asp-action="Index">@Localizer["Match_Kicker"]</a>
+                <a class="btn btn-hero btn-lg" asp-controller="Swipe" asp-action="Index">@Localizer["Nav_Discover"]</a>
+                <a class="btn btn-hero-outline btn-lg" asp-controller="Match" asp-action="Index">@Localizer["Match_Kicker"]</a>
             }
             else
             {
-                <a class="btn btn-hero btn-lg" asp-controller="Account" asp-action="Register">@Localizer["Home_CtaMaakHoroscoop"]</a>
-                <a class="btn btn-hero-omlijnd btn-lg" asp-controller="Home" asp-action="HowItWorks">@Localizer["Nav_HoeHetWerkt"]</a>
+                <a class="btn btn-hero btn-lg" asp-controller="Account" asp-action="Register">@Localizer["Home_CtaCreateHoroscope"]</a>
+                <a class="btn btn-hero-outline btn-lg" asp-controller="Home" asp-action="HowItWorks">@Localizer["Nav_HowItWorks"]</a>
             }
         </div>
     </div>
 </section>
 
-<section class="sectie">
+<section class="section-block">
     <div class="container">
-        <p class="kicker mb-3">@Localizer["Home_SectieKicker"]</p>
-        <h2 class="mb-5" style="font-size: clamp(2rem, 3.4vw, 2.9rem);">@Localizer["Home_SectieTitel"]</h2>
+        <p class="kicker mb-3">@Localizer["Home_SectionKicker"]</p>
+        <h2 class="mb-5" style="font-size: clamp(2rem, 3.4vw, 2.9rem);">@Localizer["Home_SectionTitle"]</h2>
         <div class="row g-4">
             <div class="col-md-4">
-                <div class="kaart-veer">
+                <div class="feature-card">
                     <div class="glyph">&#9737;</div>
-                    <h3>@Localizer["Home_KaartHoroscoopTitel"]</h3>
+                    <h3>@Localizer["Home_CardHoroscopeTitle"]</h3>
                     <p>
-                        @Localizer["Home_KaartHoroscoopTekst"]
+                        @Localizer["Home_CardHoroscopeText"]
                     </p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="kaart-veer">
-                    <div class="glyph glyph-salie">&#9740;</div>
-                    <h3>@Localizer["Home_KaartSynastrieTitel"]</h3>
+                <div class="feature-card">
+                    <div class="glyph glyph-sage">&#9740;</div>
+                    <h3>@Localizer["Home_CardSynastryTitle"]</h3>
                     <p>
-                        @Localizer["Home_KaartSynastrieTekst"]
+                        @Localizer["Home_CardSynastryText"]
                     </p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="kaart-veer">
+                <div class="feature-card">
                     <div class="glyph">&#9789;</div>
-                    <h3>@Localizer["Home_KaartGesprekTitel"]</h3>
+                    <h3>@Localizer["Home_CardConversationTitle"]</h3>
                     <p>
-                        @Localizer["Home_KaartGesprekTekst"]
+                        @Localizer["Home_CardConversationText"]
                     </p>
                 </div>
             </div>
@@ -68,20 +68,20 @@
     </div>
 </section>
 
-<section class="band-salie">
+<section class="sage-band">
     <div class="container">
         <div class="row g-5 align-items-center">
             <div class="col-lg-6">
-                <h2 class="mb-4">@Html.Raw(Localizer["Home_BandTitel"])</h2>
+                <h2 class="mb-4">@Html.Raw(Localizer["Home_BannerTitle"])</h2>
                 <p class="mb-4">
-                    @Localizer["Home_BandTekst"]
+                    @Localizer["Home_BannerText"]
                 </p>
-                <a class="band-link" asp-controller="Home" asp-action="HowItWorks">@Localizer["Home_BandLink"]</a>
+                <a class="band-link" asp-controller="Home" asp-action="HowItWorks">@Localizer["Home_BannerLink"]</a>
             </div>
             <div class="col-lg-6 text-center">
-                @* Decoratief horoscoopwiel (zelfde geometrie als de echte
-                   horoscooppagina die later volgt): cirkels, twaalf spaken en
-                   de tekens van de dierenriem. *@
+                @* Decorative horoscope wheel (same geometry as the real
+                   horoscope page that follows later): circles, twelve spokes
+                   and the zodiac signs. *@
                 <svg viewBox="0 0 480 480" width="380" height="380" role="img" aria-label="Horoscoopwiel">
                     <circle cx="240" cy="240" r="228" fill="none" stroke="#16324F" stroke-width="1.4" />
                     <circle cx="240" cy="240" r="180" fill="none" stroke="#0F2420" stroke-opacity="0.45" stroke-width="1" />
@@ -89,12 +89,12 @@
                     <circle cx="240" cy="240" r="46" fill="none" stroke="#0F2420" stroke-opacity="0.3" stroke-width="1" />
                     @for (var i = 0; i < 12; i++)
                     {
-                        // Spaak van r=120 naar r=228, om de 30 graden.
-                        var hoek = (i * 30 - 90) * Math.PI / 180;
-                        var x1 = 240 + 120 * Math.Cos(hoek);
-                        var y1 = 240 + 120 * Math.Sin(hoek);
-                        var x2 = 240 + 228 * Math.Cos(hoek);
-                        var y2 = 240 + 228 * Math.Sin(hoek);
+                        // Spoke from r=120 to r=228, every 30 degrees.
+                        var angle = (i * 30 - 90) * Math.PI / 180;
+                        var x1 = 240 + 120 * Math.Cos(angle);
+                        var y1 = 240 + 120 * Math.Sin(angle);
+                        var x2 = 240 + 228 * Math.Cos(angle);
+                        var y2 = 240 + 228 * Math.Sin(angle);
                         <line x1="@x1.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)"
                               y1="@y1.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)"
                               x2="@x2.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)"
@@ -102,18 +102,18 @@
                               stroke="#0F2420" stroke-opacity="0.35" stroke-width="0.8" />
                     }
                     @{
-                        var tekens = new[] { "♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "♑", "♒", "♓" };
+                        var signs = new[] { "♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "♑", "♒", "♓" };
                     }
                     @for (var i = 0; i < 12; i++)
                     {
-                        // Teken in het midden van elk segment op r=204.
-                        // Let op: het SVG-element <text> botst met de Razor-tag
-                        // <text>, daarom wordt dit element via Html.Raw gezet.
-                        var hoek = (i * 30 + 15 - 90) * Math.PI / 180;
-                        var x = (240 + 204 * Math.Cos(hoek)).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
-                        var y = (240 + 204 * Math.Sin(hoek) + 7).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
-                        @* &#xFE0E; dwingt tekstweergave af (anders emoji op Windows). *@
-                        @Html.Raw($"<text x=\"{x}\" y=\"{y}\" text-anchor=\"middle\" fill=\"#16324F\" font-size=\"21\" font-family=\"Cormorant Garamond, Segoe UI Symbol, serif\">{tekens[i]}&#xFE0E;</text>")
+                        // Sign in the middle of each segment at r=204.
+                        // Note: the SVG element <text> clashes with the Razor tag
+                        // <text>, so this element is set via Html.Raw instead.
+                        var angle = (i * 30 + 15 - 90) * Math.PI / 180;
+                        var x = (240 + 204 * Math.Cos(angle)).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
+                        var y = (240 + 204 * Math.Sin(angle) + 7).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
+                        @* &#xFE0E; forces text rendering (otherwise emoji on Windows). *@
+                        @Html.Raw($"<text x=\"{x}\" y=\"{y}\" text-anchor=\"middle\" fill=\"#16324F\" font-size=\"21\" font-family=\"Cormorant Garamond, Segoe UI Symbol, serif\">{signs[i]}&#xFE0E;</text>")
                     }
                 </svg>
             </div>

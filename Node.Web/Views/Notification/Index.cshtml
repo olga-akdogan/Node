@@ -5,29 +5,29 @@
 @using Node.Data.Models.Enums
 @model IReadOnlyList<Node.Web.Models.Notifications.NotificationViewModel>
 @{
-    ViewData["Title"] = Localizer["Notification_Titel"];
-    var huidigType = ViewData["Type"] as string;
-    var huidigeSortering = (string)(ViewData["Sortering"] ?? "nieuw");
+    ViewData["Title"] = Localizer["Notification_Title"];
+    var currentType = ViewData["Type"] as string;
+    var currentSort = (string)(ViewData["Sort"] ?? "new");
 }
 
 <div class="mx-auto" style="max-width: 44rem;">
     <p class="kicker mb-1">@Localizer["Notification_Kicker"]</p>
-    <h1 class="mb-4">@Localizer["Notification_Titel"]</h1>
+    <h1 class="mb-4">@Localizer["Notification_Title"]</h1>
 
     <form method="get" class="row g-2 align-items-end mb-3">
         <div class="col-auto">
             <label for="type" class="form-label small">@Localizer["Notification_Type"]</label>
             <select id="type" name="type" class="form-select form-select-sm" onchange="this.form.submit()">
-                <option value="" selected="@(string.IsNullOrEmpty(huidigType) ? "selected" : null)">@Localizer["Notification_AlleTypes"]</option>
-                <option value="Like" selected="@(huidigType == "Like" ? "selected" : null)">@Localizer["Notification_TypeLike"]</option>
-                <option value="Message" selected="@(huidigType == "Message" ? "selected" : null)">@Localizer["Notification_TypeMessage"]</option>
+                <option value="" selected="@(string.IsNullOrEmpty(currentType) ? "selected" : null)">@Localizer["Notification_AllTypes"]</option>
+                <option value="Like" selected="@(currentType == "Like" ? "selected" : null)">@Localizer["Notification_TypeLike"]</option>
+                <option value="Message" selected="@(currentType == "Message" ? "selected" : null)">@Localizer["Notification_TypeMessage"]</option>
             </select>
         </div>
         <div class="col-auto">
-            <label for="sortering" class="form-label small">@Localizer["Admin_Sorteren"]</label>
-            <select id="sortering" name="sortering" class="form-select form-select-sm" onchange="this.form.submit()">
-                <option value="nieuw" selected="@(huidigeSortering == "nieuw" ? "selected" : null)">@Localizer["Match_SorteerRecent"]</option>
-                <option value="oud" selected="@(huidigeSortering == "oud" ? "selected" : null)">@Localizer["Notification_SorteerOud"]</option>
+            <label for="sort" class="form-label small">@Localizer["Admin_Sort"]</label>
+            <select id="sort" name="sort" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="new" selected="@(currentSort == "new" ? "selected" : null)">@Localizer["Match_SortRecent"]</option>
+                <option value="old" selected="@(currentSort == "old" ? "selected" : null)">@Localizer["Notification_SortOldest"]</option>
             </select>
         </div>
     </form>
@@ -35,34 +35,34 @@
     @if (Model.Count == 0)
     {
         <div class="card text-center p-5">
-            <p class="text-muted mb-0">@Localizer["Notification_Leeg"]</p>
+            <p class="text-muted mb-0">@Localizer["Notification_Empty"]</p>
         </div>
     }
     else
     {
-        <div class="match-lijst">
+        <div class="match-list">
             @foreach (var notification in Model)
             {
-                var tekst = notification.Type == NotificationType.Message
+                var text = notification.Type == NotificationType.Message
                     ? string.Format(Localizer["Notification_Message"].Value, notification.ActorDisplayName)
                     : string.Format(Localizer["Notification_Like"].Value, notification.ActorDisplayName);
-                var achtergrond = !notification.IsRead ? "background-color: var(--node-salie-tint);" : "";
+                var background = !notification.IsRead ? "background-color: var(--node-sage-tint);" : "";
 
                 @if (notification.Type == NotificationType.Message)
                 {
                     // Message notifications link straight to the conversation.
-                    <a class="match-rij d-flex align-items-center gap-3 text-decoration-none" style="@achtergrond"
+                    <a class="match-row d-flex align-items-center gap-3 text-decoration-none" style="@background"
                        asp-controller="Match" asp-action="Chat" asp-route-id="@notification.MatchId">
                         @if (!string.IsNullOrEmpty(notification.ActorProfilePictureUrl))
                         {
-                            <img src="@notification.ActorProfilePictureUrl" alt="@notification.ActorDisplayName" class="avatar-cirkel" />
+                            <img src="@notification.ActorProfilePictureUrl" alt="@notification.ActorDisplayName" class="avatar-circle" />
                         }
                         else
                         {
-                            <span class="avatar-cirkel">@notification.ActorDisplayName[0]</span>
+                            <span class="avatar-circle">@notification.ActorDisplayName[0]</span>
                         }
                         <span class="flex-grow-1 min-w-0">
-                            <span class="d-block">@tekst</span>
+                            <span class="d-block">@text</span>
                             <span class="d-block text-muted small">@notification.CreatedAt.ToString("d MMM yyyy · HH:mm", System.Globalization.CultureInfo.CurrentUICulture)</span>
                         </span>
                     </a>
@@ -70,17 +70,17 @@
                 else
                 {
                     // Like notifications have no natural page to link to.
-                    <div class="match-rij d-flex align-items-center gap-3" style="@achtergrond">
+                    <div class="match-row d-flex align-items-center gap-3" style="@background">
                         @if (!string.IsNullOrEmpty(notification.ActorProfilePictureUrl))
                         {
-                            <img src="@notification.ActorProfilePictureUrl" alt="@notification.ActorDisplayName" class="avatar-cirkel" />
+                            <img src="@notification.ActorProfilePictureUrl" alt="@notification.ActorDisplayName" class="avatar-circle" />
                         }
                         else
                         {
-                            <span class="avatar-cirkel">@notification.ActorDisplayName[0]</span>
+                            <span class="avatar-circle">@notification.ActorDisplayName[0]</span>
                         }
                         <span class="flex-grow-1 min-w-0">
-                            <span class="d-block">@tekst</span>
+                            <span class="d-block">@text</span>
                             <span class="d-block text-muted small">@notification.CreatedAt.ToString("d MMM yyyy · HH:mm", System.Globalization.CultureInfo.CurrentUICulture)</span>
                         </span>
                     </div>

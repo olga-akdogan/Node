@@ -3,61 +3,58 @@ using Node.Data.Models.Enums;
 
 namespace Node.Web.Models.Account;
 
-/// <summary>
-/// Registratieformulier met de extra profielvelden van ApplicationUser.
-/// De teksten zelf komen uit de gedeelde resource-bestanden (meertaligheid).
-/// </summary>
+// Registration form
 public class RegisterViewModel
 {
-    [Required(ErrorMessage = "Valid_EmailVerplicht")]
-    [EmailAddress(ErrorMessage = "Valid_EmailOngeldig")]
-    [Display(Name = "Veld_Email")]
+    [Required(ErrorMessage = "Valid_EmailRequired")]
+    [EmailAddress(ErrorMessage = "Valid_EmailInvalid")]
+    [Display(Name = "Field_Email")]
     public string Email { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Valid_WachtwoordVerplicht")]
-    [StringLength(100, MinimumLength = 6, ErrorMessage = "Valid_WachtwoordLengte")]
+    [Required(ErrorMessage = "Valid_PasswordRequired")]
+    [StringLength(100, MinimumLength = 6, ErrorMessage = "Valid_PasswordLength")]
     [DataType(DataType.Password)]
-    [Display(Name = "Veld_Wachtwoord")]
+    [Display(Name = "Field_Password")]
     public string Password { get; set; } = string.Empty;
 
     [DataType(DataType.Password)]
-    [Display(Name = "Veld_BevestigWachtwoord")]
-    [Compare(nameof(Password), ErrorMessage = "Valid_WachtwoordenKomenNietOvereen")]
+    [Display(Name = "Field_ConfirmPassword")]
+    [Compare(nameof(Password), ErrorMessage = "Valid_PasswordsDoNotMatch")]
     public string ConfirmPassword { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Valid_WeergavenaamVerplicht")]
-    [MaxLength(80, ErrorMessage = "Valid_WeergavenaamMax")]
-    [Display(Name = "Veld_Weergavenaam")]
+    [Required(ErrorMessage = "Valid_DisplayNameRequired")]
+    [MaxLength(80, ErrorMessage = "Valid_DisplayNameMax")]
+    [Display(Name = "Field_DisplayName")]
     public string DisplayName { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Valid_GeboortedatumVerplicht")]
+    [Required(ErrorMessage = "Valid_BirthDateRequired")]
     [DataType(DataType.Date)]
-    [Display(Name = "Veld_Geboortedatum")]
+    [Display(Name = "Field_BirthDate")]
     public DateOnly? BirthDate { get; set; }
 
-    [Required(ErrorMessage = "Valid_GeboortetijdVerplicht")]
+    [Required(ErrorMessage = "Valid_BirthTimeRequired")]
     [DataType(DataType.Time)]
-    [Display(Name = "Veld_Geboortetijd")]
+    [Display(Name = "Field_BirthTime")]
     public TimeOnly? BirthTime { get; set; }
 
-    [Required(ErrorMessage = "Valid_GeboorteplaatsVerplicht")]
-    [MaxLength(150, ErrorMessage = "Valid_GeboorteplaatsMax")]
-    [Display(Name = "Veld_Geboorteplaats")]
+    [Required(ErrorMessage = "Valid_BirthPlaceRequired")]
+    [MaxLength(150, ErrorMessage = "Valid_BirthPlaceMax")]
+    [Display(Name = "Field_BirthPlace")]
     public string BirthPlace { get; set; } = string.Empty;
 
     [MaxLength(1000, ErrorMessage = "Valid_BioMax")]
     [DataType(DataType.MultilineText)]
-    [Display(Name = "Veld_BioOptioneel")]
+    [Display(Name = "Field_BioOptional")]
     public string? Bio { get; set; }
 
-    [Required(ErrorMessage = "Valid_GeslachtVerplicht")]
-    [Display(Name = "Veld_Geslacht")]
+    [Required(ErrorMessage = "Valid_GenderRequired")]
+    [Display(Name = "Field_Gender")]
     public Gender? Gender { get; set; }
 
     /// <summary>Together with <see cref="LooksForWomen"/>, determines who appears in the swipe deck (at least one required).</summary>
-    [Display(Name = "Veld_ZoektMannen")]
+    [Display(Name = "Field_SeekingMen")]
     public bool LooksForMen { get; set; }
 
-    [Display(Name = "Veld_ZoektVrouwen")]
+    [Display(Name = "Field_SeekingWomen")]
     public bool LooksForWomen { get; set; }
 }

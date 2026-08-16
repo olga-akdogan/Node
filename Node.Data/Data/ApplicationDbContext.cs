@@ -6,9 +6,8 @@ using Node.Data.Models.Enums;
 namespace Node.Data.Data;
 
 /// <summary>
-/// De databankcontext van het project, gebaseerd op IdentityDbContext
-/// zodat de Identity-tabellen en de eigen tabellen in
-/// dezelfde databank leven.
+/// The project's database context, based on IdentityDbContext so the
+/// Identity tables and the app's own tables live in the same database.
 /// </summary>
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
@@ -30,19 +29,19 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(builder);
 
-        // Horoscoop: 1-op-1 met de gebruiker; verdwijnt mee met het account.
+        // Natal chart: 1-to-1 with the user; deleted together with the account.
         builder.Entity<NatalChart>()
             .HasOne(n => n.User)
             .WithOne(u => u.NatalChart)
             .HasForeignKey<NatalChart>(n => n.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Tekens als tekst opslaan zodat de databank leesbaar blijft tijdens de demo.
+        // Store signs as text
         builder.Entity<NatalChart>().Property(n => n.SunSign).HasConversion<string>().HasMaxLength(20);
         builder.Entity<NatalChart>().Property(n => n.MoonSign).HasConversion<string>().HasMaxLength(20);
         builder.Entity<NatalChart>().Property(n => n.AscendantSign).HasConversion<string>().HasMaxLength(20);
 
-        // Posities: veel per horoscoop, elk hemellichaam maximaal één keer.
+        // Placements: many per natal chart, each celestial body at most once.
         builder.Entity<Placement>()
             .HasOne(p => p.NatalChart)
             .WithMany(n => n.Placements)
@@ -56,8 +55,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<Placement>().Property(p => p.Body).HasConversion<string>().HasMaxLength(20);
         builder.Entity<Placement>().Property(p => p.Sign).HasConversion<string>().HasMaxLength(20);
 
-        // Swipes: Restrict i.p.v. Cascade omdat SQL Server geen dubbele
-        // cascade-paden naar dezelfde tabel (AspNetUsers) toelaat.
+        // Swipes: Restrict instead of Cascade because SQL Server doesn't allow
+        // multiple cascade paths to the same table (AspNetUsers).
         builder.Entity<Swipe>()
             .HasOne(s => s.SwiperUser)
             .WithMany()
@@ -70,7 +69,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(s => s.TargetUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Eén swipe per combinatie swiper/doelwit.
+        // One swipe per swiper/target combination.
         builder.Entity<Swipe>()
             .HasIndex(s => new { s.SwiperUserId, s.TargetUserId })
             .IsUnique();
@@ -87,7 +86,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(m => m.User2Id)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Eén match per paar (User1Id < User2Id wordt in de servicelaag afgedwongen).
+        // One match per pair (User1Id < User2Id is enforced in the service layer).
         builder.Entity<Match>()
             .HasIndex(m => new { m.User1Id, m.User2Id })
             .IsUnique();
@@ -106,8 +105,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(r => r.ReportedUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Consentlog mag blijven bestaan als het account verdwijnt (bewijslast),
-        // de verwijzing naar de gebruiker wordt dan leeggemaakt.
+        // The consent log survives account deletion (evidence trail); its
+        // reference to the user is nulled out instead.
         builder.Entity<CookieConsentLog>()
             .HasOne(c => c.User)
             .WithMany()

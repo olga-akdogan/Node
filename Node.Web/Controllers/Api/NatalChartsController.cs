@@ -15,7 +15,7 @@ namespace Node.Web.Controllers.Api;
 /// </summary>
 [ApiController]
 [Route("api/natalcharts")]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = DbSeeder.RolLid)]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = DbSeeder.RoleMember)]
 public class NatalChartsController : ControllerBase
 {
     private readonly IChartService _chartService;
@@ -28,15 +28,15 @@ public class NatalChartsController : ControllerBase
     }
 
     [HttpGet("me")]
-    public async Task<ActionResult<HoroscoopViewModel>> GetMe()
+    public async Task<ActionResult<HoroscopeViewModel>> GetMe()
     {
-        var horoscoop = await _chartService.GetHoroscoopAsync(_userManager.GetUserId(User)!);
-        if (horoscoop is null)
+        var horoscope = await _chartService.GetHoroscopeAsync(_userManager.GetUserId(User)!);
+        if (horoscope is null)
         {
-            // Nog geen berekende horoscoop (bv. account net aangemaakt vóór de achtergrondberekening).
+            // No calculated chart yet (e.g. account just created before the background calculation).
             return NotFound();
         }
 
-        return Ok(horoscoop);
+        return Ok(horoscope);
     }
 }

@@ -10,7 +10,7 @@ using Node.Web.Services.Interfaces;
 namespace Node.Web.Services;
 
 /// <summary>
-/// Stelt de horoscooppagina samen uit de opgeslagen NatalChart en Placements.
+/// Assembles the natal chart page from the saved NatalChart and Placements.
 /// </summary>
 public class ChartService : IChartService
 {
@@ -28,7 +28,7 @@ public class ChartService : IChartService
         _localizer = localizer;
     }
 
-    public async Task<HoroscoopViewModel?> GetHoroscoopAsync(string userId)
+    public async Task<HoroscopeViewModel?> GetHoroscopeAsync(string userId)
     {
         var chart = await _context.NatalCharts
             .Include(n => n.User)
@@ -37,14 +37,14 @@ public class ChartService : IChartService
 
         if (chart?.User is null)
         {
-            return null; // Nog geen horoscoop berekend (bv. vers account).
+            return null; // No chart calculated yet (e.g. a brand-new account).
         }
 
-        // Datumnotatie volgt de taal die de gebruiker koos (taalkiezer), niet
-        // een vast Belgisch-Nederlandse cultuur — zo blijft de pagina ook
-        // qua datumformaat consistent in het Engels of Frans.
-        var cultuur = CultureInfo.CurrentUICulture;
-        var currentLanguage = cultuur.TwoLetterISOLanguageName;
+        // Date formatting follows the language the user chose (language
+        // picker), not a fixed Belgian-Dutch culture — so the page also
+        // stays consistent in date format when viewed in English or French.
+        var culture = CultureInfo.CurrentUICulture;
+        var currentLanguage = culture.TwoLetterISOLanguageName;
 
         // No interpretation yet, or written earlier in a different language
         // than the current selection: (re)request it from Claude and save it.
@@ -59,45 +59,45 @@ public class ChartService : IChartService
             await _context.SaveChangesAsync();
         }
 
-        return new HoroscoopViewModel
+        return new HoroscopeViewModel
         {
             DisplayName = chart.User.DisplayName,
-            GeboorteInfo = string.Join(" · ",
-                chart.User.BirthDate.ToString("d MMM yyyy", cultuur),
-                chart.User.BirthTime.ToString("HH:mm", cultuur),
+            BirthInfo = string.Join(" · ",
+                chart.User.BirthDate.ToString("d MMM yyyy", culture),
+                chart.User.BirthTime.ToString("HH:mm", culture),
                 chart.User.BirthPlace),
             SunSign = chart.SunSign,
             MoonSign = chart.MoonSign,
             AscendantSign = chart.AscendantSign,
             AscendantIsApproximate = chart.AscendantIsApproximate,
             Placements = chart.Placements
-                .OrderBy(p => p.Body) // Vaste volgorde: Zon, Maan, ... Ascendant.
-                .Select(p => new PlaatsingRegel
+                .OrderBy(p => p.Body) // Fixed order: Sun, Moon, ... Ascendant.
+                .Select(p => new PlacementRow
                 {
                     Body = p.Body,
                     Sign = p.Sign,
-                    Huis = p.House,
-                    Graad = FormatteerGraad(p.DegreeInSign),
-                    LengteGraden = (int)p.Sign * 30 + (double)p.DegreeInSign,
+                    House = p.House,
+                    DegreeText = FormatDegree(p.DegreeInSign),
+                    AbsoluteDegrees = (int)p.Sign * 30 + (double)p.DegreeInSign,
                 })
                 .ToList(),
-            Signatuur = AstroWeergave.Signatuur(chart.SunSign, chart.MoonSign, _localizer),
+            Signature = AstroDisplay.Signature(chart.SunSign, chart.MoonSign, _localizer),
             Interpretation = chart.InterpretationText,
             PartnerPreferenceText = chart.PartnerLookingForText,
         };
     }
 
-    /// <summary>Zet 14,5° om naar de klassieke notatie "14°30′".</summary>
-    private static string FormatteerGraad(decimal graadInTeken)
+    /// <summary>Converts 14.5° to the classic notation "14°30′".</summary>
+    private static string FormatDegree(decimal degreeInSign)
     {
-        var graden = (int)graadInTeken;
-        var minuten = (int)Math.Round((graadInTeken - graden) * 60);
-        if (minuten == 60)
+        var degrees = (int)degreeInSign;
+        var minutes = (int)Math.Round((degreeInSign - degrees) * 60);
+        if (minutes == 60)
         {
-            graden++;
-            minuten = 0;
+            degrees++;
+            minutes = 0;
         }
 
-        return $"{graden:00}°{minuten:00}′";
+        return $"{degrees:00}°{minutes:00}′";
     }
 }

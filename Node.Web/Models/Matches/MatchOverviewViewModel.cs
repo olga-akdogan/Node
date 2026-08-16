@@ -1,8 +1,8 @@
 namespace Node.Web.Models.Matches;
 
 /// <summary>
-/// Eén rij in het matchoverzicht (naar het voorbeeld van Bumble: naam, score,
-/// laatste bericht en het aantal ongelezen berichten).
+/// One row in the match overview (in the style of Bumble: name, score,
+/// last message and the number of unread messages).
 /// </summary>
 public class MatchOverviewViewModel
 {
@@ -10,16 +10,16 @@ public class MatchOverviewViewModel
 
     public string OtherDisplayName { get; set; } = string.Empty;
 
-    /// <summary>Profielfoto van de ander; null = nog geen foto geüpload (letter-avatar als terugval).</summary>
+    /// <summary>Profile picture of the other person; null = no photo uploaded yet (initial-letter avatar as fallback).</summary>
     public string? OtherProfilePictureUrl { get; set; }
 
     public int CompatibilityScore { get; set; }
 
-    /// <summary>Voorbeeld van het laatste bericht in het gesprek (null = nog geen berichten).</summary>
+    /// <summary>Preview of the last message in the conversation (null = no messages yet).</summary>
     public string? LastMessagePreview { get; set; }
 
     public DateTime? LastMessageAt { get; set; }
 
-    /// <summary>Aantal berichten van de ander die ik nog niet gelezen heb.</summary>
+    /// <summary>Number of messages from the other person I haven't read yet.</summary>
     public int UnreadCount { get; set; }
 }

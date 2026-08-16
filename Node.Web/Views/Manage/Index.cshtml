@@ -1,4 +1,4 @@
-@* Gebruikersparametrisatie: eigen profielvelden aanpassen. *@
+@* User parametrization: editing the own profile fields. *@
 @model Node.Web.Models.Account.ManageProfileViewModel
 @{
     ViewData["Title"] = Localizer["ManageProfile_Title"];
@@ -8,7 +8,7 @@
     <div class="col-md-8 col-lg-6">
         <h1>@ViewData["Title"]</h1>
         <p class="text-muted">
-            @Localizer["ManageProfile_Uitleg"]
+            @Localizer["ManageProfile_Explanation"]
         </p>
 
         <form asp-action="Index" method="post" enctype="multipart/form-data">
@@ -16,9 +16,9 @@
 
             <div class="mb-3">
                 <label asp-for="ProfilePicture" class="form-label"></label>
-                @if (!string.IsNullOrEmpty(Model.HuidigeProfielFotoUrl))
+                @if (!string.IsNullOrEmpty(Model.CurrentProfilePictureUrl))
                 {
-                    <img src="@Model.HuidigeProfielFotoUrl" alt="@Localizer["ManageProfile_HuidigeFotoAlt"]" class="d-block mb-2 rounded" style="width: 120px; height: 120px; object-fit: cover;" />
+                    <img src="@Model.CurrentProfilePictureUrl" alt="@Localizer["ManageProfile_CurrentPhotoAlt"]" class="d-block mb-2 rounded" style="width: 120px; height: 120px; object-fit: cover;" />
                 }
                 <input asp-for="ProfilePicture" class="form-control" type="file" accept="image/jpeg,image/png,image/webp" />
                 <span asp-validation-for="ProfilePicture" class="text-danger"></span>
@@ -76,7 +76,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary">@Localizer["ManageProfile_Opslaan"]</button>
+            <button type="submit" class="btn btn-primary">@Localizer["ManageProfile_Save"]</button>
             <a asp-action="ChangePassword" class="btn btn-outline-secondary">@Localizer["ChangePassword_Title"]</a>
         </form>
     </div>

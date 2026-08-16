@@ -9,28 +9,25 @@ using Node.Data.Services;
 namespace Node.Data.Data;
 
 /// <summary>
-/// Uitgebreide seeding bij het opstarten van een lege databank.
-/// Alles is deterministisch zodat elke run dezelfde
-/// demogegevens oplevert: rollen, gebruikers, horoscopen met posities,
-/// swipes, matches en meldingen.
+/// Extensive seeding at startup of an empty database.
+/// Everything is deterministic so every run produces the same
+/// demo data: roles, users, natal charts with placements, swipes,
+/// matches and reports.
 ///
-/// De demo-leden zijn bekende publieke figuren met gepubliceerde geboortegegevens
-/// (naam, datum, tijd, plaats) zodat de horoscoopberekening (Swiss Ephemeris)
-/// tegen bekende, extern verifieerbare horoscopen getest kan worden. Coördinaten
-/// zijn zelf opgezocht op basis van de opgegeven geboorteplaats; enkele plaatsen
-/// waren dubbelzinnig (bv. enkel een staat of provincie) en zijn dan aangevuld
-/// met de meest gedocumenteerde specifieke geboorteplaats van die persoon
-/// (zie de opmerkingen bij Zendaya Coleman en Travis Kelce hieronder).
+/// The demo members are well-known public figures with published birth data
+/// (name, date, time, place) so the chart calculation (Swiss Ephemeris) can
+/// be tested against known, externally verifiable charts. Coordinates were
+/// looked up based on the given birth place.
 /// </summary>
 public static class DbSeeder
 {
-    /// <summary>De drie actieve rollen van de applicatie.</summary>
-    public const string RolAdmin = "Admin";
-    public const string RolModerator = "Moderator";
-    public const string RolLid = "Lid";
+    /// <summary>The three active roles of the application.</summary>
+    public const string RoleAdmin = "Admin";
+    public const string RoleModerator = "Moderator";
+    public const string RoleMember = "Lid";
 
-    /// <summary>Standaardwachtwoord voor demo-accounts (alleen voor seeding/demo).</summary>
-    private const string DemoWachtwoord = "Node!2026";
+    /// <summary>Default password for demo accounts (seeding/demo only).</summary>
+    private const string DemoPassword = "Node!2026";
 
     public static async Task SeedAsync(IServiceProvider services)
     {
@@ -41,214 +38,208 @@ public static class DbSeeder
         var matchInterpretationService = services.GetRequiredService<IMatchInterpretationService>();
         var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("DbSeeder");
 
-        // Openstaande migraties automatisch toepassen zodat de databank
-        // altijd de juiste structuur heeft bij het opstarten.
+        // Automatically apply pending migrations so the database always has
+        // the correct structure at startup.
         await context.Database.MigrateAsync();
 
-        await SeedRollenAsync(roleManager);
-        var gebruikers = await SeedGebruikersAsync(userManager, logger);
-        await SeedPartnerPreferencesAsync(context, gebruikers);
-        await SeedHoroscopenAsync(context, gebruikers, natalChartCalculator);
-        await SeedSwipesEnMatchesAsync(context, gebruikers, matchInterpretationService);
-        // Chat conversations no longer live in this database since the
-        // GetStream integration, so they aren't seeded here.
-        await SeedMeldingenAsync(context, gebruikers);
+        await SeedRolesAsync(roleManager);
+        var users = await SeedUsersAsync(userManager, logger);
+        await SeedPartnerPreferencesAsync(context, users);
+        await SeedNatalChartsAsync(context, users, natalChartCalculator);
+        await SeedSwipesAndMatchesAsync(context, users, matchInterpretationService);
+        // Chat conversations no longer live in this database
+        // GetStream integration, so they aren't seeded here
+        await SeedReportsAsync(context, users);
 
-        logger.LogInformation("Seeding afgerond.");
+        logger.LogInformation("Seeding complete.");
     }
 
-    private static async Task SeedRollenAsync(RoleManager<IdentityRole> roleManager)
+    private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
     {
-        foreach (var rol in new[] { RolAdmin, RolModerator, RolLid })
+        foreach (var role in new[] { RoleAdmin, RoleModerator, RoleMember })
         {
-            if (!await roleManager.RoleExistsAsync(rol))
+            if (!await roleManager.RoleExistsAsync(role))
             {
-                await roleManager.CreateAsync(new IdentityRole(rol));
+                await roleManager.CreateAsync(new IdentityRole(role));
             }
         }
     }
 
     /// <summary>
-    /// Maakt de demo-accounts aan: één beheerder, één moderator en 24 leden
-    /// (bekende publieke figuren met gepubliceerde geboortegegevens).
-    /// E-mail staat meteen op bevestigd zodat de demo-accounts kunnen inloggen
-    /// (echte registraties moeten hun e-mail wél eerst bevestigen).
+    /// Creates the demo accounts: one admin, one moderator and 24 members
+    /// (well-known public figures with published birth data).
+    /// Email is confirmed right away so the demo accounts can log in
+    /// (real registrations do need to confirm their email first).
     /// </summary>
-    private static async Task<List<ApplicationUser>> SeedGebruikersAsync(
+    private static async Task<List<ApplicationUser>> SeedUsersAsync(
         UserManager<ApplicationUser> userManager, ILogger logger)
     {
-        // (naam, e-mail, geboortedatum, geboortetijd, plaats, lat, lng, tijd onbekend?, rol, gender)
-        var definities = new (string Naam, string Email, DateOnly Datum, TimeOnly Tijd,
-            string Plaats, decimal Lat, decimal Lng, bool TijdOnbekend, string Rol, Gender Gender)[]
+        // (name, email, birth date, birth time, place, lat, lng, time unknown?, role, gender)
+        var definitions = new (string Name, string Email, DateOnly Date, TimeOnly Time,
+            string Place, decimal Lat, decimal Lng, bool TimeUnknown, string Role, Gender Gender)[]
         {
             ("Beheerder", "admin@node.be", new(1990, 1, 15), new(8, 30), "Brussel, België",
-                50.850300m, 4.351700m, false, RolAdmin, Gender.Male),
+                50.850300m, 4.351700m, false, RoleAdmin, Gender.Male),
             ("Mo de Moderator", "moderator@node.be", new(1992, 6, 21), new(14, 0), "Gent, België",
-                51.054300m, 3.717400m, false, RolModerator, Gender.Female),
+                51.054300m, 3.717400m, false, RoleModerator, Gender.Female),
 
             ("Meghan Markle", "meghan.markle@demo.node.be", new(1981, 8, 4), new(4, 46),
-                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RolLid, Gender.Female),
+                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RoleMember, Gender.Female),
             ("Prince Harry", "prince.harry@demo.node.be", new(1984, 9, 15), new(16, 20),
-                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, false, RolLid, Gender.Male),
+                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, false, RoleMember, Gender.Male),
             ("JFK Jr", "jfk.jr@demo.node.be", new(1960, 11, 25), new(0, 22),
-                "Washington D.C., Verenigde Staten", 38.907192m, -77.036873m, false, RolLid, Gender.Male),
+                "Washington D.C., Verenigde Staten", 38.907192m, -77.036873m, false, RoleMember, Gender.Male),
             ("Carolyn Bessette", "carolyn.bessette@demo.node.be", new(1966, 1, 7), new(8, 45),
-                "New York, Verenigde Staten", 40.712776m, -74.005974m, false, RolLid, Gender.Female),
-            // Enkel "California" opgegeven (een staat, geen plaats); aangevuld met Oakland,
-            // haar gedocumenteerde geboortestad.
+                "New York, Verenigde Staten", 40.712776m, -74.005974m, false, RoleMember, Gender.Female),
             ("Zendaya Coleman", "zendaya.coleman@demo.node.be", new(1996, 9, 1), new(18, 1),
-                "Oakland, Californië, Verenigde Staten", 37.804363m, -122.271111m, false, RolLid, Gender.Female),
+                "Oakland, Californië, Verenigde Staten", 37.804363m, -122.271111m, false, RoleMember, Gender.Female),
             ("Tom Holland", "tom.holland@demo.node.be", new(1996, 6, 1), new(12, 0),
-                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, true, RolLid, Gender.Male),
+                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, true, RoleMember, Gender.Male),
             ("Taylor Swift", "taylor.swift@demo.node.be", new(1989, 12, 13), new(8, 36),
-                "Reading (Pennsylvania), Verenigde Staten", 40.335560m, -75.926880m, false, RolLid, Gender.Female),
-            // Geen land opgegeven; Westlake, Ohio is haar/zijn gedocumenteerde geboorteplaats.
+                "Reading (Pennsylvania), Verenigde Staten", 40.335560m, -75.926880m, false, RoleMember, Gender.Female),
             ("Travis Kelce", "travis.kelce@demo.node.be", new(1989, 10, 5), new(5, 49),
-                "Westlake (Ohio), Verenigde Staten", 41.458401m, -81.918404m, false, RolLid, Gender.Male),
+                "Westlake (Ohio), Verenigde Staten", 41.458401m, -81.918404m, false, RoleMember, Gender.Male),
             ("Barack Obama", "barack.obama@demo.node.be", new(1961, 8, 4), new(19, 24),
-                "Honolulu, Verenigde Staten", 21.306944m, -157.858337m, false, RolLid, Gender.Male),
+                "Honolulu, Verenigde Staten", 21.306944m, -157.858337m, false, RoleMember, Gender.Male),
             ("Michelle Obama", "michelle.obama@demo.node.be", new(1964, 1, 17), new(12, 0),
-                "Chicago, Verenigde Staten", 41.878113m, -87.629799m, true, RolLid, Gender.Female),
+                "Chicago, Verenigde Staten", 41.878113m, -87.629799m, true, RoleMember, Gender.Female),
             ("George Clooney", "george.clooney@demo.node.be", new(1961, 5, 6), new(2, 58),
-                "Lexington (Kentucky), Verenigde Staten", 38.040585m, -84.503716m, false, RolLid, Gender.Male),
+                "Lexington (Kentucky), Verenigde Staten", 38.040585m, -84.503716m, false, RoleMember, Gender.Male),
             ("Amal Clooney", "amal.clooney@demo.node.be", new(1978, 2, 3), new(12, 0),
-                "Beiroet, Libanon", 33.893891m, 35.501801m, true, RolLid, Gender.Female),
+                "Beiroet, Libanon", 33.893891m, 35.501801m, true, RoleMember, Gender.Female),
             ("Prince William", "prince.william@demo.node.be", new(1982, 6, 21), new(21, 3),
-                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, false, RolLid, Gender.Male),
+                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, false, RoleMember, Gender.Male),
             ("Kate Middleton", "kate.middleton@demo.node.be", new(1982, 1, 9), new(19, 0),
-                "Reading, Engeland", 51.454264m, -0.978180m, false, RolLid, Gender.Female),
+                "Reading, Engeland", 51.454264m, -0.978180m, false, RoleMember, Gender.Female),
             ("JFK", "jfk@demo.node.be", new(1917, 5, 29), new(15, 0),
-                "Brookline (Massachusetts), Verenigde Staten", 42.331798m, -71.121269m, false, RolLid, Gender.Male),
+                "Brookline (Massachusetts), Verenigde Staten", 42.331798m, -71.121269m, false, RoleMember, Gender.Male),
             ("Marilyn Monroe", "marilyn.monroe@demo.node.be", new(1926, 6, 1), new(9, 30),
-                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RolLid, Gender.Female),
+                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RoleMember, Gender.Female),
             ("Jackie Kennedy", "jackie.kennedy@demo.node.be", new(1929, 7, 28), new(14, 30),
-                "New York, Verenigde Staten", 40.712776m, -74.005974m, false, RolLid, Gender.Female),
+                "New York, Verenigde Staten", 40.712776m, -74.005974m, false, RoleMember, Gender.Female),
             ("Ben Affleck", "ben.affleck@demo.node.be", new(1972, 8, 15), new(2, 53),
-                "Berkeley (Californië), Verenigde Staten", 37.871593m, -122.272743m, false, RolLid, Gender.Male),
+                "Berkeley (Californië), Verenigde Staten", 37.871593m, -122.272743m, false, RoleMember, Gender.Male),
             ("Jennifer Lopez", "jennifer.lopez@demo.node.be", new(1969, 7, 24), new(12, 0),
-                "The Bronx (New York), Verenigde Staten", 40.844782m, -73.864827m, true, RolLid, Gender.Female),
+                "The Bronx (New York), Verenigde Staten", 40.844782m, -73.864827m, true, RoleMember, Gender.Female),
             ("Brad Pitt", "brad.pitt@demo.node.be", new(1963, 12, 18), new(6, 31),
-                "Shawnee (Oklahoma), Verenigde Staten", 35.327332m, -96.925285m, false, RolLid, Gender.Male),
+                "Shawnee (Oklahoma), Verenigde Staten", 35.327332m, -96.925285m, false, RoleMember, Gender.Male),
             ("Jennifer Aniston", "jennifer.aniston@demo.node.be", new(1969, 2, 11), new(22, 22),
-                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RolLid, Gender.Female),
+                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RoleMember, Gender.Female),
             ("Angelina Jolie", "angelina.jolie@demo.node.be", new(1975, 6, 4), new(9, 9),
-                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RolLid, Gender.Female),
+                "Los Angeles, Verenigde Staten", 34.052235m, -118.243683m, false, RoleMember, Gender.Female),
             ("King Charles", "king.charles@demo.node.be", new(1948, 11, 14), new(21, 14),
-                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, false, RolLid, Gender.Male),
+                "Londen, Verenigd Koninkrijk", 51.507351m, -0.127758m, false, RoleMember, Gender.Male),
             ("Princess Diana", "princess.diana@demo.node.be", new(1961, 7, 1), new(19, 45),
-                "Sandringham, Verenigd Koninkrijk", 52.834721m, 0.505600m, false, RolLid, Gender.Female),
+                "Sandringham, Verenigd Koninkrijk", 52.834721m, 0.505600m, false, RoleMember, Gender.Female),
         };
 
-        var resultaat = new List<ApplicationUser>();
+        var result = new List<ApplicationUser>();
 
-        foreach (var d in definities)
+        foreach (var d in definitions)
         {
-            var bestaande = await userManager.FindByEmailAsync(d.Email);
-            if (bestaande is not null)
+            var existing = await userManager.FindByEmailAsync(d.Email);
+            if (existing is not null)
             {
                 // Backfill accounts from a seeding run before the gender field
                 // existed, so the swipe deck works for them too.
-                if (bestaande.Gender != d.Gender)
+                if (existing.Gender != d.Gender)
                 {
-                    bestaande.Gender = d.Gender;
-                    await userManager.UpdateAsync(bestaande);
+                    existing.Gender = d.Gender;
+                    await userManager.UpdateAsync(existing);
                 }
 
-                resultaat.Add(bestaande);
+                result.Add(existing);
                 continue;
             }
 
-            var gebruiker = new ApplicationUser
+            var user = new ApplicationUser
             {
                 UserName = d.Email,
                 Email = d.Email,
-                EmailConfirmed = true, // Demo-accounts slaan de e-mailverificatie over.
-                DisplayName = d.Naam,
-                BirthDate = d.Datum,
-                BirthTime = d.Tijd,
-                BirthTimeIsUnknown = d.TijdOnbekend,
-                BirthPlace = d.Plaats,
+                EmailConfirmed = true, // Demo accounts skip email verification.
+                DisplayName = d.Name,
+                BirthDate = d.Date,
+                BirthTime = d.Time,
+                BirthTimeIsUnknown = d.TimeUnknown,
+                BirthPlace = d.Place,
                 BirthLatitude = d.Lat,
                 BirthLongitude = d.Lng,
                 Gender = d.Gender,
                 CreatedAt = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc),
             };
 
-            var aangemaakt = await userManager.CreateAsync(gebruiker, DemoWachtwoord);
-            if (!aangemaakt.Succeeded)
+            var created = await userManager.CreateAsync(user, DemoPassword);
+            if (!created.Succeeded)
             {
-                logger.LogError("Seeden van gebruiker {Email} mislukt: {Fouten}",
-                    d.Email, string.Join(", ", aangemaakt.Errors.Select(e => e.Description)));
+                logger.LogError("Seeding user {Email} failed: {Errors}",
+                    d.Email, string.Join(", ", created.Errors.Select(e => e.Description)));
                 continue;
             }
 
-            await userManager.AddToRoleAsync(gebruiker, d.Rol);
-            resultaat.Add(gebruiker);
+            await userManager.AddToRoleAsync(user, d.Role);
+            result.Add(user);
         }
 
-        return resultaat;
+        return result;
     }
 
     /// <summary>
     /// Sets a partner preference for every demo user: the opposite gender,
     /// consistent with the seeded couples below (all man-woman).
     /// </summary>
-    private static async Task SeedPartnerPreferencesAsync(ApplicationDbContext context, List<ApplicationUser> gebruikers)
+    private static async Task SeedPartnerPreferencesAsync(ApplicationDbContext context, List<ApplicationUser> users)
     {
         if (await context.PartnerPreferences.AnyAsync())
         {
-            return; // Preferences already exist: nothing to do.
+            return;
         }
 
-        foreach (var gebruiker in gebruikers)
+        foreach (var user in users)
         {
-            var oppositeGender = gebruiker.Gender == Gender.Male ? Gender.Female : Gender.Male;
-            context.PartnerPreferences.Add(new PartnerPreference { UserId = gebruiker.Id, Gender = oppositeGender });
+            var oppositeGender = user.Gender == Gender.Male ? Gender.Female : Gender.Male;
+            context.PartnerPreferences.Add(new PartnerPreference { UserId = user.Id, Gender = oppositeGender });
         }
 
         await context.SaveChangesAsync();
     }
 
     /// <summary>
-    /// Berekent en bewaart voor elk lid de echte geboortehoroscoop (Swiss
-    /// Ephemeris) met alle posities (Zon t.e.m. Pluto plus Ascendant).
+    /// Calculates and saves the real birth chart (Swiss Ephemeris) for every
+    /// member, with all placements (Sun through Pluto plus Ascendant).
     /// </summary>
-    private static async Task SeedHoroscopenAsync(
-        ApplicationDbContext context, List<ApplicationUser> gebruikers, INatalChartCalculator calculator)
+    private static async Task SeedNatalChartsAsync(
+        ApplicationDbContext context, List<ApplicationUser> users, INatalChartCalculator calculator)
     {
         if (await context.NatalCharts.AnyAsync())
         {
-            return; // Horoscopen bestaan al: niets te doen.
+            return; 
         }
 
-        foreach (var gebruiker in gebruikers)
+        foreach (var user in users)
         {
-            var horoscoop = calculator.Calculate(gebruiker);
-            context.NatalCharts.Add(horoscoop);
+            var chart = calculator.Calculate(user);
+            context.NatalCharts.Add(chart);
         }
 
         await context.SaveChangesAsync();
     }
 
     /// <summary>
-    /// Seedt wederzijdse likes (die matches opleveren) enkel voor paren die
-    /// een gedocumenteerde echte relatie hebben (huwelijk of publieke relatie).
-    /// Er wordt bewust geen eenzijdige interesse of afwijzing tussen specifieke
-    /// publieke figuren verzonnen: Marilyn Monroe en Angelina Jolie blijven
-    /// daarom ongekoppeld in deze demo, net als bij een echte swipe-app.
+    /// Seeds mutual likes (which produce matches) only for pairs with a
+    /// documented real relationship (marriage or public relationship).
     /// </summary>
-    private static async Task SeedSwipesEnMatchesAsync(
-        ApplicationDbContext context, List<ApplicationUser> gebruikers, IMatchInterpretationService matchInterpretationService)
+    private static async Task SeedSwipesAndMatchesAsync(
+        ApplicationDbContext context, List<ApplicationUser> users, IMatchInterpretationService matchInterpretationService)
     {
         if (await context.Swipes.AnyAsync())
         {
             return;
         }
 
-        var perEmail = gebruikers.ToDictionary(g => g.Email!, g => g);
+        var byEmail = users.ToDictionary(g => g.Email!, g => g);
 
-        // Wederzijdse likes: gedocumenteerde koppels, worden matches.
-        var wederzijds = new[]
+        // Mutual likes: documented couples, become matches.
+        var mutualLikes = new[]
         {
             ("meghan.markle@demo.node.be", "prince.harry@demo.node.be"),
             ("jfk.jr@demo.node.be", "carolyn.bessette@demo.node.be"),
@@ -263,62 +254,60 @@ public static class DbSeeder
             ("king.charles@demo.node.be", "princess.diana@demo.node.be"),
         };
 
-        var tijdstip = new DateTime(2026, 2, 1, 20, 0, 0, DateTimeKind.Utc);
+        var timestamp = new DateTime(2026, 2, 1, 20, 0, 0, DateTimeKind.Utc);
 
-        foreach (var (a, b) in wederzijds)
+        foreach (var (a, b) in mutualLikes)
         {
-            var userA = perEmail[a];
-            var userB = perEmail[b];
+            var userA = byEmail[a];
+            var userB = byEmail[b];
 
-            context.Swipes.Add(new Swipe { SwiperUserId = userA.Id, TargetUserId = userB.Id, IsLike = true, CreatedAt = tijdstip });
-            context.Swipes.Add(new Swipe { SwiperUserId = userB.Id, TargetUserId = userA.Id, IsLike = true, CreatedAt = tijdstip.AddHours(2) });
+            context.Swipes.Add(new Swipe { SwiperUserId = userA.Id, TargetUserId = userB.Id, IsLike = true, CreatedAt = timestamp });
+            context.Swipes.Add(new Swipe { SwiperUserId = userB.Id, TargetUserId = userA.Id, IsLike = true, CreatedAt = timestamp.AddHours(2) });
 
-            // Afspraak: User1Id alfabetisch vóór User2Id zodat een paar uniek is.
-            var (eerste, tweede) = string.CompareOrdinal(userA.Id, userB.Id) < 0 ? (userA, userB) : (userB, userA);
+            var (first, second) = string.CompareOrdinal(userA.Id, userB.Id) < 0 ? (userA, userB) : (userB, userA);
 
-            var chartA = await context.NatalCharts.Include(n => n.Placements).FirstAsync(n => n.UserId == eerste.Id);
-            var chartB = await context.NatalCharts.Include(n => n.Placements).FirstAsync(n => n.UserId == tweede.Id);
-            var (score, _) = DemoSynastrie.Bereken(chartA, chartB);
+            var chartA = await context.NatalCharts.Include(n => n.Placements).FirstAsync(n => n.UserId == first.Id);
+            var chartB = await context.NatalCharts.Include(n => n.Placements).FirstAsync(n => n.UserId == second.Id);
+            var (score, _) = DemoSynastry.Calculate(chartA, chartB);
 
-            // De uitlegtekst komt van Claude op basis van de volledige horoscopen;
-            // de score zelf blijft hierboven deterministisch berekend.
-            var uitleg = await matchInterpretationService.SchrijfInterpretatieAsync(eerste, chartA, tweede, chartB, score, "nl");
+            // The explanation text comes from Claude API based on the full natal charts;
+            // the score itself stays deterministically calculated above.
+            var explanation = await matchInterpretationService.WriteMatchInterpretationAsync(first, chartA, second, chartB, score, "nl");
 
             context.Matches.Add(new Match
             {
-                User1Id = eerste.Id,
-                User2Id = tweede.Id,
+                User1Id = first.Id,
+                User2Id = second.Id,
                 CompatibilityScore = score,
-                CompatibilityExplanation = uitleg,
+                CompatibilityExplanation = explanation,
                 CompatibilityExplanationLanguage = "nl",
                 Status = MatchStatus.Active,
-                MatchedAt = tijdstip.AddHours(2),
+                MatchedAt = timestamp.AddHours(2),
             });
 
-            tijdstip = tijdstip.AddDays(1);
+            timestamp = timestamp.AddDays(1);
         }
 
         await context.SaveChangesAsync();
     }
 
     /// <summary>
-    /// Seedt twee meldingen zodat het moderatiescherm data heeft. De reden is
-    /// bewust neutrale testtekst (geen echte klacht) om geen gedrag toe te
-    /// schrijven aan de publieke figuren die als demogebruiker dienen.
+    /// Seeds two reports so the moderation screen has data. The reason is
+    /// deliberately neutral test text (not a real complaint)
     /// </summary>
-    private static async Task SeedMeldingenAsync(ApplicationDbContext context, List<ApplicationUser> gebruikers)
+    private static async Task SeedReportsAsync(ApplicationDbContext context, List<ApplicationUser> users)
     {
         if (await context.Reports.AnyAsync())
         {
             return;
         }
 
-        var perEmail = gebruikers.ToDictionary(g => g.Email!, g => g);
+        var byEmail = users.ToDictionary(g => g.Email!, g => g);
 
         context.Reports.Add(new Report
         {
-            ReporterUserId = perEmail["marilyn.monroe@demo.node.be"].Id,
-            ReportedUserId = perEmail["angelina.jolie@demo.node.be"].Id,
+            ReporterUserId = byEmail["marilyn.monroe@demo.node.be"].Id,
+            ReportedUserId = byEmail["angelina.jolie@demo.node.be"].Id,
             Reason = "Testmelding voor de moderatiedemo (geen echte klacht).",
             IsResolved = false,
             CreatedAt = new DateTime(2026, 2, 20, 9, 30, 0, DateTimeKind.Utc),
@@ -326,8 +315,8 @@ public static class DbSeeder
 
         context.Reports.Add(new Report
         {
-            ReporterUserId = perEmail["jackie.kennedy@demo.node.be"].Id,
-            ReportedUserId = perEmail["ben.affleck@demo.node.be"].Id,
+            ReporterUserId = byEmail["jackie.kennedy@demo.node.be"].Id,
+            ReportedUserId = byEmail["ben.affleck@demo.node.be"].Id,
             Reason = "Testmelding voor de moderatiedemo (geen echte klacht).",
             IsResolved = true,
             CreatedAt = new DateTime(2026, 2, 25, 18, 45, 0, DateTimeKind.Utc),

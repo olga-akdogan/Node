@@ -8,10 +8,10 @@ namespace Node.Web.Services.Interfaces;
 public interface IProfilePictureService
 {
     /// <summary>Content-type -> file extension for the types allowed as a profile picture.</summary>
-    IReadOnlyDictionary<string, string> ToegestaneTypes { get; }
+    IReadOnlyDictionary<string, string> AllowedTypes { get; }
 
-    long MaxGrootteBytes { get; }
+    long MaxSizeBytes { get; }
 
     /// <summary>Saves the file to wwwroot/uploads/profiles, replacing any previous photo for this user, and returns its public URL.</summary>
-    Task<string> BewaarAsync(string userId, IFormFile foto);
+    Task<string> SaveAsync(string userId, IFormFile photo);
 }

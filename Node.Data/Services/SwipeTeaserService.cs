@@ -7,7 +7,7 @@ using Node.Data.Models;
 namespace Node.Data.Services;
 
 /// <summary>
-/// Calls the Claude API (Anthropic) for the swipe card's compatibility-test
+/// Calls the Claude API for the swipe card's compatibility-test
 /// blurb and first-date idea. Both parts come from a single answer,
 /// separated by a fixed delimiter, so only one API call is needed per card.
 /// </summary>
@@ -79,21 +79,21 @@ public class SwipeTeaserService : ISwipeTeaserService
         sb.AppendLine($"Compatibility score: {score}/100.");
         sb.AppendLine();
         sb.AppendLine($"Chart of {viewer.DisplayName} (the viewer):");
-        BeschrijfPlaatsingen(sb, viewerChart);
+        DescribePlacements(sb, viewerChart);
         sb.AppendLine();
         sb.AppendLine($"Chart of {candidate.DisplayName} (the candidate on the card):");
-        BeschrijfPlaatsingen(sb, candidateChart);
+        DescribePlacements(sb, candidateChart);
         sb.AppendLine();
         sb.AppendLine($"Write the compatibility-test blurb and first-date idea for {viewer.DisplayName} about {candidate.DisplayName}.");
 
         return sb.ToString();
     }
 
-    private static void BeschrijfPlaatsingen(StringBuilder sb, NatalChart chart)
+    private static void DescribePlacements(StringBuilder sb, NatalChart chart)
     {
-        foreach (var plaatsing in chart.Placements.OrderBy(p => p.Body))
+        foreach (var placement in chart.Placements.OrderBy(p => p.Body))
         {
-            sb.AppendLine($"- {plaatsing.Body} in {plaatsing.Sign} (house {plaatsing.House})");
+            sb.AppendLine($"- {placement.Body} in {placement.Sign} (house {placement.House})");
         }
     }
 

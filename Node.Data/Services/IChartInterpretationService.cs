@@ -3,7 +3,7 @@ using Node.Data.Models;
 namespace Node.Data.Services;
 
 /// <summary>
-/// Writes the "My chart" interpretation texts with Claude (Anthropic): an
+/// Writes the "My chart" interpretation texts with Claude API: an
 /// interpretation of the full natal chart, and a text about what the user is
 /// looking for in a partner/relationship based on that same chart.
 /// </summary>

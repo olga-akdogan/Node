@@ -11,13 +11,13 @@ using Node.Web.Resources;
 namespace Node.Web.Controllers;
 
 /// <summary>
-/// De meldingenwachtrij: gerapporteerde gebruikers bekijken en afhandelen.
-/// Toegankelijk voor Moderator en Admin — dit is wat de rol Moderator
-/// concreet onderscheidt van een gewoon lid. Moderator kan een gerapporteerde
-/// gebruiker blokkeren, maar niet deblokkeren of rollen beheren: dat blijft
-/// voorbehouden aan Admin (Admin/Users).
+/// The report queue: viewing and handling reported users. Accessible to
+/// Moderator and Admin — this is what concretely distinguishes the
+/// Moderator role from a regular member. A Moderator can block a reported
+/// user, but not unblock or manage roles: that stays reserved for Admin
+/// (Admin/Users).
 /// </summary>
-[Authorize(Roles = $"{DbSeeder.RolModerator},{DbSeeder.RolAdmin}")]
+[Authorize(Roles = $"{DbSeeder.RoleModerator},{DbSeeder.RoleAdmin}")]
 public class ModerationController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -37,21 +37,21 @@ public class ModerationController : Controller
         _logger = logger;
     }
 
-    /// <summary>Overzicht van de meldingen, standaard enkel de nog niet afgehandelde.</summary>
+    /// <summary>Overview of the reports, by default only the ones not yet handled.</summary>
     [HttpGet]
-    public async Task<IActionResult> Index(bool alleenOnopgelost = true)
+    public async Task<IActionResult> Index(bool unresolvedOnly = true)
     {
         var query = _context.Reports
             .Include(r => r.ReporterUser)
             .Include(r => r.ReportedUser)
             .AsQueryable();
 
-        if (alleenOnopgelost)
+        if (unresolvedOnly)
         {
             query = query.Where(r => !r.IsResolved);
         }
 
-        var meldingen = await query
+        var reports = await query
             .OrderByDescending(r => r.CreatedAt)
             .Select(r => new ReportOverviewViewModel
             {
@@ -66,70 +66,70 @@ public class ModerationController : Controller
             })
             .ToListAsync();
 
-        ViewData["AlleenOnopgelost"] = alleenOnopgelost;
-        return View(meldingen);
+        ViewData["UnresolvedOnly"] = unresolvedOnly;
+        return View(reports);
     }
 
-    /// <summary>Markeert een melding als afgehandeld.</summary>
+    /// <summary>Marks a report as resolved.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Resolve(int id, bool alleenOnopgelost = true)
+    public async Task<IActionResult> Resolve(int id, bool unresolvedOnly = true)
     {
-        var melding = await _context.Reports.FindAsync(id);
-        if (melding is null)
+        var report = await _context.Reports.FindAsync(id);
+        if (report is null)
         {
             return NotFound();
         }
 
-        melding.IsResolved = true;
+        report.IsResolved = true;
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("{Moderator} handelde melding {Id} af.", User.Identity?.Name, id);
+        _logger.LogInformation("{Moderator} resolved report {Id}.", User.Identity?.Name, id);
 
-        TempData["Melding"] = _localizer["Moderation_AfgehandeldMelding"].Value;
-        return RedirectToAction(nameof(Index), new { alleenOnopgelost });
+        TempData["Message"] = _localizer["Moderation_ResolvedMessage"].Value;
+        return RedirectToAction(nameof(Index), new { unresolvedOnly });
     }
 
     /// <summary>
-    /// Blokkeert de gerapporteerde gebruiker en markeert de melding meteen als
-    /// afgehandeld. Enkel blokkeren, geen deblokkeren: dat blijft bij Admin.
+    /// Blocks the reported user and marks the report resolved right away.
+    /// Blocking only, no unblocking: that stays with Admin.
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> BlockReportedUser(int id, bool alleenOnopgelost = true)
+    public async Task<IActionResult> BlockReportedUser(int id, bool unresolvedOnly = true)
     {
-        var melding = await _context.Reports.FindAsync(id);
-        if (melding is null)
+        var report = await _context.Reports.FindAsync(id);
+        if (report is null)
         {
             return NotFound();
         }
 
-        var gerapporteerde = await _userManager.FindByIdAsync(melding.ReportedUserId);
-        if (gerapporteerde is null)
+        var reportedUser = await _userManager.FindByIdAsync(report.ReportedUserId);
+        if (reportedUser is null)
         {
             return NotFound();
         }
 
-        if (gerapporteerde.Id == _userManager.GetUserId(User))
+        if (reportedUser.Id == _userManager.GetUserId(User))
         {
-            TempData["Fout"] = "Je kan jezelf niet blokkeren.";
-            return RedirectToAction(nameof(Index), new { alleenOnopgelost });
+            TempData["Error"] = _localizer["Admin_CannotBlockYourself"].Value;
+            return RedirectToAction(nameof(Index), new { unresolvedOnly });
         }
 
-        gerapporteerde.IsBlocked = true;
-        await _userManager.UpdateAsync(gerapporteerde);
+        reportedUser.IsBlocked = true;
+        await _userManager.UpdateAsync(reportedUser);
 
-        // Security stamp vernieuwen zodat een bestaande login-cookie van de
-        // geblokkeerde gebruiker snel ongeldig wordt (zie ook Program.cs).
-        await _userManager.UpdateSecurityStampAsync(gerapporteerde);
+        // Refresh the security stamp so an existing login cookie of the
+        // blocked user becomes invalid quickly (see also Program.cs).
+        await _userManager.UpdateSecurityStampAsync(reportedUser);
 
-        melding.IsResolved = true;
+        report.IsResolved = true;
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("{Moderator} blokkeerde {Email} n.a.v. melding {Id}.",
-            User.Identity?.Name, gerapporteerde.Email, id);
+        _logger.LogInformation("{Moderator} blocked {Email} following report {Id}.",
+            User.Identity?.Name, reportedUser.Email, id);
 
-        TempData["Melding"] = _localizer["Moderation_GeblokkeerdMelding"].Value;
-        return RedirectToAction(nameof(Index), new { alleenOnopgelost });
+        TempData["Message"] = _localizer["Moderation_BlockedMessage"].Value;
+        return RedirectToAction(nameof(Index), new { unresolvedOnly });
     }
 }

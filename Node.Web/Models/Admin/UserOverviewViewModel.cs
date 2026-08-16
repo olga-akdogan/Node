@@ -1,7 +1,7 @@
 namespace Node.Web.Models.Admin;
 
 /// <summary>
-/// Eén rij in het gebruikersbeheerscherm: gebruiker + rollen + blokkeerstatus.
+/// One row in the user management screen: user + roles + blocked status.
 /// </summary>
 public class UserOverviewViewModel
 {
@@ -17,6 +17,6 @@ public class UserOverviewViewModel
 
     public IList<string> Roles { get; set; } = new List<string>();
 
-    /// <summary>Rollen die de gebruiker nog niet heeft (voor de toekennen-dropdown).</summary>
+    /// <summary>Roles the user doesn't have yet (for the assign dropdown).</summary>
     public IList<string> AssignableRoles { get; set; } = new List<string>();
 }

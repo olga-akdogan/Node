@@ -7,10 +7,10 @@ using Node.Data.Models;
 namespace Node.Data.Services;
 
 /// <summary>
-/// Roept de Claude API (Anthropic) op om een leesbare synastrie-interpretatie
-/// te schrijven op basis van beide volledige horoscopen. De compatibiliteitsscore
-/// zelf komt niet van Claude (die blijft deterministisch, zie DemoSynastrie) —
-/// enkel de begeleidende tekst.
+/// Calls the Claude API to write a readable synastry
+/// interpretation based on both full natal charts. The compatibility score
+/// itself doesn't come from Claude (it stays deterministic, see
+/// DemoSynastry) — only the accompanying text does.
 /// </summary>
 public class MatchInterpretationService : IMatchInterpretationService
 {
@@ -25,10 +25,10 @@ public class MatchInterpretationService : IMatchInterpretationService
         _logger = logger;
     }
 
-    public async Task<string> SchrijfInterpretatieAsync(
-        ApplicationUser gebruikerA, NatalChart chartA,
-        ApplicationUser gebruikerB, NatalChart chartB,
-        int compatibiliteitsScore,
+    public async Task<string> WriteMatchInterpretationAsync(
+        ApplicationUser userA, NatalChart chartA,
+        ApplicationUser userB, NatalChart chartB,
+        int compatibilityScore,
         string language)
     {
         try
@@ -38,88 +38,93 @@ public class MatchInterpretationService : IMatchInterpretationService
                 Model = Model,
                 MaxTokens = 400,
                 System = BuildSystemPrompt(language),
-                Messages = [new() { Role = Role.User, Content = BouwPrompt(gebruikerA, chartA, gebruikerB, chartB, compatibiliteitsScore) }],
+                Messages = [new() { Role = Role.User, Content = BuildPrompt(userA, chartA, userB, chartB, compatibilityScore) }],
             });
 
-            var tekst = response.Content
+            var text = response.Content
                 .Select(b => b.Value)
                 .OfType<TextBlock>()
                 .FirstOrDefault()?.Text;
 
-            return string.IsNullOrWhiteSpace(tekst) ? Terugval(gebruikerA, gebruikerB) : OpschonenMarkdown(tekst);
+            return string.IsNullOrWhiteSpace(text) ? Fallback(userA, userB, language) : CleanMarkdown(text);
         }
         catch (Exception ex)
         {
-            // Een tijdelijke storing bij Claude mag het ontstaan van een match
-            // niet blokkeren: terugvaltekst gebruiken en de fout loggen.
+            // A transient Claude outage must not block the match from being
+            // created: use the fallback text and log the error.
             _logger.LogWarning(ex,
-                "Interpretatie via Claude mislukt voor match {UserA}/{UserB}; terugvaltekst gebruikt.",
-                gebruikerA.Id, gebruikerB.Id);
-            return Terugval(gebruikerA, gebruikerB);
+                "Interpretation via Claude failed for match {UserA}/{UserB}; using fallback text.",
+                userA.Id, userB.Id);
+            return Fallback(userA, userB, language);
         }
     }
 
     /// <summary>
-    /// Builds the system prompt in the requested language. The instruction
-    /// itself stays in Dutch (Claude follows it regardless of the source
-    /// language); only the requested answer language changes.
+    /// Builds the system prompt in English (matching ChartInterpretationService
+    /// and SwipeTeaserService): with a Dutch-language instruction body, a
+    /// smaller model like Haiku tends to keep answering in Dutch even when a
+    /// single embedded word asks for another language. Writing the instructions
+    /// themselves in English keeps the requested answer language reliable.
     /// </summary>
     private static string BuildSystemPrompt(string language) =>
-        "Je bent een warme, beeldende astroloog die synastrie (compatibiliteit tussen twee " +
-        "geboortehoroscopen) uitlegt voor een datingapp. Schrijf in het " + LanguageName(language) + ", 3 tot 5 zinnen, " +
-        "in de tweede persoon meervoud ('jullie'). Verwijs concreet naar minstens twee van de " +
-        "opgegeven plaatsingen (bv. \"jouw Maan in Kreeft\"). Wees positief maar eerlijk: benoem " +
-        "gerust een spanning naast de sterke kanten. Antwoord met platte tekst: geen Markdown, geen " +
-        "titel, geen '#'-kopjes, geen opsomming — start meteen met de eerste zin van de uitleg.";
+        "You are a warm, vivid astrologer explaining synastry (compatibility between two " +
+        "natal charts) for a dating app. Write in " + LanguageName(language) + ", 3 to 5 sentences, " +
+        "addressing the couple in the second person plural ('you two'). Refer concretely to at " +
+        "least two of the given placements (e.g. \"your Moon in Cancer\"). Be positive but honest: " +
+        "feel free to mention a tension alongside the strengths. Answer in plain text: no Markdown, " +
+        "no title, no '#' headings, no bullet points — start immediately with the first sentence of the explanation.";
 
-    /// <summary>Maps an ISO 639-1 code to a Dutch language name for the prompt.</summary>
+    /// <summary>Maps an ISO 639-1 code to an English language name for the prompt.</summary>
     internal static string LanguageName(string language) => language switch
     {
-        "en" => "Engels",
-        "fr" => "Frans",
-        _ => "Nederlands",
+        "en" => "English",
+        "fr" => "French",
+        _ => "Dutch",
     };
 
-    private static string BouwPrompt(
-        ApplicationUser gebruikerA, NatalChart chartA,
-        ApplicationUser gebruikerB, NatalChart chartB,
+    private static string BuildPrompt(
+        ApplicationUser userA, NatalChart chartA,
+        ApplicationUser userB, NatalChart chartB,
         int score)
     {
         var sb = new StringBuilder();
-        sb.AppendLine($"Compatibiliteitsscore: {score}/100.");
+        sb.AppendLine($"Compatibility score: {score}/100.");
         sb.AppendLine();
-        sb.AppendLine($"Horoscoop van {gebruikerA.DisplayName}:");
-        BeschrijfPlaatsingen(sb, chartA);
+        sb.AppendLine($"Chart of {userA.DisplayName}:");
+        DescribePlacements(sb, chartA);
         sb.AppendLine();
-        sb.AppendLine($"Horoscoop van {gebruikerB.DisplayName}:");
-        BeschrijfPlaatsingen(sb, chartB);
+        sb.AppendLine($"Chart of {userB.DisplayName}:");
+        DescribePlacements(sb, chartB);
         sb.AppendLine();
-        sb.AppendLine($"Schrijf de synastrie-interpretatie voor {gebruikerA.DisplayName} en {gebruikerB.DisplayName}.");
+        sb.AppendLine($"Write the synastry interpretation for {userA.DisplayName} and {userB.DisplayName}.");
 
         return sb.ToString();
     }
 
-    private static void BeschrijfPlaatsingen(StringBuilder sb, NatalChart chart)
+    private static void DescribePlacements(StringBuilder sb, NatalChart chart)
     {
-        foreach (var plaatsing in chart.Placements.OrderBy(p => p.Body))
+        foreach (var placement in chart.Placements.OrderBy(p => p.Body))
         {
-            sb.AppendLine($"- {plaatsing.Body} in {plaatsing.Sign} (huis {plaatsing.House})");
+            sb.AppendLine($"- {placement.Body} in {placement.Sign} (house {placement.House})");
         }
     }
 
     /// <summary>
-    /// Claude volgt de instructie "geen Markdown" niet altijd; een enkele
-    /// leidende '#'-titelregel wordt hier defensief verwijderd zodat de tekst
-    /// niet met een letterlijke hekjeskop in de &lt;p&gt; belandt.
+    /// Claude doesn't always follow the "no Markdown" instruction; a single
+    /// leading '#' title line is defensively stripped here so the text
+    /// doesn't end up with a literal hash heading inside the &lt;p&gt;.
     /// </summary>
-    private static string OpschonenMarkdown(string tekst)
+    private static string CleanMarkdown(string text)
     {
-        var regels = tekst.Trim().Split('\n');
-        var start = regels[0].TrimStart().StartsWith('#') ? 1 : 0;
-        return string.Join('\n', regels.Skip(start)).Trim();
+        var lines = text.Trim().Split('\n');
+        var start = lines[0].TrimStart().StartsWith('#') ? 1 : 0;
+        return string.Join('\n', lines.Skip(start)).Trim();
     }
 
-    private static string Terugval(ApplicationUser gebruikerA, ApplicationUser gebruikerB) =>
-        $"{gebruikerA.DisplayName} en {gebruikerB.DisplayName} matchen op basis van hun horoscopen " +
-        "(interpretatietekst kon niet opgehaald worden).";
+    private static string Fallback(ApplicationUser userA, ApplicationUser userB, string language) => language switch
+    {
+        "en" => $"{userA.DisplayName} and {userB.DisplayName} match based on their charts (interpretation text could not be retrieved).",
+        "fr" => $"{userA.DisplayName} et {userB.DisplayName} sont compatibles selon leurs thèmes (le texte d'interprétation n'a pas pu être récupéré).",
+        _ => $"{userA.DisplayName} en {userB.DisplayName} matchen op basis van hun horoscopen (interpretatietekst kon niet opgehaald worden).",
+    };
 }

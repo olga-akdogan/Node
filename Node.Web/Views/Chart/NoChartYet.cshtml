@@ -1,0 +1,15 @@
+@* Empty state: this user's natal chart hasn't been calculated yet. *@
+@{
+    ViewData["Title"] = Localizer["Nav_MyHoroscope"];
+}
+
+<div class="mx-auto text-center card p-5" style="max-width: 34rem;">
+    <p class="kicker mb-3">@Localizer["NoChartYet_Kicker"]</p>
+    <h1 style="font-size: 2rem;">@Localizer["NoChartYet_Title"]</h1>
+    <p class="text-muted mb-4">
+        @Localizer["NoChartYet_Text"]
+    </p>
+    <div>
+        <a class="btn btn-primary" asp-controller="Manage" asp-action="Index">@Localizer["NoChartYet_Button"]</a>
+    </div>
+</div>

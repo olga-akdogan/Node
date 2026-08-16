@@ -1,5 +1,5 @@
-@* Rechterkant van de navigatie, zoals in het ontwerp: "Inloggen" als tekstlink
-   plus een salie-pil als CTA voor bezoekers; naam en afmelden voor leden. *@
+@* Right side of the nav, per the design: "Log in" as a text link
+   plus a sage pill as CTA for visitors; name and log out for members. *@
 @using Microsoft.AspNetCore.Identity
 @using Node.Data.Models
 @inject SignInManager<ApplicationUser> SignInManager
@@ -8,25 +8,25 @@
 <ul class="navbar-nav align-items-sm-center">
     @if (SignInManager.IsSignedIn(User))
     {
-        var gebruiker = await UserManager.GetUserAsync(User);
+        var user = await UserManager.GetUserAsync(User);
         <li class="nav-item">
-            <a class="nav-link" asp-controller="Manage" asp-action="Index" title="@Localizer["Nav_Instellingen"]">
-                @(gebruiker?.DisplayName ?? User.Identity?.Name)
+            <a class="nav-link" asp-controller="Manage" asp-action="Index" title="@Localizer["Nav_Settings"]">
+                @(user?.DisplayName ?? User.Identity?.Name)
             </a>
         </li>
         <li class="nav-item">
             <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post">
-                <button type="submit" class="nav-link btn btn-link">@Localizer["Nav_Afmelden"]</button>
+                <button type="submit" class="nav-link btn btn-link">@Localizer["Nav_LogOut"]</button>
             </form>
         </li>
     }
     else
     {
         <li class="nav-item me-sm-3">
-            <a class="nav-link" asp-controller="Account" asp-action="Login">@Localizer["Nav_Inloggen"]</a>
+            <a class="nav-link" asp-controller="Account" asp-action="Login">@Localizer["Nav_LogIn"]</a>
         </li>
         <li class="nav-item">
-            <a class="btn btn-accent" asp-controller="Account" asp-action="Register">@Localizer["Nav_MaakJeHoroscoop"]</a>
+            <a class="btn btn-accent" asp-controller="Account" asp-action="Register">@Localizer["Nav_CreateYourHoroscope"]</a>
         </li>
     }
 </ul>

@@ -1,20 +1,20 @@
 @{
     ViewData["Title"] = Localizer["ConfirmEmail_Title"];
-    var gelukt = ViewData["Gelukt"] as bool? ?? false;
+    var succeeded = ViewData["Gelukt"] as bool? ?? false;
 }
 
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6 text-center">
         <h1>@ViewData["Title"]</h1>
-        @if (gelukt)
+        @if (succeeded)
         {
-            <p>@Localizer["ConfirmEmail_Succes"]</p>
-            <a asp-action="Login" class="btn btn-primary">@Localizer["ConfirmEmail_NaarInloggen"]</a>
+            <p>@Localizer["ConfirmEmail_Success"]</p>
+            <a asp-action="Login" class="btn btn-primary">@Localizer["ConfirmEmail_GoToLogin"]</a>
         }
         else
         {
             <p class="text-danger">
-                @Localizer["ConfirmEmail_Fout"]
+                @Localizer["ConfirmEmail_Error"]
             </p>
         }
     </div>

@@ -3,21 +3,21 @@ using System.ComponentModel.DataAnnotations;
 namespace Node.Data.Models;
 
 /// <summary>
-/// Eén beoordeling van een gebruiker over een andere gebruiker (like of pass).
-/// Wanneer twee gebruikers elkaar liken ontstaat er een <see cref="Match"/>.
-/// Eén swipe per combinatie swiper/doelwit (unieke index in de DbContext).
+/// One user's rating of another user (like or pass).
+/// When two users like each other, a <see cref="Match"/> is created.
+/// One swipe per swiper/target combination (unique index in the DbContext).
 /// </summary>
 public class Swipe
 {
     public int Id { get; set; }
 
-    /// <summary>De gebruiker die swipet.</summary>
+    /// <summary>The user doing the swiping.</summary>
     [Required]
     public string SwiperUserId { get; set; } = string.Empty;
 
     public ApplicationUser? SwiperUser { get; set; }
 
-    /// <summary>De gebruiker die beoordeeld wordt.</summary>
+    /// <summary>The user being rated.</summary>
     [Required]
     public string TargetUserId { get; set; } = string.Empty;
 

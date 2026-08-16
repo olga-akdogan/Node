@@ -19,34 +19,34 @@ public class JwtTokenService : IJwtTokenService
         _configuration = configuration;
     }
 
-    public async Task<(string Token, DateTime ExpiresAtUtc)> CreateTokenAsync(ApplicationUser gebruiker)
+    public async Task<(string Token, DateTime ExpiresAtUtc)> CreateTokenAsync(ApplicationUser user)
     {
-        var sleutel = _configuration["Jwt:Key"]
-            ?? throw new InvalidOperationException("Configuratie 'Jwt:Key' ontbreekt.");
+        var key = _configuration["Jwt:Key"]
+            ?? throw new InvalidOperationException("Configuration 'Jwt:Key' is missing.");
         var issuer = _configuration["Jwt:Issuer"]
-            ?? throw new InvalidOperationException("Configuratie 'Jwt:Issuer' ontbreekt.");
+            ?? throw new InvalidOperationException("Configuration 'Jwt:Issuer' is missing.");
         var audience = _configuration["Jwt:Audience"]
-            ?? throw new InvalidOperationException("Configuratie 'Jwt:Audience' ontbreekt.");
+            ?? throw new InvalidOperationException("Configuration 'Jwt:Audience' is missing.");
 
-        var rollen = await _userManager.GetRolesAsync(gebruiker);
+        var roles = await _userManager.GetRolesAsync(user);
 
         var claims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, gebruiker.Id),
-            new(ClaimTypes.Name, gebruiker.UserName ?? gebruiker.Email ?? gebruiker.Id),
-            new(ClaimTypes.Email, gebruiker.Email ?? string.Empty),
+            new(ClaimTypes.NameIdentifier, user.Id),
+            new(ClaimTypes.Name, user.UserName ?? user.Email ?? user.Id),
+            new(ClaimTypes.Email, user.Email ?? string.Empty),
         };
-        claims.AddRange(rollen.Select(rol => new Claim(ClaimTypes.Role, rol)));
+        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
-        var vervalt = DateTime.UtcNow.AddHours(12);
-        var ondertekeningssleutel = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(sleutel));
+        var expires = DateTime.UtcNow.AddHours(12);
+        var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
         var token = new JwtSecurityToken(
             issuer: issuer,
             audience: audience,
             claims: claims,
-            expires: vervalt,
-            signingCredentials: new SigningCredentials(ondertekeningssleutel, SecurityAlgorithms.HmacSha256));
+            expires: expires,
+            signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256));
 
-        return (new JwtSecurityTokenHandler().WriteToken(token), vervalt);
+        return (new JwtSecurityTokenHandler().WriteToken(token), expires);
     }
 }

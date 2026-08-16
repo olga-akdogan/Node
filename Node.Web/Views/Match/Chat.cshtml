@@ -10,38 +10,38 @@
 <div class="mx-auto" style="max-width: 44rem;">
     <div class="d-flex align-items-baseline justify-content-between border-bottom pb-3 mb-3">
         <div>
-            <a class="kicker text-decoration-none" asp-action="Index">&larr; @Localizer["Match_Titel"]</a>
+            <a class="kicker text-decoration-none" asp-action="Index">&larr; @Localizer["Match_Title"]</a>
             <h1 class="mb-0 mt-1">
                 @Model.OtherDisplayName
-                <button type="button" class="btn btn-sm btn-outline-danger ms-2" data-bs-toggle="modal" data-bs-target="#meldModal">
-                    @Localizer["Report_Knop"]
+                <button type="button" class="btn btn-sm btn-outline-danger ms-2" data-bs-toggle="modal" data-bs-target="#reportModal">
+                    @Localizer["Report_Button"]
                 </button>
             </h1>
         </div>
         <div class="text-end">
-            <span class="score-cijfer">@Model.CompatibilityScore</span>
-            <p class="kicker mb-0">@Localizer["SwipeKaart_MatchScore"]</p>
+            <span class="score-number">@Model.CompatibilityScore</span>
+            <p class="kicker mb-0">@Localizer["SwipeCard_MatchScore"]</p>
         </div>
     </div>
 
-    @* Melding indienen over deze gebruiker: reden intypen, versturen gaat via ReportController.Create. *@
-    <div class="modal fade" id="meldModal" tabindex="-1" aria-labelledby="meldModalLabel" aria-hidden="true">
+    @* Report this user: type a reason, submitting goes through ReportController.Create. *@
+    <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <form asp-controller="Report" asp-action="Create" method="post">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="meldModalLabel">@string.Format(Localizer["Report_ModalTitel"], Model.OtherDisplayName)</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Nav_Sluiten"]"></button>
+                        <h5 class="modal-title" id="reportModalLabel">@string.Format(Localizer["Report_ModalTitle"], Model.OtherDisplayName)</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Nav_Close"]"></button>
                     </div>
                     <div class="modal-body">
                         <input type="hidden" name="reportedUserId" value="@Model.OtherUserId" />
                         <input type="hidden" name="matchId" value="@Model.MatchId" />
-                        <label for="meldReden" class="form-label">@Localizer["Moderation_Reden"]</label>
-                        <textarea id="meldReden" name="reason" class="form-control" rows="3" maxlength="1000" required></textarea>
+                        <label for="reportReason" class="form-label">@Localizer["Moderation_Reason"]</label>
+                        <textarea id="reportReason" name="reason" class="form-control" rows="3" maxlength="1000" required></textarea>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">@Localizer["Nav_Sluiten"]</button>
-                        <button type="submit" class="btn btn-danger">@Localizer["Report_Versturen"]</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">@Localizer["Nav_Close"]</button>
+                        <button type="submit" class="btn btn-danger">@Localizer["Report_Send"]</button>
                     </div>
                 </form>
             </div>
@@ -58,14 +58,14 @@
          data-user-token="@Model.StreamUserToken"
          data-current-user-id="@Model.CurrentUserId"
          data-other-user-id="@Model.OtherUserId">
-        <div id="berichten" class="chat-venster mb-3">
-            <p class="text-muted small text-center">@Localizer["Chat_GesprekLaden"]</p>
+        <div id="messages" class="chat-window mb-3">
+            <p class="text-muted small text-center">@Localizer["Chat_LoadingConversation"]</p>
         </div>
 
-        <form id="chat-formulier" class="d-flex gap-2">
-            <input type="text" id="chat-invoer" class="form-control"
-                   placeholder="@Localizer["Chat_SchrijfBericht"]" maxlength="1000" autocomplete="off" />
-            <button type="submit" class="btn btn-primary">@Localizer["Chat_Verstuur"]</button>
+        <form id="chat-form" class="d-flex gap-2">
+            <input type="text" id="chat-input" class="form-control"
+                   placeholder="@Localizer["Chat_WriteMessage"]" maxlength="1000" autocomplete="off" />
+            <button type="submit" class="btn btn-primary">@Localizer["Chat_Send"]</button>
         </form>
     </div>
 </div>
@@ -77,67 +77,67 @@
         // listen live for new messages from the other user.
         (async function () {
             const app = document.getElementById('chat-app');
-            const venster = document.getElementById('berichten');
-            const formulier = document.getElementById('chat-formulier');
-            const invoer = document.getElementById('chat-invoer');
-            const eigenGebruikerId = app.dataset.currentUserId;
+            const messagesEl = document.getElementById('messages');
+            const form = document.getElementById('chat-form');
+            const input = document.getElementById('chat-input');
+            const currentUserId = app.dataset.currentUserId;
 
             const client = StreamChat.getInstance(app.dataset.apiKey);
-            await client.connectUser({ id: eigenGebruikerId }, app.dataset.userToken);
+            await client.connectUser({ id: currentUserId }, app.dataset.userToken);
 
             // Channel without an explicit id: GetStream derives the id from
             // the member list, so the same two users always find the same
             // conversation.
             const channel = client.channel('messaging', {
-                members: [eigenGebruikerId, app.dataset.otherUserId],
+                members: [currentUserId, app.dataset.otherUserId],
             });
             await channel.watch();
             await channel.markRead();
 
-            function toonBericht(bericht) {
-                const isMijn = bericht.user.id === eigenGebruikerId;
+            function showMessage(message) {
+                const isMine = message.user.id === currentUserId;
 
-                const rij = document.createElement('div');
-                rij.className = 'd-flex ' + (isMijn ? 'justify-content-end' : 'justify-content-start');
+                const row = document.createElement('div');
+                row.className = 'd-flex ' + (isMine ? 'justify-content-end' : 'justify-content-start');
 
-                const ballon = document.createElement('div');
-                ballon.className = 'ballon ' + (isMijn ? 'ballon-mijn' : 'ballon-ander');
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble ' + (isMine ? 'bubble-mine' : 'bubble-other');
 
-                const tekst = document.createElement('span');
-                tekst.textContent = bericht.text;
+                const text = document.createElement('span');
+                text.textContent = message.text;
 
-                const tijd = document.createElement('span');
-                tijd.className = 'ballon-tijd';
-                tijd.textContent = new Date(bericht.created_at).toLocaleTimeString('nl-BE', {
+                const time = document.createElement('span');
+                time.className = 'bubble-time';
+                time.textContent = new Date(message.created_at).toLocaleTimeString('nl-BE', {
                     hour: '2-digit', minute: '2-digit',
                 });
 
-                ballon.appendChild(tekst);
-                ballon.appendChild(tijd);
-                rij.appendChild(ballon);
-                venster.appendChild(rij);
-                venster.scrollTop = venster.scrollHeight;
+                bubble.appendChild(text);
+                bubble.appendChild(time);
+                row.appendChild(bubble);
+                messagesEl.appendChild(row);
+                messagesEl.scrollTop = messagesEl.scrollHeight;
             }
 
-            venster.innerHTML = '';
-            channel.state.messages.forEach(toonBericht);
-            venster.scrollTop = venster.scrollHeight;
+            messagesEl.innerHTML = '';
+            channel.state.messages.forEach(showMessage);
+            messagesEl.scrollTop = messagesEl.scrollHeight;
 
             channel.on('message.new', function (event) {
-                toonBericht(event.message);
-                if (event.message.user.id !== eigenGebruikerId) {
+                showMessage(event.message);
+                if (event.message.user.id !== currentUserId) {
                     channel.markRead();
                 }
             });
 
-            formulier.addEventListener('submit', async function (e) {
+            form.addEventListener('submit', async function (e) {
                 e.preventDefault();
-                const tekst = invoer.value.trim();
-                if (!tekst) {
+                const text = input.value.trim();
+                if (!text) {
                     return;
                 }
-                invoer.value = '';
-                await channel.sendMessage({ text: tekst });
+                input.value = '';
+                await channel.sendMessage({ text });
             });
         })();
     </script>

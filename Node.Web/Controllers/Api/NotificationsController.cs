@@ -15,7 +15,7 @@ namespace Node.Web.Controllers.Api;
 /// </summary>
 [ApiController]
 [Route("api/notifications")]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = DbSeeder.RolLid)]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = DbSeeder.RoleMember)]
 public class NotificationsController : ControllerBase
 {
     private readonly INotificationService _notificationService;

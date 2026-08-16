@@ -1,11 +1,11 @@
 namespace Node.Web.Services.Interfaces;
 
-/// <summary>Zoekt de coördinaten van een vrij ingetypte plaatsnaam op.</summary>
+/// <summary>Looks up the coordinates of a freely typed place name.</summary>
 public interface IGeocodingService
 {
     /// <summary>
-    /// Geeft de (breedtegraad, lengtegraad) van de opgegeven plaats, of null
-    /// wanneer de plaats niet gevonden werd.
+    /// Returns the (latitude, longitude) of the given place, or null when
+    /// the place wasn't found.
     /// </summary>
-    Task<(decimal Latitude, decimal Longitude)?> ZoekCoordinatenAsync(string plaats);
+    Task<(decimal Latitude, decimal Longitude)?> FindCoordinatesAsync(string place);
 }

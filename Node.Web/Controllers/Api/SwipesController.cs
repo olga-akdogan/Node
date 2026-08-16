@@ -16,7 +16,7 @@ namespace Node.Web.Controllers.Api;
 /// </summary>
 [ApiController]
 [Route("api/swipes")]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = DbSeeder.RolLid)]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = DbSeeder.RoleMember)]
 public class SwipesController : ControllerBase
 {
     private readonly ISwipeService _swipeService;
@@ -32,20 +32,20 @@ public class SwipesController : ControllerBase
     [HttpGet("next")]
     public async Task<ActionResult<SwipeCardViewModel>> GetNext()
     {
-        var kandidaat = await _swipeService.GetVolgendeKandidaatAsync(_userManager.GetUserId(User)!);
-        if (kandidaat is null)
+        var candidate = await _swipeService.GetNextCandidateAsync(_userManager.GetUserId(User)!);
+        if (candidate is null)
         {
             return NoContent();
         }
 
-        return Ok(kandidaat);
+        return Ok(candidate);
     }
 
     /// <summary>Registers a like or pass; reports whether it resulted in a mutual match.</summary>
     [HttpPost]
-    public async Task<ActionResult<SwipeResultDto>> Beoordeel(SwipeRequest request)
+    public async Task<ActionResult<SwipeResultDto>> Rate(SwipeRequest request)
     {
-        var (isMatch, matchId) = await _swipeService.BeoordeelAsync(
+        var (isMatch, matchId) = await _swipeService.RateAsync(
             _userManager.GetUserId(User)!, request.TargetUserId, request.IsLike);
 
         return Ok(new SwipeResultDto { IsMatch = isMatch, MatchId = matchId });

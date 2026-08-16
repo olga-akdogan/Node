@@ -6,14 +6,13 @@ using Node.Web.Services.Interfaces;
 namespace Node.Web.Services;
 
 /// <summary>
-/// E-mailservice via SMTP (MailKit). De toegangsgegevens staan NIET in de repo
-/// maar in user-secrets of
-/// omgevingsvariabelen: Email:SmtpHost, Email:SmtpPort, Email:SmtpUser,
-/// Email:SmtpPassword, Email:FromAddress, Email:FromName.
+/// Email service via SMTP (MailKit). Credentials are NOT in the repo but in
+/// user-secrets or environment variables: Email:SmtpHost, Email:SmtpPort,
+/// Email:SmtpUser, Email:SmtpPassword, Email:FromAddress, Email:FromName.
 ///
-/// Zonder geconfigureerde SMTP-server (lokale ontwikkeling) wordt de e-mail
-/// niet verstuurd maar volledig gelogd, zodat de bevestigingslink uit de log
-/// geknipt kan worden.
+/// Without a configured SMTP server (local development) the email isn't
+/// sent but fully logged instead, so the confirmation link can be copied
+/// from the log.
 /// </summary>
 public class SmtpEmailService : IEmailService
 {
@@ -32,38 +31,38 @@ public class SmtpEmailService : IEmailService
 
         if (string.IsNullOrWhiteSpace(host))
         {
-            // Ontwikkelmodus: geen SMTP geconfigureerd, e-mail alleen loggen.
+            // Development mode: no SMTP configured, only log the email.
             _logger.LogWarning(
-                "SMTP niet geconfigureerd; e-mail wordt alleen gelogd. Aan: {To}, onderwerp: {Subject}, inhoud: {Body}",
+                "SMTP not configured; email is only logged. To: {To}, subject: {Subject}, body: {Body}",
                 to, subject, htmlBody);
             return;
         }
 
-        var poort = int.TryParse(_configuration["Email:SmtpPort"], out var p) ? p : 587;
-        var afzenderAdres = _configuration["Email:FromAddress"] ?? "noreply@node.be";
-        var afzenderNaam = _configuration["Email:FromName"] ?? "Node";
+        var port = int.TryParse(_configuration["Email:SmtpPort"], out var p) ? p : 587;
+        var fromAddress = _configuration["Email:FromAddress"] ?? "noreply@node.be";
+        var fromName = _configuration["Email:FromName"] ?? "Node";
 
-        var bericht = new MimeMessage();
-        bericht.From.Add(new MailboxAddress(afzenderNaam, afzenderAdres));
-        bericht.To.Add(MailboxAddress.Parse(to));
-        bericht.Subject = subject;
-        bericht.Body = new BodyBuilder { HtmlBody = htmlBody }.ToMessageBody();
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress(fromName, fromAddress));
+        message.To.Add(MailboxAddress.Parse(to));
+        message.Subject = subject;
+        message.Body = new BodyBuilder { HtmlBody = htmlBody }.ToMessageBody();
 
         using var client = new SmtpClient();
-        await client.ConnectAsync(host, poort, SecureSocketOptions.StartTls);
+        await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
 
-        // Alleen aanmelden wanneer er inloggegevens geconfigureerd zijn
-        // (sommige relay-servers vereisen geen authenticatie).
-        var smtpGebruiker = _configuration["Email:SmtpUser"];
-        var smtpWachtwoord = _configuration["Email:SmtpPassword"];
-        if (!string.IsNullOrWhiteSpace(smtpGebruiker) && !string.IsNullOrWhiteSpace(smtpWachtwoord))
+        // Only authenticate when credentials are configured
+        // (some relay servers don't require authentication).
+        var smtpUser = _configuration["Email:SmtpUser"];
+        var smtpPassword = _configuration["Email:SmtpPassword"];
+        if (!string.IsNullOrWhiteSpace(smtpUser) && !string.IsNullOrWhiteSpace(smtpPassword))
         {
-            await client.AuthenticateAsync(smtpGebruiker, smtpWachtwoord);
+            await client.AuthenticateAsync(smtpUser, smtpPassword);
         }
 
-        await client.SendAsync(bericht);
+        await client.SendAsync(message);
         await client.DisconnectAsync(quit: true);
 
-        _logger.LogInformation("Verificatie-e-mail verstuurd naar {To}.", to);
+        _logger.LogInformation("Verification email sent to {To}.", to);
     }
 }

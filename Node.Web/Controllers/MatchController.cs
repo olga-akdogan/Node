@@ -13,7 +13,7 @@ namespace Node.Web.Controllers;
 /// GetStream token needed to set up that connection. Members only: Admin and
 /// Moderator are staff accounts, not dating profiles.
 /// </summary>
-[Authorize(Roles = DbSeeder.RolLid)]
+[Authorize(Roles = DbSeeder.RoleMember)]
 public class MatchController : Controller
 {
     private readonly IMatchService _matchService;
@@ -25,31 +25,31 @@ public class MatchController : Controller
         _userManager = userManager;
     }
 
-    /// <summary>Overzicht van alle actieve matches van de ingelogde gebruiker.</summary>
-    /// <param name="sortering">"recent" (standaard, meest recente gesprek eerst) of "score" (hoogste compatibiliteit eerst).</param>
+    /// <summary>Overview of all active matches of the logged-in user.</summary>
+    /// <param name="sort">"recent" (default, most recent conversation first) or "score" (highest compatibility first).</param>
     [HttpGet]
-    public async Task<IActionResult> Index(string sortering = "recent")
+    public async Task<IActionResult> Index(string sort = "recent")
     {
-        var matches = await _matchService.GetMatchesVoorGebruikerAsync(_userManager.GetUserId(User)!);
+        var matches = await _matchService.GetMatchesForUserAsync(_userManager.GetUserId(User)!);
 
-        if (sortering == "score")
+        if (sort == "score")
         {
             matches = matches.OrderByDescending(m => m.CompatibilityScore).ToList();
         }
-        // "recent" is al de volgorde die de service teruggeeft: niets te doen.
+        // "recent" is already the order the service returns: nothing to do.
 
-        ViewData["Sortering"] = sortering;
+        ViewData["Sort"] = sort;
         return View(matches);
     }
 
-    /// <summary>Het chatgesprek van één match.</summary>
+    /// <summary>The chat conversation of one match.</summary>
     [HttpGet]
     public async Task<IActionResult> Chat(int id)
     {
         var chat = await _matchService.GetChatAsync(id, _userManager.GetUserId(User)!);
         if (chat is null)
         {
-            // Bestaat niet of de gebruiker is geen deelnemer: niets prijsgeven.
+            // Doesn't exist or the user isn't a participant: reveal nothing.
             return NotFound();
         }
 

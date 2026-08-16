@@ -15,8 +15,8 @@ using Node.Web.Services.Interfaces;
 namespace Node.Web.Controllers;
 
 /// <summary>
-/// Aangepaste registratie- en loginflow met de extra
-/// profielvelden, automatische roltoekenning en verplichte e-mailverificatie.
+/// Customized registration and login flow with the extra
+/// profile fields, automatic role assignment and required email verification.
 /// </summary>
 public class AccountController : Controller
 {
@@ -60,7 +60,7 @@ public class AccountController : Controller
     {
         if (!model.LooksForMen && !model.LooksForWomen)
         {
-            ModelState.AddModelError(string.Empty, _localizer["Valid_KiesMinstensEenVoorkeur"]);
+            ModelState.AddModelError(string.Empty, _localizer["Valid_ChooseAtLeastOnePreference"]);
         }
 
         if (!ModelState.IsValid)
@@ -68,63 +68,63 @@ public class AccountController : Controller
             return View(model);
         }
 
-        // Coördinaten van de geboorteplaats zijn nodig voor zowel de historische
-        // tijdzone-omrekening als de Ascendant/huizenberekening.
-        var coordinaten = await _geocodingService.ZoekCoordinatenAsync(model.BirthPlace);
-        if (coordinaten is null)
+        // Coordinates of the birth place are needed both for the historical
+        // timezone conversion and for the Ascendant/house calculation.
+        var coordinates = await _geocodingService.FindCoordinatesAsync(model.BirthPlace);
+        if (coordinates is null)
         {
-            ModelState.AddModelError(nameof(model.BirthPlace), _localizer["Fout_GeboorteplaatsNietGevonden"]);
+            ModelState.AddModelError(nameof(model.BirthPlace), _localizer["Error_BirthPlaceNotFound"]);
             return View(model);
         }
 
-        var gebruiker = new ApplicationUser
+        var user = new ApplicationUser
         {
             UserName = model.Email,
             Email = model.Email,
             DisplayName = model.DisplayName,
             Bio = model.Bio,
-            // De velden zijn [Required] in het viewmodel, dus hier nooit null.
+            // The fields are [Required] on the view model, so never null here.
             BirthDate = model.BirthDate!.Value,
             BirthTime = model.BirthTime!.Value,
             BirthPlace = model.BirthPlace,
-            BirthLatitude = coordinaten.Value.Latitude,
-            BirthLongitude = coordinaten.Value.Longitude,
+            BirthLatitude = coordinates.Value.Latitude,
+            BirthLongitude = coordinates.Value.Longitude,
             Gender = model.Gender!.Value,
         };
 
-        var resultaat = await _userManager.CreateAsync(gebruiker, model.Password);
-        if (!resultaat.Succeeded)
+        var result = await _userManager.CreateAsync(user, model.Password);
+        if (!result.Succeeded)
         {
-            // De Identity-foutteksten worden in de meertaligheidsfase vertaald.
-            foreach (var fout in resultaat.Errors)
+            // The Identity error texts are translated in the localization pipeline.
+            foreach (var error in result.Errors)
             {
-                ModelState.AddModelError(string.Empty, fout.Description);
+                ModelState.AddModelError(string.Empty, error.Description);
             }
 
             return View(model);
         }
 
-        // Elke nieuwe gebruiker krijgt automatisch de rol "Lid".
-        await _userManager.AddToRoleAsync(gebruiker, DbSeeder.RolLid);
-        _logger.LogInformation("Nieuwe gebruiker geregistreerd: {Email}.", model.Email);
+        // Every new user automatically gets the "Lid" role.
+        await _userManager.AddToRoleAsync(user, DbSeeder.RoleMember);
+        _logger.LogInformation("New user registered: {Email}.", model.Email);
 
-        AddPartnerPreferences(gebruiker.Id, model.LooksForMen, model.LooksForWomen);
+        AddPartnerPreferences(user.Id, model.LooksForMen, model.LooksForWomen);
 
-        var horoscoop = _natalChartCalculator.Calculate(gebruiker);
-        _context.NatalCharts.Add(horoscoop);
+        var natalChart = _natalChartCalculator.Calculate(user);
+        _context.NatalCharts.Add(natalChart);
         await _context.SaveChangesAsync();
 
-        await VerstuurVerificatieEmailAsync(gebruiker);
+        await SendVerificationEmailAsync(user);
 
         return RedirectToAction(nameof(RegisterConfirmation));
     }
 
-    /// <summary>Informatiepagina na registratie: "bevestig je e-mailadres".</summary>
+    /// <summary>Info page after registration: "confirm your email address".</summary>
     [HttpGet]
     [AllowAnonymous]
     public IActionResult RegisterConfirmation() => View();
 
-    /// <summary>Verwerkt de bevestigingslink uit de verificatie-e-mail.</summary>
+    /// <summary>Processes the confirmation link from the verification email.</summary>
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> ConfirmEmail(string? userId, string? code)
@@ -134,17 +134,17 @@ public class AccountController : Controller
             return RedirectToAction("Index", "Home");
         }
 
-        var gebruiker = await _userManager.FindByIdAsync(userId);
-        if (gebruiker is null)
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
         {
             return NotFound();
         }
 
-        // De token werd URL-veilig gecodeerd bij het versturen; hier terug decoderen.
+        // The token was URL-safe encoded when sent; decode it back here.
         var token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
-        var resultaat = await _userManager.ConfirmEmailAsync(gebruiker, token);
+        var result = await _userManager.ConfirmEmailAsync(user, token);
 
-        ViewData["Gelukt"] = resultaat.Succeeded;
+        ViewData["Gelukt"] = result.Succeeded;
         return View();
     }
 
@@ -168,40 +168,40 @@ public class AccountController : Controller
             return View(model);
         }
 
-        var gebruiker = await _userManager.FindByEmailAsync(model.Email);
+        var user = await _userManager.FindByEmailAsync(model.Email);
 
-        // Geblokkeerde gebruikers mogen niet meer inloggen.
-        if (gebruiker is not null && gebruiker.IsBlocked)
+        // Blocked users are no longer allowed to log in.
+        if (user is not null && user.IsBlocked)
         {
-            _logger.LogWarning("Geblokkeerde gebruiker probeerde in te loggen: {Email}.", model.Email);
-            ModelState.AddModelError(string.Empty, _localizer["Fout_AccountGeblokkeerd"]);
+            _logger.LogWarning("Blocked user attempted to log in: {Email}.", model.Email);
+            ModelState.AddModelError(string.Empty, _localizer["Error_AccountBlocked"]);
             return View(model);
         }
 
-        var resultaat = await _signInManager.PasswordSignInAsync(
+        var result = await _signInManager.PasswordSignInAsync(
             model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
 
-        if (resultaat.Succeeded)
+        if (result.Succeeded)
         {
-            _logger.LogInformation("Gebruiker ingelogd: {Email}.", model.Email);
+            _logger.LogInformation("User logged in: {Email}.", model.Email);
             return LocalRedirect(returnUrl ?? Url.Action("Index", "Home")!);
         }
 
-        if (resultaat.IsNotAllowed)
+        if (result.IsNotAllowed)
         {
-            // E-mail nog niet bevestigd: inloggen is nog niet toegestaan.
-            ModelState.AddModelError(string.Empty, _localizer["Fout_EmailNietBevestigd"]);
+            // Email not confirmed yet: login isn't allowed yet.
+            ModelState.AddModelError(string.Empty, _localizer["Error_EmailNotConfirmed"]);
             return View(model);
         }
 
-        if (resultaat.IsLockedOut)
+        if (result.IsLockedOut)
         {
-            _logger.LogWarning("Account tijdelijk vergrendeld na mislukte pogingen: {Email}.", model.Email);
-            ModelState.AddModelError(string.Empty, _localizer["Fout_TeVeelPogingen"]);
+            _logger.LogWarning("Account temporarily locked after failed attempts: {Email}.", model.Email);
+            ModelState.AddModelError(string.Empty, _localizer["Error_TooManyAttempts"]);
             return View(model);
         }
 
-        ModelState.AddModelError(string.Empty, _localizer["Fout_OngeldigeInloggegevens"]);
+        ModelState.AddModelError(string.Empty, _localizer["Error_InvalidLoginCredentials"]);
         return View(model);
     }
 
@@ -214,7 +214,7 @@ public class AccountController : Controller
         return RedirectToAction("Index", "Home");
     }
 
-    /// <summary>Getoond wanneer een gebruiker een pagina zonder rechten opvraagt.</summary>
+    /// <summary>Shown when a user requests a page they don't have permission for.</summary>
     [HttpGet]
     [AllowAnonymous]
     public IActionResult AccessDenied() => View();
@@ -234,28 +234,28 @@ public class AccountController : Controller
     }
 
     /// <summary>
-    /// Genereert de bevestigingstoken, bouwt de absolute link en verstuurt de
-    /// verificatie-e-mail. Een tijdelijke SMTP-storing mag de registratie zelf
-    /// (het account bestaat dan al) niet laten crashen: de fout wordt gelogd
-    /// in plaats van door te bubbelen, zoals ook bij de Claude-oproepen gebeurt.
+    /// Generates the confirmation token, builds the absolute link and sends
+    /// the verification email. A transient SMTP failure must not crash the
+    /// registration itself (the account already exists at that point): the
+    /// error is logged instead of bubbling up, same as with the Claude calls.
     /// </summary>
-    private async Task VerstuurVerificatieEmailAsync(ApplicationUser gebruiker)
+    private async Task SendVerificationEmailAsync(ApplicationUser user)
     {
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(gebruiker);
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         var link = Url.Action(nameof(ConfirmEmail), "Account",
-            new { userId = gebruiker.Id, code }, protocol: Request.Scheme)!;
+            new { userId = user.Id, code }, protocol: Request.Scheme)!;
 
         try
         {
             await _emailService.SendAsync(
-                gebruiker.Email!,
+                user.Email!,
                 "Bevestig je e-mailadres bij Node",
                 $"<p>Welkom bij Node!</p><p><a href=\"{link}\">Klik hier om je e-mailadres te bevestigen</a>.</p>");
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Versturen van de verificatie-e-mail naar {Email} is mislukt.", gebruiker.Email);
+            _logger.LogWarning(ex, "Sending the verification email to {Email} failed.", user.Email);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Node.Web.Controllers.Api;
 /// </summary>
 [ApiController]
 [Route("api/matches")]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = DbSeeder.RolLid)]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = DbSeeder.RoleMember)]
 public class MatchesController : ControllerBase
 {
     private readonly IMatchService _matchService;
@@ -30,7 +30,7 @@ public class MatchesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<MatchOverviewViewModel>>> GetMatches()
     {
-        var matches = await _matchService.GetMatchesVoorGebruikerAsync(_userManager.GetUserId(User)!);
+        var matches = await _matchService.GetMatchesForUserAsync(_userManager.GetUserId(User)!);
         return Ok(matches);
     }
 
@@ -41,7 +41,7 @@ public class MatchesController : ControllerBase
         var chat = await _matchService.GetChatAsync(id, _userManager.GetUserId(User)!);
         if (chat is null)
         {
-            // Bestaat niet of de gebruiker is geen deelnemer: niets prijsgeven.
+            // Doesn't exist or the user isn't a participant: reveal nothing.
             return NotFound();
         }
 

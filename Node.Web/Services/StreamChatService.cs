@@ -6,17 +6,13 @@ using Node.Web.Services.Interfaces;
 namespace Node.Web.Services;
 
 /// <summary>
-/// Implementatie van <see cref="IStreamChatService"/> bovenop de officiële
-/// GetStream .NET-SDK (pakket "getstream-net").
-/// [AI-gegenereerd: Claude (Sonnet 5), prompt "add GetStream Chat to my .NET
-/// app, replace the custom chat with it" — aangepast en van Nederlandse
-/// documentatie voorzien voor dit examenproject. De exacte klasse- en
-/// methodenamen zijn via reflectie op het geïnstalleerde pakket geverifieerd.]
+/// Implementation of <see cref="IStreamChatService"/> on top of the official
+/// GetStream .NET SDK (package "getstream-net").
 /// </summary>
 public class StreamChatService : IStreamChatService
 {
-    /// <summary>GetStream-kanaaltype voor 1-op-1 chat (ingebouwd standaardtype).</summary>
-    private const string KanaalType = "messaging";
+    /// <summary>GetStream channel type for 1-on-1 chat (built-in default type).</summary>
+    private const string ChannelType = "messaging";
 
     private readonly StreamClient _client;
     private readonly ChatClient _chat;
@@ -28,73 +24,73 @@ public class StreamChatService : IStreamChatService
         _chat = chat;
         _logger = logger;
 
-        // Al gevalideerd bij het opstarten (Program.cs); hier enkel opnieuw uitlezen.
+        // Already validated at startup (Program.cs); just re-read it here.
         ApiKey = configuration["Stream:ApiKey"]!;
     }
 
     public string ApiKey { get; }
 
-    public string MaakGebruikersToken(string userId) => _client.CreateUserToken(userId);
+    public string CreateUserToken(string userId) => _client.CreateUserToken(userId);
 
-    public async Task ZorgVoorGebruikerAsync(ApplicationUser gebruiker)
+    public async Task EnsureUserExistsAsync(ApplicationUser user)
     {
         await _client.UpdateUsersAsync(new UpdateUsersRequest
         {
             Users = new Dictionary<string, UserRequest>
             {
-                [gebruiker.Id] = new UserRequest
+                [user.Id] = new UserRequest
                 {
-                    ID = gebruiker.Id,
-                    Name = gebruiker.DisplayName,
-                    Image = gebruiker.ProfilePictureUrl,
+                    ID = user.Id,
+                    Name = user.DisplayName,
+                    Image = user.ProfilePictureUrl,
                 },
             },
         });
 
-        _logger.LogInformation("GetStream-gebruiker bijgewerkt voor {UserId}.", gebruiker.Id);
+        _logger.LogInformation("GetStream user updated for {UserId}.", user.Id);
     }
 
-    public async Task<IReadOnlyDictionary<string, StreamKanaalStatus>> GetKanaalStatussenAsync(string userId)
+    public async Task<IReadOnlyDictionary<string, StreamChannelStatus>> GetChannelStatusesAsync(string userId)
     {
         var response = await _chat.QueryChannelsAsync(new QueryChannelsRequest
         {
             UserID = userId,
             FilterConditions = new Dictionary<string, object>
             {
-                ["type"] = KanaalType,
+                ["type"] = ChannelType,
                 ["members"] = new Dictionary<string, object> { ["$in"] = new[] { userId } },
             },
-            // Enkel het laatste bericht nodig voor het matchoverzicht.
+            // Only the last message is needed for the match overview.
             MessageLimit = 1,
         });
 
-        var statussen = new Dictionary<string, StreamKanaalStatus>();
+        var statuses = new Dictionary<string, StreamChannelStatus>();
 
-        // response.Data is altijd gevuld wanneer de aanroep niet gooit (SDK-garantie bij succes).
-        foreach (var kanaal in response.Data!.Channels)
+        // response.Data is always populated when the call doesn't throw (SDK guarantee on success).
+        foreach (var channel in response.Data!.Channels)
         {
-            // De "andere" gebruiker van dit 1-op-1-kanaal, om te koppelen aan onze Match.
-            var andereGebruiker = kanaal.Members
-                .Select(lid => lid.User)
-                .Where(gebruikerInKanaal => gebruikerInKanaal is not null)
-                .FirstOrDefault(gebruikerInKanaal => gebruikerInKanaal!.ID != userId);
+            // The "other" user of this 1-on-1 channel, to link back to our Match.
+            var otherUser = channel.Members
+                .Select(member => member.User)
+                .Where(memberInChannel => memberInChannel is not null)
+                .FirstOrDefault(memberInChannel => memberInChannel!.ID != userId);
 
-            if (andereGebruiker is null)
+            if (otherUser is null)
             {
                 continue;
             }
 
-            var laatsteBericht = kanaal.Messages.LastOrDefault();
-            var ongelezenAantal = kanaal.Read
-                .FirstOrDefault(leesstatus => leesstatus.User.ID == userId)
+            var lastMessage = channel.Messages.LastOrDefault();
+            var unreadCount = channel.Read
+                .FirstOrDefault(readState => readState.User.ID == userId)
                 ?.UnreadMessages ?? 0;
 
-            statussen[andereGebruiker.ID] = new StreamKanaalStatus(
-                laatsteBericht?.Text,
-                laatsteBericht?.CreatedAt,
-                ongelezenAantal);
+            statuses[otherUser.ID] = new StreamChannelStatus(
+                lastMessage?.Text,
+                lastMessage?.CreatedAt,
+                unreadCount);
         }
 
-        return statussen;
+        return statuses;
     }
 }

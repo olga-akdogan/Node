@@ -8,12 +8,12 @@ using Node.Web.Services.Interfaces;
 namespace Node.Web.Controllers;
 
 /// <summary>
-/// De ontdek-pagina (naar het voorbeeld van Tinder/Bumble): één kandidaat
-/// tegelijk, beoordelen met like of pass. De volgende kaart wordt via AJAX
-/// geladen zonder dat de pagina herlaadt. Enkel voor leden: Admin/Moderator
-/// zijn beheeraccounts, geen datingprofielen.
+/// The discover page (in the style of Tinder/Bumble): one candidate at a
+/// time, rated with a like or pass. The next card is loaded via AJAX without
+/// reloading the page. Members only: Admin/Moderator are staff accounts, not
+/// dating profiles.
 /// </summary>
-[Authorize(Roles = DbSeeder.RolLid)]
+[Authorize(Roles = DbSeeder.RoleMember)]
 public class SwipeController : Controller
 {
     private readonly ISwipeService _swipeService;
@@ -25,43 +25,43 @@ public class SwipeController : Controller
         _userManager = userManager;
     }
 
-    /// <summary>De ontdek-pagina met de eerste kandidaat.</summary>
+    /// <summary>The discover page with the first candidate.</summary>
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var kandidaat = await _swipeService.GetVolgendeKandidaatAsync(_userManager.GetUserId(User)!);
-        return View(kandidaat);
+        var candidate = await _swipeService.GetNextCandidateAsync(_userManager.GetUserId(User)!);
+        return View(candidate);
     }
 
     /// <summary>
-    /// AJAX: de volgende kandidaat als partial view (HTML-fragment), zodat de
-    /// stapel doorloopt zonder paginaherlaad.
+    /// AJAX: the next candidate as a partial view (HTML fragment), so the
+    /// stack keeps going without a page reload.
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> VolgendeKaart()
+    public async Task<IActionResult> NextCard()
     {
-        var kandidaat = await _swipeService.GetVolgendeKandidaatAsync(_userManager.GetUserId(User)!);
-        if (kandidaat is null)
+        var candidate = await _swipeService.GetNextCandidateAsync(_userManager.GetUserId(User)!);
+        if (candidate is null)
         {
-            return PartialView("_StapelLeeg");
+            return PartialView("_StackEmpty");
         }
 
-        return PartialView("_SwipeKaart", kandidaat);
+        return PartialView("_SwipeCard", candidate);
     }
 
     /// <summary>
-    /// AJAX: verwerkt een like of pass en meldt of er een match ontstond.
+    /// AJAX: processes a like or pass and reports whether it resulted in a match.
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Beoordeel(string targetUserId, bool isLike)
+    public async Task<IActionResult> Rate(string targetUserId, bool isLike)
     {
         if (string.IsNullOrWhiteSpace(targetUserId))
         {
             return BadRequest();
         }
 
-        var (isMatch, matchId) = await _swipeService.BeoordeelAsync(
+        var (isMatch, matchId) = await _swipeService.RateAsync(
             _userManager.GetUserId(User)!, targetUserId, isLike);
 
         return Json(new { isMatch, matchId });

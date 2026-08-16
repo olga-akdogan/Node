@@ -6,7 +6,7 @@ namespace Node.Data.Services;
 /// Writes the playful "compatibility test" blurb and first-date suggestion
 /// shown on a swipe card, with Claude (Anthropic), based on both users' full
 /// natal charts. The compatibility score itself stays deterministic (see
-/// <see cref="DemoSynastrie"/> in Node.Data.Data); this only supplies the text.
+/// <see cref="Node.Data.Data.DemoSynastry"/>); this only supplies the text.
 /// </summary>
 public interface ISwipeTeaserService
 {

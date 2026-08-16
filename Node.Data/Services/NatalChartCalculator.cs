@@ -7,18 +7,18 @@ using SwissEphNet;
 namespace Node.Data.Services;
 
 /// <summary>
-/// Berekent de geboortehoroscoop met de Swiss Ephemeris (Moshier-model, geen
-/// externe ephemeris-bestanden nodig). Rekent eerst de lokale geboortetijd om
-/// naar UT met de historische tijdzone van de geboorteplaats (via de
-/// coördinaten), en berekent dan de posities van zon t.e.m. Pluto plus de
-/// Ascendant. De huizen volgen het hele-teken-systeem (huis 1 = het teken van
-/// de Ascendant, huis 2 = het volgende teken, enz.) zodat elk huis exact 30°
-/// beslaat en de indeling eenvoudig en uitlegbaar blijft.
+/// Calculates the birth chart using the Swiss Ephemeris (Moshier model, no
+/// external ephemeris files needed). First converts the local birth time to
+/// UT using the historical timezone of the birth place (via the
+/// coordinates), then calculates the positions of Sun through Pluto plus the
+/// Ascendant. Houses follow the whole-sign system (house 1 = the Ascendant's
+/// sign, house 2 = the next sign, etc.) so each house spans exactly 30° and
+/// the layout stays simple and explainable.
 /// </summary>
 public class NatalChartCalculator : INatalChartCalculator
 {
-    /// <summary>Hemellichamen in de volgorde waarin Swiss Ephemeris ze identificeert.</summary>
-    private static readonly (CelestialBody Body, int SweId)[] Planeten =
+    /// <summary>Celestial bodies in the order Swiss Ephemeris identifies them.</summary>
+    private static readonly (CelestialBody Body, int SweId)[] Planets =
     [
         (CelestialBody.Sun, SwissEph.SE_SUN),
         (CelestialBody.Moon, SwissEph.SE_MOON),
@@ -37,13 +37,13 @@ public class NatalChartCalculator : INatalChartCalculator
         if (user.BirthLatitude is null || user.BirthLongitude is null)
         {
             throw new InvalidOperationException(
-                $"Kan geen horoscoop berekenen voor gebruiker {user.Id}: geboortecoördinaten ontbreken.");
+                $"Cannot calculate a natal chart for user {user.Id}: birth coordinates are missing.");
         }
 
         var lat = (double)user.BirthLatitude.Value;
         var lng = (double)user.BirthLongitude.Value;
 
-        var birthMomentUtc = LokaleTijdNaarUtc(user.BirthDate, user.BirthTime, lat, lng);
+        var birthMomentUtc = LocalTimeToUtc(user.BirthDate, user.BirthTime, lat, lng);
 
         using var sw = new SwissEph();
         var flags = SwissEph.SEFLG_MOSEPH | SwissEph.SEFLG_SPEED;
@@ -53,101 +53,101 @@ public class NatalChartCalculator : INatalChartCalculator
             birthMomentUtc.Hour + birthMomentUtc.Minute / 60.0 + birthMomentUtc.Second / 3600.0,
             SwissEph.SE_GREG_CAL);
 
-        // Enkel de Ascendant zelf is nodig (ascmc[0], huissysteem 'P' hiervoor
-        // genegeerd); de huizen volgen daarna het hele-teken-systeem hieronder.
+        // Only the Ascendant itself is needed (ascmc[0], house system 'P' is
+        // ignored for this); the houses below then follow the whole-sign system.
         var cusps = new double[13];
         var ascmc = new double[10];
         sw.swe_houses(jdUt, lat, lng, 'P', cusps, ascmc);
         var ascendantLongitude = ascmc[0];
-        var ascendantTeken = GraadNaarTeken(ascendantLongitude);
+        var ascendantSign = DegreeToSign(ascendantLongitude);
 
-        var horoscoop = new NatalChart
+        var chart = new NatalChart
         {
             UserId = user.Id,
             BirthMomentUtc = birthMomentUtc,
-            AscendantSign = ascendantTeken,
+            AscendantSign = ascendantSign,
             AscendantIsApproximate = user.BirthTimeIsUnknown,
             CalculatedAt = DateTime.UtcNow,
         };
 
-        horoscoop.Placements.Add(new Placement
+        chart.Placements.Add(new Placement
         {
             Body = CelestialBody.Ascendant,
-            Sign = horoscoop.AscendantSign,
+            Sign = chart.AscendantSign,
             House = 1,
-            DegreeInSign = GraadInTeken(ascendantLongitude),
+            DegreeInSign = DegreeWithinSign(ascendantLongitude),
         });
 
-        foreach (var (lichaam, sweId) in Planeten)
+        foreach (var (body, sweId) in Planets)
         {
             var xx = new double[6];
-            var foutmelding = "";
-            sw.swe_calc_ut(jdUt, sweId, flags, xx, ref foutmelding);
-            var lengtegraad = xx[0];
+            var errorMessage = "";
+            sw.swe_calc_ut(jdUt, sweId, flags, xx, ref errorMessage);
+            var longitude = xx[0];
 
-            var teken = GraadNaarTeken(lengtegraad);
+            var sign = DegreeToSign(longitude);
 
-            if (lichaam == CelestialBody.Sun)
+            if (body == CelestialBody.Sun)
             {
-                horoscoop.SunSign = teken;
+                chart.SunSign = sign;
             }
-            else if (lichaam == CelestialBody.Moon)
+            else if (body == CelestialBody.Moon)
             {
-                horoscoop.MoonSign = teken;
+                chart.MoonSign = sign;
             }
 
-            horoscoop.Placements.Add(new Placement
+            chart.Placements.Add(new Placement
             {
-                Body = lichaam,
-                Sign = teken,
-                House = BepaalHuis(teken, ascendantTeken),
-                DegreeInSign = GraadInTeken(lengtegraad),
+                Body = body,
+                Sign = sign,
+                House = DetermineHouse(sign, ascendantSign),
+                DegreeInSign = DegreeWithinSign(longitude),
             });
         }
 
-        return horoscoop;
+        return chart;
     }
 
     /// <summary>
-    /// Rekent de lokale geboortedatum/-tijd om naar UT, met de historische
-    /// tijdzone van de geboorteplaats (afgeleid uit de coördinaten). Bij een
-    /// dubbelzinnige of niet-bestaande lokale tijd (zomertijdovergang) wordt de
-    /// meest waarschijnlijke interpretatie gebruikt in plaats van een crash.
+    /// Converts the local birth date/time to UT, using the historical
+    /// timezone of the birth place (derived from the coordinates). For an
+    /// ambiguous or nonexistent local time (a DST transition), the most
+    /// likely interpretation is used instead of crashing.
     /// </summary>
-    private static DateTime LokaleTijdNaarUtc(DateOnly datum, TimeOnly tijd, double lat, double lng)
+    private static DateTime LocalTimeToUtc(DateOnly date, TimeOnly time, double lat, double lng)
     {
         var ianaId = TimeZoneLookup.GetTimeZone(lat, lng).Result;
-        var tijdzone = DateTimeZoneProviders.Tzdb[ianaId];
+        var timeZone = DateTimeZoneProviders.Tzdb[ianaId];
 
-        var lokaal = new LocalDateTime(datum.Year, datum.Month, datum.Day, tijd.Hour, tijd.Minute, tijd.Second);
-        var zonedDateTime = lokaal.InZoneLeniently(tijdzone);
+        var local = new LocalDateTime(date.Year, date.Month, date.Day, time.Hour, time.Minute, time.Second);
+        var zonedDateTime = local.InZoneLeniently(timeZone);
 
         return zonedDateTime.ToDateTimeUtc();
     }
 
-    /// <summary>Zet een eclipticale lengtegraad (0-360°) om naar het dierenriemteken.</summary>
-    private static ZodiacSign GraadNaarTeken(double lengtegraad)
+    /// <summary>Converts an ecliptic longitude (0-360°) to the zodiac sign.</summary>
+    private static ZodiacSign DegreeToSign(double longitude)
     {
-        var genormaliseerd = Normaliseer(lengtegraad);
-        return (ZodiacSign)((int)(genormaliseerd / 30) % 12);
+        var normalized = Normalize(longitude);
+        return (ZodiacSign)((int)(normalized / 30) % 12);
     }
 
-    /// <summary>Positie binnen het teken zelf (0-30°).</summary>
-    private static decimal GraadInTeken(double lengtegraad)
+    /// <summary>Position within the sign itself (0-30°).</summary>
+    private static decimal DegreeWithinSign(double longitude)
     {
-        var genormaliseerd = Normaliseer(lengtegraad);
-        return (decimal)(genormaliseerd % 30);
+        var normalized = Normalize(longitude);
+        return (decimal)(normalized % 30);
     }
 
-    private static double Normaliseer(double graden) => ((graden % 360) + 360) % 360;
+    private static double Normalize(double degrees) => ((degrees % 360) + 360) % 360;
 
     /// <summary>
-    /// Hele-teken-huis van een plaatsing: huis 1 is het teken van de
-    /// Ascendant, en elk volgend teken (in dierenriemvolgorde) is het
-    /// volgende huis. Bv. Ascendant in Leeuw: Maagd = huis 2, ... Kreeft = huis 12.
+    /// Whole-sign house of a placement: house 1 is the Ascendant's sign, and
+    /// each following sign (in zodiac order) is the next house. E.g.
+    /// Ascendant in Leo: Virgo = house 2, ... Cancer = house 12.
     /// </summary>
-    private static int BepaalHuis(ZodiacSign teken, ZodiacSign ascendantTeken)
+    private static int DetermineHouse(ZodiacSign sign, ZodiacSign ascendantSign)
     {
-        return (((int)teken - (int)ascendantTeken + 12) % 12) + 1;
+        return (((int)sign - (int)ascendantSign + 12) % 12) + 1;
     }
 }

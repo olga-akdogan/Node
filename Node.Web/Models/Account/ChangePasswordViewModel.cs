@@ -2,22 +2,22 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Node.Web.Models.Account;
 
-/// <summary>Formulier om het eigen wachtwoord te wijzigen.</summary>
+/// <summary>Form to change your own password.</summary>
 public class ChangePasswordViewModel
 {
-    [Required(ErrorMessage = "Valid_HuidigWachtwoordVerplicht")]
+    [Required(ErrorMessage = "Valid_CurrentPasswordRequired")]
     [DataType(DataType.Password)]
-    [Display(Name = "Veld_HuidigWachtwoord")]
+    [Display(Name = "Field_CurrentPassword")]
     public string CurrentPassword { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Valid_NieuwWachtwoordVerplicht")]
-    [StringLength(100, MinimumLength = 6, ErrorMessage = "Valid_WachtwoordLengte")]
+    [Required(ErrorMessage = "Valid_NewPasswordRequired")]
+    [StringLength(100, MinimumLength = 6, ErrorMessage = "Valid_PasswordLength")]
     [DataType(DataType.Password)]
-    [Display(Name = "Veld_NieuwWachtwoord")]
+    [Display(Name = "Field_NewPassword")]
     public string NewPassword { get; set; } = string.Empty;
 
     [DataType(DataType.Password)]
-    [Display(Name = "Veld_BevestigNieuwWachtwoord")]
-    [Compare(nameof(NewPassword), ErrorMessage = "Valid_WachtwoordenKomenNietOvereen")]
+    [Display(Name = "Field_ConfirmNewPassword")]
+    [Compare(nameof(NewPassword), ErrorMessage = "Valid_PasswordsDoNotMatch")]
     public string ConfirmNewPassword { get; set; } = string.Empty;
 }

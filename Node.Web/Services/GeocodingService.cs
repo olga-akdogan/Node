@@ -6,9 +6,9 @@ using Node.Web.Services.Interfaces;
 namespace Node.Web.Services;
 
 /// <summary>
-/// Zoekt coördinaten op via Nominatim, de gratis geocodingdienst van
-/// OpenStreetMap. Wordt gebruikt bij registratie zodat de geboorteplaats die
-/// de gebruiker intypt, coördinaten krijgt voor de horoscoopberekening.
+/// Looks up coordinates via Nominatim, OpenStreetMap's free geocoding
+/// service. Used during registration so the birth place the user types in
+/// gets coordinates for the natal chart calculation.
 /// </summary>
 public class GeocodingService : IGeocodingService
 {
@@ -28,34 +28,34 @@ public class GeocodingService : IGeocodingService
     /// again" message for null, so a network hiccup degrades to that instead
     /// of crashing the registration/profile-edit flow with an unhandled exception.
     /// </summary>
-    public async Task<(decimal Latitude, decimal Longitude)?> ZoekCoordinatenAsync(string plaats)
+    public async Task<(decimal Latitude, decimal Longitude)?> FindCoordinatesAsync(string place)
     {
-        var url = $"search?q={Uri.EscapeDataString(plaats)}&format=json&limit=1";
+        var url = $"search?q={Uri.EscapeDataString(place)}&format=json&limit=1";
 
-        List<NominatimResultaat>? resultaten;
+        List<NominatimResult>? results;
         try
         {
-            resultaten = await _httpClient.GetFromJsonAsync<List<NominatimResultaat>>(url);
+            results = await _httpClient.GetFromJsonAsync<List<NominatimResult>>(url);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
         {
-            _logger.LogWarning(ex, "Geocoding via Nominatim mislukt voor '{Plaats}'.", plaats);
+            _logger.LogWarning(ex, "Geocoding via Nominatim failed for '{Place}'.", place);
             return null;
         }
 
-        var eerste = resultaten?.FirstOrDefault();
-        if (eerste is null)
+        var first = results?.FirstOrDefault();
+        if (first is null)
         {
-            return null; // Plaats niet gevonden.
+            return null; // Place not found.
         }
 
         return (
-            decimal.Parse(eerste.Lat, CultureInfo.InvariantCulture),
-            decimal.Parse(eerste.Lon, CultureInfo.InvariantCulture));
+            decimal.Parse(first.Lat, CultureInfo.InvariantCulture),
+            decimal.Parse(first.Lon, CultureInfo.InvariantCulture));
     }
 
-    /// <summary>Enkel de velden van de Nominatim-respons die we effectief gebruiken.</summary>
-    private class NominatimResultaat
+    /// <summary>Only the fields of the Nominatim response we actually use.</summary>
+    private class NominatimResult
     {
         [JsonPropertyName("lat")]
         public string Lat { get; set; } = string.Empty;

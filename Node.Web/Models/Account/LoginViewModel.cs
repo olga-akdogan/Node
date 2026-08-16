@@ -2,19 +2,19 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Node.Web.Models.Account;
 
-/// <summary>Inlogformulier.</summary>
+/// Registration form
 public class LoginViewModel
 {
-    [Required(ErrorMessage = "Valid_EmailVerplicht")]
-    [EmailAddress(ErrorMessage = "Valid_EmailOngeldig")]
-    [Display(Name = "Veld_Email")]
+    [Required(ErrorMessage = "Valid_EmailRequired")]
+    [EmailAddress(ErrorMessage = "Valid_EmailInvalid")]
+    [Display(Name = "Field_Email")]
     public string Email { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Valid_WachtwoordVerplicht")]
+    [Required(ErrorMessage = "Valid_PasswordRequired")]
     [DataType(DataType.Password)]
-    [Display(Name = "Veld_Wachtwoord")]
+    [Display(Name = "Field_Password")]
     public string Password { get; set; } = string.Empty;
 
-    [Display(Name = "Veld_AangemeldBlijven")]
+    [Display(Name = "Field_StayLoggedIn")]
     public bool RememberMe { get; set; }
 }

@@ -1,21 +1,21 @@
 namespace Node.Data.Models.Enums;
 
 /// <summary>
-/// De hemellichamen en punten die in een geboortehoroscoop (natal chart) berekend worden.
-/// De Ascendant is geen hemellichaam maar wel een essentieel punt in de horoscoop,
-/// daarom is hij hier mee opgenomen.
+/// The celestial bodies and points calculated for a natal chart.
+/// The Ascendant isn't a celestial body but is an essential point in the
+/// chart
 /// </summary>
 public enum CelestialBody
 {
-    Sun,       // Zon
-    Moon,      // Maan
-    Mercury,   // Mercurius
-    Venus,     // Venus
-    Mars,      // Mars
-    Jupiter,   // Jupiter
-    Saturn,    // Saturnus
-    Uranus,    // Uranus
-    Neptune,   // Neptunus
-    Pluto,     // Pluto
-    Ascendant  // Ascendant (rijzend teken)
+    Sun,
+    Moon,
+    Mercury,
+    Venus,
+    Mars,
+    Jupiter,
+    Saturn,
+    Uranus,
+    Neptune,
+    Pluto,
+    Ascendant
 }

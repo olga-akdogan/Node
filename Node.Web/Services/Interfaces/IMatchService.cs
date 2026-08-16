@@ -10,7 +10,7 @@ namespace Node.Web.Services.Interfaces;
 public interface IMatchService
 {
     /// <summary>All active matches of the user, most recent conversation first.</summary>
-    Task<List<MatchOverviewViewModel>> GetMatchesVoorGebruikerAsync(string userId);
+    Task<List<MatchOverviewViewModel>> GetMatchesForUserAsync(string userId);
 
     /// <summary>
     /// The chat screen for one match: match data plus a GetStream token the
@@ -25,5 +25,5 @@ public interface IMatchService
     /// when one of them reports the other, so the reporter isn't stuck
     /// chatting with someone they just reported while it's reviewed.
     /// </summary>
-    Task EindigMatchTussenAsync(string userAId, string userBId);
+    Task EndMatchBetweenAsync(string userAId, string userBId);
 }

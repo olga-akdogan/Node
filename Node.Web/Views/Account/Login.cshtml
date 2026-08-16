@@ -1,12 +1,12 @@
 @model Node.Web.Models.Account.LoginViewModel
 @{
-    ViewData["Title"] = Localizer["Nav_Inloggen"];
+    ViewData["Title"] = Localizer["Nav_LogIn"];
     Layout = "_AuthLayout";
 }
 
 <div class="auth-tabs">
-    <span class="auth-tab-actief">@Localizer["Nav_Inloggen"]</span>
-    <a asp-action="Register">@Localizer["Login_TabAccountAanmaken"]</a>
+    <span class="auth-tab-active">@Localizer["Nav_LogIn"]</span>
+    <a asp-action="Register">@Localizer["Login_TabCreateAccount"]</a>
 </div>
 
 <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
@@ -29,7 +29,7 @@
         <label asp-for="RememberMe" class="form-check-label small"></label>
     </div>
 
-    <button type="submit" class="btn btn-primary w-100">@Localizer["Nav_Inloggen"]</button>
+    <button type="submit" class="btn btn-primary w-100">@Localizer["Nav_LogIn"]</button>
 
 </form>
 

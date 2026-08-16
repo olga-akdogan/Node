@@ -18,7 +18,7 @@ namespace Node.Web.Controllers
             return View();
         }
 
-        /// <summary>Uitlegpagina "Hoe het werkt" (statische inhoud).</summary>
+        /// <summary>"How it works" explainer page (static content).</summary>
         public IActionResult HowItWorks()
         {
             return View();

@@ -1,0 +1,12 @@
+@* Empty stack: all candidates have been rated. *@
+
+<div class="card text-center p-5">
+    <p class="kicker mb-3">@Localizer["EmptyStack_Kicker"]</p>
+    <h2>@Localizer["EmptyStack_Title"]</h2>
+    <p class="text-muted mb-4">
+        @Localizer["EmptyStack_Text"]
+    </p>
+    <div>
+        <a class="btn btn-primary" asp-controller="Match" asp-action="Index">@Localizer["EmptyStack_GoToMatches"]</a>
+    </div>
+</div>

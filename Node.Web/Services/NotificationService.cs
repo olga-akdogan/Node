@@ -39,7 +39,7 @@ public class NotificationService : INotificationService
     public async Task<int> GetUnreadCountAsync(string userId)
     {
         var unreadLikes = await _context.Notifications.CountAsync(n => n.UserId == userId && !n.IsRead);
-        var unreadMessages = (await _matchService.GetMatchesVoorGebruikerAsync(userId)).Sum(m => m.UnreadCount);
+        var unreadMessages = (await _matchService.GetMatchesForUserAsync(userId)).Sum(m => m.UnreadCount);
 
         return unreadLikes + unreadMessages;
     }
@@ -65,7 +65,7 @@ public class NotificationService : INotificationService
         // Unread messages aren't stored as Notification rows: GetStream already
         // tracks read/unread per conversation, so we ask it live via
         // IMatchService instead of duplicating that state in our own database.
-        var berichtNotificaties = (await _matchService.GetMatchesVoorGebruikerAsync(userId))
+        var berichtNotificaties = (await _matchService.GetMatchesForUserAsync(userId))
             .Where(m => m.UnreadCount > 0 && m.LastMessageAt.HasValue)
             .Select(m => new NotificationViewModel
             {

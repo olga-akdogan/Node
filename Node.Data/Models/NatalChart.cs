@@ -4,53 +4,53 @@ using Node.Data.Models.Enums;
 namespace Node.Data.Models;
 
 /// <summary>
-/// De geboortehoroscoop van één gebruiker (1-op-1 relatie).
-/// De afzonderlijke planeetposities staan in <see cref="Placement"/>;
-/// de zon-, maan- en ascendanttekens worden hier gedenormaliseerd bewaard
-/// zodat overzichtspagina's er eenvoudig op kunnen filteren en sorteren.
+/// One user's natal chart (1-to-1 relation).
+/// The individual planet positions live in <see cref="Placement"/>;
+/// the Sun, Moon and Ascendant signs are denormalized here so index
+/// pages can easily filter and sort on them.
 /// </summary>
 public class NatalChart
 {
     public int Id { get; set; }
 
-    /// <summary>De gebruiker bij wie deze horoscoop hoort.</summary>
+    /// <summary>The user this natal chart belongs to.</summary>
     [Required]
     public string UserId { get; set; } = string.Empty;
 
     public ApplicationUser? User { get; set; }
 
     /// <summary>
-    /// Het geboortemoment omgerekend naar UT (wereldtijd).
-    /// Belangrijk: de omrekening gebeurt met de historische tijdzone van de
-    /// geboorteplaats, niet met een vaste offset.
+    /// The birth moment converted to UT (universal time).
+    /// Important: the conversion uses the birthplace's historical time zone,
+    /// not a fixed offset.
     /// </summary>
     [Required]
     public DateTime BirthMomentUtc { get; set; }
 
-    /// <summary>Zonneteken (gedenormaliseerd voor filteren).</summary>
+    /// <summary>Sun sign (denormalized for filtering).</summary>
     [Required]
     public ZodiacSign SunSign { get; set; }
 
-    /// <summary>Maanteken (gedenormaliseerd voor filteren).</summary>
+    /// <summary>Moon sign (denormalized for filtering).</summary>
     [Required]
     public ZodiacSign MoonSign { get; set; }
 
-    /// <summary>Ascendant / rijzend teken (gedenormaliseerd voor filteren).</summary>
+    /// <summary>Ascendant / rising sign (denormalized for filtering).</summary>
     [Required]
     public ZodiacSign AscendantSign { get; set; }
 
     /// <summary>
-    /// True wanneer de gebruiker geen exacte geboortetijd opgaf. De Ascendant en
-    /// de huizen van alle plaatsingen zijn dan berekend op een conventionele
-    /// tijd (bv. 12:00) en dus niet betrouwbaar; de zon-, maan- en planeettekens
-    /// zelf blijven wel correct.
+    /// True when the user didn't provide an exact birth time. The Ascendant and
+    /// every placement's house are then calculated on a conventional time
+    /// (12:00) and therefore unreliable; the Sun, Moon and planet signs
+    /// themselves remain correct.
     /// </summary>
     public bool AscendantIsApproximate { get; set; }
 
-    /// <summary>Tijdstip waarop de horoscoop (her)berekend werd (UTC).</summary>
+    /// <summary>Timestamp when the natal chart was (re)calculated (UTC).</summary>
     public DateTime CalculatedAt { get; set; } = DateTime.UtcNow;
 
-    /// <summary>Alle berekende posities (planeet per teken/huis/graad).</summary>
+    /// <summary>All calculated positions (planet per sign/house/degree).</summary>
     public ICollection<Placement> Placements { get; set; } = new List<Placement>();
 
     /// <summary>Claude-written interpretation of the full natal chart.</summary>

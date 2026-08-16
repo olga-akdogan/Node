@@ -1,10 +1,12 @@
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Node.Data.Data;
 using Node.Data.Models;
 using Node.Data.Models.Enums;
 using Node.Data.Services;
 using Node.Web.Models.Matches;
+using Node.Web.Resources;
 using Node.Web.Services.Interfaces;
 
 namespace Node.Web.Services;
@@ -19,21 +21,24 @@ public class MatchService : IMatchService
     private readonly ApplicationDbContext _context;
     private readonly IStreamChatService _streamChatService;
     private readonly IMatchInterpretationService _matchInterpretationService;
+    private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly ILogger<MatchService> _logger;
 
     public MatchService(
         ApplicationDbContext context,
         IStreamChatService streamChatService,
         IMatchInterpretationService matchInterpretationService,
+        IStringLocalizer<SharedResource> localizer,
         ILogger<MatchService> logger)
     {
         _context = context;
         _streamChatService = streamChatService;
         _matchInterpretationService = matchInterpretationService;
+        _localizer = localizer;
         _logger = logger;
     }
 
-    public async Task<List<MatchOverviewViewModel>> GetMatchesVoorGebruikerAsync(string userId)
+    public async Task<List<MatchOverviewViewModel>> GetMatchesForUserAsync(string userId)
     {
         var matches = await _context.Matches
             .Include(m => m.User1)
@@ -49,28 +54,28 @@ public class MatchService : IMatchService
 
         // GetStream needs to already know the logged-in user before we can ask
         // for their channels; reuses the match data already loaded above.
-        var ikzelf = (matches[0].User1Id == userId ? matches[0].User1 : matches[0].User2)!;
-        await _streamChatService.ZorgVoorGebruikerAsync(ikzelf);
+        var self = (matches[0].User1Id == userId ? matches[0].User1 : matches[0].User2)!;
+        await _streamChatService.EnsureUserExistsAsync(self);
 
         // Last message + unread count per conversation come from GetStream,
         // looked up via the other user's id.
-        var kanaalStatussen = await _streamChatService.GetKanaalStatussenAsync(userId);
+        var channelStatuses = await _streamChatService.GetChannelStatusesAsync(userId);
 
         return matches
             .Select(m =>
             {
-                var ander = m.User1Id == userId ? m.User2 : m.User1;
-                kanaalStatussen.TryGetValue(ander?.Id ?? string.Empty, out var status);
+                var other = m.User1Id == userId ? m.User2 : m.User1;
+                channelStatuses.TryGetValue(other?.Id ?? string.Empty, out var status);
 
                 return new MatchOverviewViewModel
                 {
                     MatchId = m.Id,
-                    OtherDisplayName = ander?.DisplayName ?? "Onbekend",
-                    OtherProfilePictureUrl = ander?.ProfilePictureUrl,
+                    OtherDisplayName = other?.DisplayName ?? _localizer["Match_UnknownUser"],
+                    OtherProfilePictureUrl = other?.ProfilePictureUrl,
                     CompatibilityScore = m.CompatibilityScore,
-                    LastMessagePreview = status?.LaatsteBerichtTekst,
-                    LastMessageAt = status?.LaatsteBerichtOp,
-                    UnreadCount = status?.OngelezenAantal ?? 0,
+                    LastMessagePreview = status?.LastMessageText,
+                    LastMessageAt = status?.LastMessageAt,
+                    UnreadCount = status?.UnreadCount ?? 0,
                 };
             })
             // Most recent conversation first; matches without one sink to the bottom.
@@ -80,20 +85,20 @@ public class MatchService : IMatchService
 
     public async Task<ChatViewModel?> GetChatAsync(int matchId, string userId)
     {
-        var match = await ZoekMatchVanDeelnemerAsync(matchId, userId);
+        var match = await FindMatchForParticipantAsync(matchId, userId);
         if (match is null || match.User1 is null || match.User2 is null)
         {
             return null;
         }
 
-        var ikzelf = match.User1Id == userId ? match.User1 : match.User2;
-        var ander = match.User1Id == userId ? match.User2 : match.User1;
+        var self = match.User1Id == userId ? match.User1 : match.User2;
+        var other = match.User1Id == userId ? match.User2 : match.User1;
 
         // Both users must exist as GetStream users before they can join the
         // channel (the JS client creates the channel itself via the members
         // list, the first time either of them opens the conversation).
-        await _streamChatService.ZorgVoorGebruikerAsync(ikzelf);
-        await _streamChatService.ZorgVoorGebruikerAsync(ander);
+        await _streamChatService.EnsureUserExistsAsync(self);
+        await _streamChatService.EnsureUserExistsAsync(other);
 
         await EnsureInterpretationInCurrentLanguageAsync(match);
 
@@ -102,13 +107,13 @@ public class MatchService : IMatchService
         return new ChatViewModel
         {
             MatchId = match.Id,
-            OtherDisplayName = ander.DisplayName,
+            OtherDisplayName = other.DisplayName,
             CompatibilityScore = match.CompatibilityScore,
             CompatibilityExplanation = match.CompatibilityExplanation,
             StreamApiKey = _streamChatService.ApiKey,
-            StreamUserToken = _streamChatService.MaakGebruikersToken(userId),
+            StreamUserToken = _streamChatService.CreateUserToken(userId),
             CurrentUserId = userId,
-            OtherUserId = ander.Id,
+            OtherUserId = other.Id,
         };
     }
 
@@ -132,13 +137,13 @@ public class MatchService : IMatchService
             return; // Charts not calculated yet: nothing to write the text from.
         }
 
-        match.CompatibilityExplanation = await _matchInterpretationService.SchrijfInterpretatieAsync(
+        match.CompatibilityExplanation = await _matchInterpretationService.WriteMatchInterpretationAsync(
             match.User1, chart1, match.User2, chart2, match.CompatibilityScore, currentLanguage);
         match.CompatibilityExplanationLanguage = currentLanguage;
         await _context.SaveChangesAsync();
     }
 
-    public async Task EindigMatchTussenAsync(string userAId, string userBId)
+    public async Task EndMatchBetweenAsync(string userAId, string userBId)
     {
         var match = await _context.Matches.FirstOrDefaultAsync(m =>
             m.Status == MatchStatus.Active &&
@@ -147,20 +152,20 @@ public class MatchService : IMatchService
 
         if (match is null)
         {
-            return; // Niet (meer) gematcht: niets te doen.
+            return; // Not (or no longer) matched: nothing to do.
         }
 
         match.Status = MatchStatus.Unmatched;
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Match {MatchId} beëindigd tussen {UserA} en {UserB}.", match.Id, userAId, userBId);
+        _logger.LogInformation("Match {MatchId} ended between {UserA} and {UserB}.", match.Id, userAId, userBId);
     }
 
     /// <summary>
     /// Looks up the match, but only when it's still active and the user is a
     /// participant in it.
     /// </summary>
-    private async Task<Match?> ZoekMatchVanDeelnemerAsync(int matchId, string userId)
+    private async Task<Match?> FindMatchForParticipantAsync(int matchId, string userId)
     {
         return await _context.Matches
             .Include(m => m.User1)

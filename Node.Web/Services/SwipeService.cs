@@ -1,17 +1,19 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Node.Data.Data;
 using Node.Data.Models;
 using Node.Data.Models.Enums;
 using Node.Data.Services;
 using Node.Web.Models.Swiping;
+using Node.Web.Resources;
 using Node.Web.Services.Interfaces;
 
 namespace Node.Web.Services;
 
 /// <summary>
-/// De swipe-stapel: kandidaten zoeken en likes/passes verwerken.
+/// The swipe stack: finding candidates and processing likes/passes.
 /// </summary>
 public class SwipeService : ISwipeService
 {
@@ -20,6 +22,7 @@ public class SwipeService : ISwipeService
     private readonly IMatchInterpretationService _matchInterpretationService;
     private readonly ISwipeTeaserService _swipeTeaserService;
     private readonly INotificationService _notificationService;
+    private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly ILogger<SwipeService> _logger;
 
     public SwipeService(
@@ -28,6 +31,7 @@ public class SwipeService : ISwipeService
         IMatchInterpretationService matchInterpretationService,
         ISwipeTeaserService swipeTeaserService,
         INotificationService notificationService,
+        IStringLocalizer<SharedResource> localizer,
         ILogger<SwipeService> logger)
     {
         _context = context;
@@ -35,19 +39,20 @@ public class SwipeService : ISwipeService
         _matchInterpretationService = matchInterpretationService;
         _swipeTeaserService = swipeTeaserService;
         _notificationService = notificationService;
+        _localizer = localizer;
         _logger = logger;
     }
 
-    public async Task<SwipeCardViewModel?> GetVolgendeKandidaatAsync(string userId)
+    public async Task<SwipeCardViewModel?> GetNextCandidateAsync(string userId)
     {
-        // Alleen gewone leden verschijnen in de stapel (geen beheerders of
-        // moderatoren, die accounts zijn geen datingprofielen).
-        var ledenIds = (await _userManager.GetUsersInRoleAsync(DbSeeder.RolLid))
+        // Only regular members appear in the stack (no admins or moderators,
+        // those accounts aren't dating profiles).
+        var memberIds = (await _userManager.GetUsersInRoleAsync(DbSeeder.RoleMember))
             .Select(u => u.Id)
             .ToHashSet();
 
-        // Wie ik al beoordeeld heb, komt niet opnieuw langs.
-        var beoordeeldeIds = await _context.Swipes
+        // Anyone I already rated doesn't come up again.
+        var ratedIds = await _context.Swipes
             .Where(s => s.SwiperUserId == userId)
             .Select(s => s.TargetUserId)
             .ToListAsync();
@@ -64,58 +69,58 @@ public class SwipeService : ISwipeService
 
         var myPreferences = currentUser.PartnerPreferences.Select(p => p.Gender).ToHashSet();
 
-        var kandidaat = await _context.Users
+        var candidate = await _context.Users
             .Include(u => u.NatalChart).ThenInclude(n => n!.Placements)
             .Where(u => u.Id != userId
                         && !u.IsBlocked
                         && u.EmailConfirmed
-                        && ledenIds.Contains(u.Id)
-                        && !beoordeeldeIds.Contains(u.Id)
+                        && memberIds.Contains(u.Id)
+                        && !ratedIds.Contains(u.Id)
                         && myPreferences.Contains(u.Gender)
                         && u.PartnerPreferences.Any(p => p.Gender == currentUser.Gender))
-            .OrderBy(u => u.DisplayName) // Deterministische volgorde voor de demo.
+            .OrderBy(u => u.DisplayName) // Deterministic order for the demo.
             .FirstOrDefaultAsync();
 
-        if (kandidaat is null)
+        if (candidate is null)
         {
-            return null; // Stapel is leeg.
+            return null; // Stack is empty.
         }
 
-        // Score alleen berekenbaar wanneer beide horoscopen bestaan.
-        var mijnChart = await _context.NatalCharts.Include(n => n.Placements).FirstOrDefaultAsync(n => n.UserId == userId);
-        (int Score, SynastryConclusion Conclusion)? synastrie = mijnChart is not null && kandidaat.NatalChart is not null
-            ? DemoSynastrie.Bereken(mijnChart, kandidaat.NatalChart)
+        // Score only calculable when both natal charts exist.
+        var myChart = await _context.NatalCharts.Include(n => n.Placements).FirstOrDefaultAsync(n => n.UserId == userId);
+        (int Score, SynastryConclusion Conclusion)? synastry = myChart is not null && candidate.NatalChart is not null
+            ? DemoSynastry.Calculate(myChart, candidate.NatalChart)
             : null;
 
         string? compatibilityTest = null;
         string? dateIdea = null;
-        if (synastrie is not null && mijnChart is not null && kandidaat.NatalChart is not null)
+        if (synastry is not null && myChart is not null && candidate.NatalChart is not null)
         {
-            var taal = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+            var language = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
             (compatibilityTest, dateIdea) = await _swipeTeaserService.WriteTeaserAsync(
-                currentUser, mijnChart, kandidaat, kandidaat.NatalChart, synastrie.Value.Score, taal);
+                currentUser, myChart, candidate, candidate.NatalChart, synastry.Value.Score, language);
         }
 
         return new SwipeCardViewModel
         {
-            UserId = kandidaat.Id,
-            DisplayName = kandidaat.DisplayName,
-            ProfilePictureUrl = kandidaat.ProfilePictureUrl,
-            Age = BerekenLeeftijd(kandidaat.BirthDate),
-            Bio = kandidaat.Bio,
-            BirthPlace = kandidaat.BirthPlace,
-            CompatibilityScore = synastrie?.Score,
+            UserId = candidate.Id,
+            DisplayName = candidate.DisplayName,
+            ProfilePictureUrl = candidate.ProfilePictureUrl,
+            Age = CalculateAge(candidate.BirthDate),
+            Bio = candidate.Bio,
+            BirthPlace = candidate.BirthPlace,
+            CompatibilityScore = synastry?.Score,
             CompatibilityExplanation = compatibilityTest,
             DateIdea = dateIdea,
         };
     }
 
-    public async Task<(bool IsMatch, int? MatchId)> BeoordeelAsync(string swiperUserId, string targetUserId, bool isLike)
+    public async Task<(bool IsMatch, int? MatchId)> RateAsync(string swiperUserId, string targetUserId, bool isLike)
     {
-        // Dubbele beoordelingen negeren (bv. twee keer snel klikken).
-        var bestaat = await _context.Swipes.AnyAsync(
+        // Ignore duplicate ratings (e.g. clicking twice quickly).
+        var alreadyExists = await _context.Swipes.AnyAsync(
             s => s.SwiperUserId == swiperUserId && s.TargetUserId == targetUserId);
-        if (bestaat)
+        if (alreadyExists)
         {
             return (false, null);
         }
@@ -136,52 +141,52 @@ public class SwipeService : ISwipeService
         await _context.SaveChangesAsync();
         await _notificationService.NotifyLikeAsync(recipientUserId: targetUserId, actorUserId: swiperUserId);
 
-        // Wederzijdse like? Dan ontstaat er een match.
-        var wederzijds = await _context.Swipes.AnyAsync(
+        // Mutual like? Then a match is born.
+        var isMutual = await _context.Swipes.AnyAsync(
             s => s.SwiperUserId == targetUserId && s.TargetUserId == swiperUserId && s.IsLike);
-        if (!wederzijds)
+        if (!isMutual)
         {
             await _context.SaveChangesAsync();
             return (false, null);
         }
 
-        // Afspraak: User1Id alfabetisch vóór User2Id zodat een paar uniek is.
-        var (eerste, tweede) = string.CompareOrdinal(swiperUserId, targetUserId) < 0
+        // Convention: User1Id alphabetically before User2Id so a pair is unique.
+        var (first, second) = string.CompareOrdinal(swiperUserId, targetUserId) < 0
             ? (swiperUserId, targetUserId)
             : (targetUserId, swiperUserId);
 
-        var chart1 = await _context.NatalCharts.Include(n => n.Placements).FirstOrDefaultAsync(n => n.UserId == eerste);
-        var chart2 = await _context.NatalCharts.Include(n => n.Placements).FirstOrDefaultAsync(n => n.UserId == tweede);
+        var chart1 = await _context.NatalCharts.Include(n => n.Placements).FirstOrDefaultAsync(n => n.UserId == first);
+        var chart2 = await _context.NatalCharts.Include(n => n.Placements).FirstOrDefaultAsync(n => n.UserId == second);
 
         var currentLanguage = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 
         int score;
-        string uitleg;
+        string explanation;
         if (chart1 is not null && chart2 is not null)
         {
-            var (berekendeScore, _) = DemoSynastrie.Bereken(chart1, chart2);
-            score = berekendeScore;
+            var (calculatedScore, _) = DemoSynastry.Calculate(chart1, chart2);
+            score = calculatedScore;
 
-            // De uitlegtekst komt van Claude (op basis van de volledige horoscopen);
-            // de score zelf blijft deterministisch berekend hierboven.
-            var gebruiker1 = await _userManager.FindByIdAsync(eerste);
-            var gebruiker2 = await _userManager.FindByIdAsync(tweede);
-            uitleg = gebruiker1 is not null && gebruiker2 is not null
-                ? await _matchInterpretationService.SchrijfInterpretatieAsync(gebruiker1, chart1, gebruiker2, chart2, score, currentLanguage)
-                : "Score volgt zodra beide horoscopen berekend zijn.";
+            // The explanation text comes from Claude (based on the full natal charts);
+            // the score itself stays deterministically calculated above.
+            var user1 = await _userManager.FindByIdAsync(first);
+            var user2 = await _userManager.FindByIdAsync(second);
+            explanation = user1 is not null && user2 is not null
+                ? await _matchInterpretationService.WriteMatchInterpretationAsync(user1, chart1, user2, chart2, score, currentLanguage)
+                : _localizer["SwipeCard_ScorePending"];
         }
         else
         {
             score = 50;
-            uitleg = "Score volgt zodra beide horoscopen berekend zijn.";
+            explanation = _localizer["SwipeCard_ScorePending"];
         }
 
         var match = new Match
         {
-            User1Id = eerste,
-            User2Id = tweede,
+            User1Id = first,
+            User2Id = second,
             CompatibilityScore = score,
-            CompatibilityExplanation = uitleg,
+            CompatibilityExplanation = explanation,
             CompatibilityExplanationLanguage = currentLanguage,
             Status = MatchStatus.Active,
         };
@@ -189,22 +194,22 @@ public class SwipeService : ISwipeService
         _context.Matches.Add(match);
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Nieuwe match {MatchId} tussen {User1} en {User2}.",
-            match.Id, eerste, tweede);
+        _logger.LogInformation("New match {MatchId} between {User1} and {User2}.",
+            match.Id, first, second);
 
         return (true, match.Id);
     }
 
-    /// <summary>Berekent de leeftijd in volle jaren uit de geboortedatum.</summary>
-    private static int BerekenLeeftijd(DateOnly geboortedatum)
+    /// <summary>Calculates the age in full years from the birth date.</summary>
+    private static int CalculateAge(DateOnly birthDate)
     {
-        var vandaag = DateOnly.FromDateTime(DateTime.Today);
-        var leeftijd = vandaag.Year - geboortedatum.Year;
-        if (geboortedatum > vandaag.AddYears(-leeftijd))
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var age = today.Year - birthDate.Year;
+        if (birthDate > today.AddYears(-age))
         {
-            leeftijd--; // Verjaardag van dit jaar is nog niet voorbij.
+            age--; // This year's birthday hasn't happened yet.
         }
 
-        return leeftijd;
+        return age;
     }
 }

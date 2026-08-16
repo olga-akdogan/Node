@@ -1,30 +1,30 @@
-/* Huisstijl van Node volgens het UI-ontwerp (design_handoff_node_ui):
-   Cormorant Garamond voor titels, Jost voor interface, pilvormige knoppen,
-   marineblauwe verlopen met een subtiel sterrenveld en veel witruimte. */
+/* Node's house style per the UI design (design_handoff_node_ui):
+   Cormorant Garamond for titles, Jost for interface, pill-shaped buttons,
+   navy gradients with a subtle starfield and plenty of whitespace. */
 
 :root {
-    /* Ontwerptokens uit de design-handoff (README) */
-    --node-inkt: #14201E;          /* lopende tekst */
-    --node-inkt-diep: #10231F;     /* titels, primaire knop */
-    --node-teal-donker: #0F2E2B;   /* zijbalk (dashboard) */
-    --node-marine: #16324F;        /* voettekst, chips, grafiek-lijnen */
-    --node-nacht: #0C1E38;         /* terugvalkleur van het hero-verloop */
-    --node-salie: #87A6A0;         /* accent: CTA's, actieve tab, avatars */
-    --node-salie-tint: #DCE6E4;    /* "chart signature"-vlak */
-    --node-fond: #ECEDEE;          /* paginakleur */
-    --node-fond-warm: #F7F8F7;     /* feature-kaarten / formulierpaneel */
-    --node-kaart: #FFFFFF;         /* kaarten */
-    --node-gedempt: #5A6663;       /* labels en eyebrows */
-    --node-gedempt-2: #7A8683;     /* secundaire tekst */
-    --node-lijn-invoer: #CBD1D0;   /* randen van invoervelden */
-    --node-lijn: #E0E3E2;          /* scheidingslijnen */
-    --node-lijn-zacht: #EDF0EF;    /* zachte scheidingslijnen in tabellen */
-    --node-tekst-donker: #F2F4F3;  /* tekst op donkere vlakken */
-    --node-fout: #B0574F;          /* validatiefouten */
+    /* Design tokens from the design handoff (README) */
+    --node-ink: #14201E;           /* body text */
+    --node-ink-deep: #10231F;      /* titles, primary button */
+    --node-dark-teal: #0F2E2B;     /* sidebar (dashboard) */
+    --node-marine: #16324F;        /* footer, chips, chart lines */
+    --node-night: #0C1E38;         /* fallback color of the hero gradient */
+    --node-sage: #87A6A0;          /* accent: CTAs, active tab, avatars */
+    --node-sage-tint: #DCE6E4;     /* "chart signature" area */
+    --node-background: #ECEDEE;    /* page color */
+    --node-warm-background: #F7F8F7; /* feature cards / form panel */
+    --node-card: #FFFFFF;          /* cards */
+    --node-muted: #5A6663;         /* labels and eyebrows */
+    --node-muted-2: #7A8683;       /* secondary text */
+    --node-input-border: #CBD1D0;  /* borders of input fields */
+    --node-line: #E0E3E2;          /* dividing lines */
+    --node-soft-line: #EDF0EF;     /* soft dividing lines in tables */
+    --node-dark-text: #F2F4F3;     /* text on dark areas */
+    --node-error: #B0574F;         /* validation errors */
 
-    /* Marineblauw verloop + sterrenveld voor donkere vlakken */
-    --node-verloop-nacht: linear-gradient(160deg, #1B3A5C 0%, #12294A 55%, #0C1E38 100%);
-    --node-sterren:
+    /* Navy gradient + starfield for dark areas */
+    --node-night-gradient: linear-gradient(160deg, #1B3A5C 0%, #12294A 55%, #0C1E38 100%);
+    --node-stars:
         radial-gradient(1.6px 1.6px at 12% 22%, rgba(242,244,243,0.9) 50%, transparent 51%),
         radial-gradient(1.2px 1.2px at 28% 68%, rgba(242,244,243,0.7) 50%, transparent 51%),
         radial-gradient(1.8px 1.8px at 44% 12%, rgba(242,244,243,0.8) 50%, transparent 51%),
@@ -36,8 +36,8 @@
 
     --node-font-display: "Cormorant Garamond", Georgia, serif;
     --node-font-ui: "Jost", "Segoe UI", sans-serif;
-    /* Voor astrologische glyphs: "Segoe UI Symbol" bevat de tekstversie van
-       de tekens (anders vallen ze terug op gekleurde emoji). */
+    /* For astrological glyphs: "Segoe UI Symbol" contains the text version
+       of the signs (otherwise they fall back to colored emoji). */
     --node-font-glyph: "Cormorant Garamond", "Segoe UI Symbol", serif;
 }
 
@@ -50,27 +50,27 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background-color: var(--node-fond);
-    color: var(--node-inkt);
+    background-color: var(--node-background);
+    color: var(--node-ink);
     font-family: var(--node-font-ui);
     font-weight: 400;
 }
 
-/* Het middenstuk groeit zodat de voettekst onderaan blijft. */
-.pagina-inhoud {
+/* The middle section grows so the footer stays at the bottom. */
+.page-content {
     flex: 1 0 auto;
 }
 
-/* ---------- Typografie ---------- */
+/* ---------- Typography ---------- */
 
 h1, h2, h3, h4 {
     font-family: var(--node-font-display);
     font-weight: 500;
-    color: var(--node-inkt-diep);
+    color: var(--node-ink-deep);
 }
 
 h1 em, h2 em {
-    font-weight: 400; /* Cursieve nadruk is iets lichter, zoals in het ontwerp. */
+    font-weight: 400; /* Italic emphasis is a bit lighter, as in the design. */
 }
 
 a {
@@ -83,24 +83,24 @@ a:hover {
 }
 
 .text-muted {
-    color: var(--node-gedempt-2) !important;
+    color: var(--node-muted-2) !important;
 }
 
-/* Eyebrow/kicker: klein kapitaal met ruime letterafstand. */
+/* Eyebrow/kicker: small caps with generous letter spacing. */
 .kicker {
     font-size: 0.75rem;
     letter-spacing: 0.28em;
     text-transform: uppercase;
-    color: var(--node-gedempt);
+    color: var(--node-muted);
 }
 
-/* ---------- Logo-woordmerk "n○de" ---------- */
+/* ---------- Logo wordmark "n○de" ---------- */
 
-.logo-woordmerk {
+.logo-wordmark {
     font-family: var(--node-font-display);
     font-size: 1.65rem;
     letter-spacing: 0.06em;
-    color: var(--node-inkt-diep);
+    color: var(--node-ink-deep);
 }
 
 .logo-o {
@@ -112,7 +112,7 @@ a:hover {
     margin: 0 2px;
 }
 
-/* ---------- Navigatiebalk ---------- */
+/* ---------- Navbar ---------- */
 
 .navbar-node {
     background-color: transparent;
@@ -126,17 +126,17 @@ a:hover {
     letter-spacing: 0.12em;
     text-transform: uppercase;
     text-decoration: none;
-    color: var(--node-gedempt);
+    color: var(--node-muted);
 }
 
 .navbar-node .nav-link:hover,
 .navbar-node .nav-link:focus,
 .navbar-node .btn-link:hover {
-    color: var(--node-inkt-diep);
+    color: var(--node-ink-deep);
 }
 
-/* Donkere variant: transparant óver het navy-hero-vlak. */
-.nav-donker {
+/* Dark variant: transparent, over the navy hero area. */
+.nav-dark {
     position: absolute;
     top: 0;
     left: 0;
@@ -144,27 +144,27 @@ a:hover {
     z-index: 10;
 }
 
-.nav-donker .logo-woordmerk {
-    color: var(--node-tekst-donker);
+.nav-dark .logo-wordmark {
+    color: var(--node-dark-text);
 }
 
-.nav-donker .nav-link,
-.nav-donker .btn-link {
+.nav-dark .nav-link,
+.nav-dark .btn-link {
     color: rgba(242, 244, 243, 0.8);
 }
 
-.nav-donker .nav-link:hover,
-.nav-donker .nav-link:focus,
-.nav-donker .btn-link:hover {
+.nav-dark .nav-link:hover,
+.nav-dark .nav-link:focus,
+.nav-dark .btn-link:hover {
     color: #FFFFFF;
 }
 
-.nav-donker .navbar-toggler {
+.nav-dark .navbar-toggler {
     border-color: rgba(242, 244, 243, 0.4);
     color: rgba(242, 244, 243, 0.8);
 }
 
-/* ---------- Knoppen: pilvormig ---------- */
+/* ---------- Buttons: pill-shaped ---------- */
 
 .btn {
     border-radius: 999px;
@@ -180,38 +180,38 @@ a:hover {
     padding: 0.9rem 2.1rem;
 }
 
-/* Primair: diep inktgroen, hover naar marine. */
+/* Primary: deep ink green, hover to marine. */
 .btn-primary {
-    --bs-btn-bg: var(--node-inkt-diep);
-    --bs-btn-border-color: var(--node-inkt-diep);
-    --bs-btn-color: var(--node-tekst-donker);
+    --bs-btn-bg: var(--node-ink-deep);
+    --bs-btn-border-color: var(--node-ink-deep);
+    --bs-btn-color: var(--node-dark-text);
     --bs-btn-hover-bg: var(--node-marine);
     --bs-btn-hover-border-color: var(--node-marine);
     --bs-btn-active-bg: var(--node-marine);
     --bs-btn-active-border-color: var(--node-marine);
 }
 
-/* Accent: salie-pil (CTA in navigatie en hero). */
+/* Accent: sage pill (CTA in nav and hero). */
 .btn-accent,
 .btn-hero {
-    --bs-btn-bg: var(--node-salie);
-    --bs-btn-border-color: var(--node-salie);
-    --bs-btn-color: var(--node-inkt-diep);
+    --bs-btn-bg: var(--node-sage);
+    --bs-btn-border-color: var(--node-sage);
+    --bs-btn-color: var(--node-ink-deep);
     --bs-btn-hover-bg: #94B0AA;
     --bs-btn-hover-border-color: #94B0AA;
-    --bs-btn-hover-color: var(--node-inkt-diep);
+    --bs-btn-hover-color: var(--node-ink-deep);
 }
 
-/* Spookknop op donkere vlakken. */
-.btn-hero-omlijnd {
-    --bs-btn-color: var(--node-tekst-donker);
+/* Ghost button on dark areas. */
+.btn-hero-outline {
+    --bs-btn-color: var(--node-dark-text);
     --bs-btn-border-color: rgba(242, 244, 243, 0.35);
     --bs-btn-hover-color: #FFFFFF;
     --bs-btn-hover-border-color: #F2F4F3;
     --bs-btn-hover-bg: transparent;
 }
 
-/* Spookknop op lichte vlakken. */
+/* Ghost button on light areas. */
 .btn-outline-primary,
 .btn-outline-secondary {
     --bs-btn-color: #37423F;
@@ -226,62 +226,62 @@ a:hover {
     text-decoration: none;
 }
 
-/* Focus in saliekleur i.p.v. het Bootstrap-blauw. */
+/* Focus in sage color instead of Bootstrap blue. */
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus,
 .form-control:focus, .form-check-input:focus, .form-select:focus {
-    border-color: var(--node-salie);
+    border-color: var(--node-sage);
     box-shadow: 0 0 0 0.2rem rgba(135, 166, 160, 0.3);
 }
 
 .form-check-input:checked {
-    background-color: var(--node-inkt-diep);
-    border-color: var(--node-inkt-diep);
+    background-color: var(--node-ink-deep);
+    border-color: var(--node-ink-deep);
 }
 
-/* ---------- Formulieren ---------- */
+/* ---------- Forms ---------- */
 
 .form-control, .form-select {
     border-radius: 8px;
-    border-color: var(--node-lijn-invoer);
+    border-color: var(--node-input-border);
     background-color: #FFFFFF;
     padding: 0.8rem 1rem;
     font-size: 0.95rem;
-    color: var(--node-inkt);
+    color: var(--node-ink);
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: var(--node-salie);
+    border-color: var(--node-sage);
 }
 
 .form-label {
     font-size: 0.75rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--node-gedempt);
+    color: var(--node-muted);
 }
 
 .text-danger {
-    color: var(--node-fout) !important;
+    color: var(--node-error) !important;
     font-size: 0.85rem;
 }
 
-/* ---------- Hero (donker navy-vlak met sterrenveld) ---------- */
+/* ---------- Hero (dark navy area with starfield) ---------- */
 
 .hero-node {
-    background-color: var(--node-nacht);
-    background-image: var(--node-sterren), var(--node-verloop-nacht);
-    color: var(--node-tekst-donker);
+    background-color: var(--node-night);
+    background-image: var(--node-stars), var(--node-night-gradient);
+    color: var(--node-dark-text);
     text-align: center;
-    padding: 10.5rem 2rem 9rem; /* Extra ruimte boven: de navigatie zweeft erover. */
+    padding: 10.5rem 2rem 9rem; /* Extra space on top: the nav floats over it. */
 }
 
 .hero-node .kicker {
-    color: var(--node-salie);
+    color: var(--node-sage);
     letter-spacing: 0.32em;
 }
 
 .hero-node h1 {
-    color: var(--node-tekst-donker);
+    color: var(--node-dark-text);
     font-size: clamp(3rem, 6.4vw, 5.75rem);
     line-height: 1.04;
     font-weight: 500;
@@ -296,54 +296,54 @@ a:hover {
     margin-inline: auto;
 }
 
-/* Compactere variant (afsluitend blok op tekstpagina's). */
-.hero-node.blok-klein {
+/* More compact variant (closing block on text pages). */
+.hero-node.block-small {
     padding: 5.5rem 2rem;
 }
 
-.hero-titel-klein {
-    color: var(--node-tekst-donker);
+.hero-title-small {
+    color: var(--node-dark-text);
     font-size: clamp(2rem, 4.5vw, 3rem);
 }
 
-.hero-node a.tekstlink {
-    color: var(--node-tekst-donker);
+.hero-node a.text-link {
+    color: var(--node-dark-text);
     text-decoration: underline;
     text-underline-offset: 4px;
 }
 
-/* ---------- Secties op de landingspagina ---------- */
+/* ---------- Sections on the landing page ---------- */
 
-.sectie {
+.section-block {
     padding: 6rem 0;
 }
 
-/* Feature-kaart: warm wit vlak met serif-glyph. */
-.kaart-veer {
-    background-color: var(--node-fond-warm);
+/* Feature card: warm white area with serif glyph. */
+.feature-card {
+    background-color: var(--node-warm-background);
     border-radius: 10px;
     padding: 2.5rem 2.25rem;
     height: 100%;
 }
 
-.kaart-veer .glyph {
+.feature-card .glyph {
     font-family: var(--node-font-display);
     font-size: 2.75rem;
     line-height: 1;
     color: var(--node-marine);
 }
 
-.kaart-veer .glyph-salie {
+.feature-card .glyph-sage {
     color: #4E7C75;
 }
 
-.kaart-veer h3 {
+.feature-card h3 {
     font-size: 1.6rem;
     font-weight: 600;
     margin: 1.35rem 0 0.6rem;
 }
 
-.kaart-veer p {
+.feature-card p {
     font-size: 0.95rem;
     font-weight: 300;
     line-height: 1.65;
@@ -351,19 +351,19 @@ a:hover {
     margin: 0;
 }
 
-/* Salieband: tweekoloms vlak zoals in het ontwerp. */
-.band-salie {
-    background-color: var(--node-salie);
+/* Sage band: two-column area as in the design. */
+.sage-band {
+    background-color: var(--node-sage);
     padding: 6rem 0;
 }
 
-.band-salie h2 {
+.sage-band h2 {
     color: #0F2420;
     font-size: clamp(2.2rem, 3.6vw, 3.25rem);
     line-height: 1.1;
 }
 
-.band-salie p {
+.sage-band p {
     font-size: 1.05rem;
     font-weight: 300;
     line-height: 1.7;
@@ -371,7 +371,7 @@ a:hover {
     max-width: 29rem;
 }
 
-.band-salie .band-link {
+.sage-band .band-link {
     color: #0F2420;
     font-size: 0.95rem;
     letter-spacing: 0.1em;
@@ -380,29 +380,29 @@ a:hover {
     padding-bottom: 4px;
 }
 
-.band-salie .band-link:hover {
+.sage-band .band-link:hover {
     color: var(--node-marine);
     border-color: var(--node-marine);
 }
 
-/* ---------- Redactionele rubrieken (Hoe het werkt) ---------- */
+/* ---------- Editorial topics (How it works) ---------- */
 
-.rubriek {
-    border-top: 1px solid var(--node-lijn);
+.topic {
+    border-top: 1px solid var(--node-line);
     padding-top: 1.5rem;
 }
 
-.rubriek h3 {
+.topic h3 {
     font-size: 1.45rem;
 }
 
-.rubriek-nummer {
+.topic-number {
     display: block;
     font-family: var(--node-font-display);
     font-size: 3.4rem;
     font-weight: 500;
     line-height: 1;
-    color: var(--node-salie);
+    color: var(--node-sage);
     margin-bottom: 0.75rem;
 }
 
@@ -412,19 +412,19 @@ a:hover {
     font-size: 1.65rem;
     font-weight: 400;
     line-height: 1.3;
-    color: var(--node-inkt-diep);
+    color: var(--node-ink-deep);
 }
 
-/* ---------- Ontdek-stapel ---------- */
+/* ---------- Discover stack ---------- */
 
 .deck {
     max-width: 26rem;
 }
 
-/* Beeldvlak van de profielkaart: nachthemel met initiaal. */
-.kaart-blok {
-    background-color: var(--node-nacht);
-    background-image: var(--node-sterren), var(--node-verloop-nacht);
+/* Image area of the profile card: night sky with initial. */
+.card-image {
+    background-color: var(--node-night);
+    background-image: var(--node-stars), var(--node-night-gradient);
     aspect-ratio: 4 / 3;
     display: flex;
     align-items: center;
@@ -433,20 +433,20 @@ a:hover {
     overflow: hidden;
 }
 
-.kaart-blok img {
+.card-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.kaart-initiaal {
+.card-initial {
     font-family: var(--node-font-display);
     font-size: 6rem;
     font-weight: 500;
-    color: var(--node-tekst-donker);
+    color: var(--node-dark-text);
 }
 
-.score-cijfer {
+.score-number {
     font-family: var(--node-font-display);
     font-size: 2.6rem;
     font-weight: 500;
@@ -454,85 +454,85 @@ a:hover {
     color: var(--node-marine);
 }
 
-/* Ronde pas- en like-knoppen. */
-.actieknop {
+/* Round pass and like buttons. */
+.action-button {
     width: 3.6rem;
     height: 3.6rem;
     border-radius: 50%;
-    border: 1px solid var(--node-lijn-invoer);
+    border: 1px solid var(--node-input-border);
     background-color: #FFFFFF;
-    color: var(--node-inkt);
+    color: var(--node-ink);
     font-size: 1.4rem;
     line-height: 1;
 }
 
-.actieknop:hover {
+.action-button:hover {
     background-color: var(--node-marine);
     border-color: var(--node-marine);
-    color: var(--node-tekst-donker);
+    color: var(--node-dark-text);
 }
 
-.actieknop-like:hover {
-    background-color: var(--node-salie);
-    border-color: var(--node-salie);
-    color: var(--node-inkt-diep);
+.action-button-like:hover {
+    background-color: var(--node-sage);
+    border-color: var(--node-sage);
+    color: var(--node-ink-deep);
 }
 
-/* Donker matchvlak bij een wederzijdse like. */
+/* Dark match area on a mutual like. */
 .match-overlay {
-    background-color: var(--node-nacht);
-    background-image: var(--node-sterren), var(--node-verloop-nacht);
-    color: var(--node-tekst-donker);
+    background-color: var(--node-night);
+    background-image: var(--node-stars), var(--node-night-gradient);
+    color: var(--node-dark-text);
     border-radius: 12px;
     padding: 4rem 2rem;
 }
 
 .match-overlay h2 {
-    color: var(--node-tekst-donker);
+    color: var(--node-dark-text);
     font-size: 2.6rem;
 }
 
 .match-overlay .kicker {
-    color: var(--node-salie);
+    color: var(--node-sage);
 }
 
-.match-overlay a.tekstlink {
-    color: var(--node-tekst-donker);
+.match-overlay a.text-link {
+    color: var(--node-dark-text);
     text-decoration: underline;
     text-underline-offset: 4px;
 }
 
-/* ---------- Matchoverzicht ---------- */
+/* ---------- Match overview ---------- */
 
-.match-lijst {
-    background-color: var(--node-kaart);
+.match-list {
+    background-color: var(--node-card);
     border-radius: 12px;
     padding: 0.75rem 1.5rem;
 }
 
-.match-rij {
+.match-row {
     padding: 1rem 0.25rem;
-    border-bottom: 1px solid var(--node-lijn-zacht);
-    color: var(--node-inkt);
+    border-bottom: 1px solid var(--node-soft-line);
+    color: var(--node-ink);
 }
 
-.match-rij:last-child {
+.match-row:last-child {
     border-bottom: none;
 }
 
-.match-naam {
+.match-name {
     font-family: var(--node-font-display);
     font-size: 1.25rem;
-    color: var(--node-inkt-diep);
+    color: var(--node-ink-deep);
 }
 
-.avatar-cirkel {
+.avatar-circle {
     flex: 0 0 auto;
     width: 2.9rem;
     height: 2.9rem;
     border-radius: 50%;
-    background-color: var(--node-salie);
-    color: var(--node-inkt-diep);
+    background-color: var(--node-sage);
+    color: var(--node-ink-deep);
     font-family: var(--node-font-display);
     font-size: 1.3rem;
     display: inline-flex;
@@ -540,16 +540,16 @@ a:hover {
     justify-content: center;
 }
 
-img.avatar-cirkel {
+img.avatar-circle {
     object-fit: cover;
 }
 
-.taal-kiezer {
+.language-picker {
     font-family: var(--node-font-sans, inherit);
     font-size: 0.8rem;
 }
 
-.taal-knop {
+.language-button {
     background: none;
     border: none;
     padding: 0;
@@ -558,17 +558,17 @@ img.avatar-cirkel {
     cursor: pointer;
 }
 
-.taal-knop:hover {
+.language-button:hover {
     opacity: 1;
 }
 
-.taal-knop.taal-actief {
+.language-button.language-active {
     opacity: 1;
     font-weight: 600;
     text-decoration: underline;
 }
 
-.taal-scheiding {
+.language-separator {
     opacity: 0.4;
 }
 
@@ -578,7 +578,7 @@ img.avatar-cirkel {
     right: 0;
     bottom: 0;
     z-index: 1050;
-    background-color: var(--node-inkt-diep, #1C3B33);
+    background-color: var(--node-ink-deep, #1C3B33);
     color: #fff;
     box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
 }
@@ -587,14 +587,14 @@ img.avatar-cirkel {
     color: #fff;
 }
 
-.ongelezen-stip {
+.unread-dot {
     flex: 0 0 auto;
     min-width: 1.5rem;
     height: 1.5rem;
     padding-inline: 0.4rem;
     border-radius: 999px;
     background-color: var(--node-marine);
-    color: var(--node-tekst-donker);
+    color: var(--node-dark-text);
     font-size: 0.75rem;
     display: inline-flex;
     align-items: center;
@@ -602,12 +602,12 @@ img.avatar-cirkel {
 }
 
 .min-w-0 {
-    min-width: 0; /* Nodig zodat text-truncate werkt binnen flex. */
+    min-width: 0; /* Needed so text-truncate works within flex. */
 }
 
 /* ---------- Chat ---------- */
 
-.chat-venster {
+.chat-window {
     height: 55vh;
     overflow-y: auto;
     display: flex;
@@ -616,27 +616,27 @@ img.avatar-cirkel {
     padding: 0.25rem;
 }
 
-.ballon {
+.bubble {
     max-width: 75%;
     padding: 0.6rem 1rem;
     border-radius: 14px;
     font-size: 0.95rem;
 }
 
-.ballon-mijn {
-    background-color: var(--node-inkt-diep);
-    color: var(--node-tekst-donker);
+.bubble-mine {
+    background-color: var(--node-ink-deep);
+    color: var(--node-dark-text);
     border-bottom-right-radius: 4px;
 }
 
-.ballon-ander {
+.bubble-other {
     background-color: #FFFFFF;
-    border: 1px solid var(--node-lijn);
-    color: var(--node-inkt);
+    border: 1px solid var(--node-line);
+    color: var(--node-ink);
     border-bottom-left-radius: 4px;
 }
 
-.ballon-tijd {
+.bubble-time {
     display: block;
     font-size: 0.68rem;
     opacity: 0.65;
@@ -644,12 +644,12 @@ img.avatar-cirkel {
     margin-top: 0.15rem;
 }
 
-/* ---------- Kaarten, tabellen en meldingen ---------- */
+/* ---------- Cards, tables and alerts ---------- */
 
 .card {
     border: none;
     border-radius: 12px;
-    background-color: var(--node-kaart);
+    background-color: var(--node-card);
 }
 
 .table {
@@ -657,24 +657,24 @@ img.avatar-cirkel {
 }
 
 .alert-success {
-    background-color: var(--node-salie-tint);
-    border-color: var(--node-salie-tint);
+    background-color: var(--node-sage-tint);
+    border-color: var(--node-sage-tint);
     color: #14342F;
 }
 
-/* ---------- Auth-schermen (gesplitst scherm, ontwerp 02) ---------- */
+/* ---------- Auth screens (split screen, design 02) ---------- */
 
-.auth-scherm {
+.auth-screen {
     display: flex;
     min-height: 100vh;
 }
 
-/* Linkerpaneel: nachthemel met logo, citaat en privacyregel. */
-.auth-paneel-donker {
+/* Left panel: night sky with logo, quote and privacy line. */
+.auth-panel-dark {
     width: 46%;
-    background-color: var(--node-nacht);
-    background-image: var(--node-sterren), var(--node-verloop-nacht);
-    color: var(--node-tekst-donker);
+    background-color: var(--node-night);
+    background-image: var(--node-stars), var(--node-night-gradient);
+    color: var(--node-dark-text);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -682,16 +682,16 @@ img.avatar-cirkel {
 }
 
 @media (max-width: 991.98px) {
-    .auth-paneel-donker {
-        display: none; /* Op kleine schermen alleen het formulier tonen. */
+    .auth-panel-dark {
+        display: none; /* Only show the form on small screens. */
     }
 }
 
-.auth-paneel-donker .logo-woordmerk {
-    color: var(--node-tekst-donker);
+.auth-panel-dark .logo-wordmark {
+    color: var(--node-dark-text);
 }
 
-.auth-citaat {
+.auth-quote {
     font-family: var(--node-font-display);
     font-style: italic;
     font-weight: 400;
@@ -700,8 +700,8 @@ img.avatar-cirkel {
     max-width: 27rem;
 }
 
-/* Rechterpaneel: warm licht vlak met het formulier. */
-.auth-paneel-vorm {
+/* Right panel: warm light area with the form. */
+.auth-panel-form {
     flex: 1;
     background-color: #F4F5F4;
     display: flex;
@@ -711,20 +711,21 @@ img.avatar-cirkel {
     position: relative;
 }
 
-/* Taalkiezer op het auth-scherm: vast in de hoek i.p.v. mee te centreren
-   met het formulier (dat zou de knoppen midden op de pagina zetten). */
-.auth-taalkiezer-hoek {
+/* Language picker on the auth screen: fixed in the corner instead of
+   centering with the form (that would put the buttons in the middle
+   of the page). */
+.auth-language-picker-corner {
     position: absolute;
     top: 1.5rem;
     right: 1.5rem;
 }
 
-.auth-vorm {
+.auth-form {
     width: 100%;
     max-width: 420px;
 }
 
-/* Tabs "Inloggen / Account aanmaken": actieve tab met salie-onderlijn. */
+/* Tabs "Log in / Create account": active tab with sage underline. */
 .auth-tabs {
     display: flex;
     gap: 2rem;
@@ -733,47 +734,47 @@ img.avatar-cirkel {
     letter-spacing: 0.08em;
 }
 
-.auth-tab-actief {
-    color: var(--node-inkt-diep);
+.auth-tab-active {
+    color: var(--node-ink-deep);
     font-weight: 500;
     padding-bottom: 8px;
-    border-bottom: 2px solid var(--node-salie);
+    border-bottom: 2px solid var(--node-sage);
 }
 
 .auth-tabs a {
-    color: var(--node-gedempt-2);
+    color: var(--node-muted-2);
     padding-bottom: 8px;
 }
 
 .auth-tabs a:hover {
-    color: var(--node-inkt-diep);
+    color: var(--node-ink-deep);
 }
 
-/* ---------- Mijn horoscoop (ontwerp 04) ---------- */
+/* ---------- My horoscope (design 04) ---------- */
 
-/* Witte topbalk met broodkruimel, naam en actieknop. */
-.topbalk {
-    background-color: var(--node-kaart);
-    border-bottom: 1px solid var(--node-lijn);
+/* White top bar with breadcrumb, name and action button. */
+.top-bar {
+    background-color: var(--node-card);
+    border-bottom: 1px solid var(--node-line);
     padding: 1.6rem 0;
 }
 
-.topbalk h1 {
+.top-bar h1 {
     font-size: 2rem;
     margin: 0;
 }
 
-.broodkruimel {
+.breadcrumb-text {
     font-size: 0.75rem;
     letter-spacing: 0.24em;
     text-transform: uppercase;
-    color: var(--node-gedempt-2);
+    color: var(--node-muted-2);
 }
 
-/* Navy pil-chips voor de grote drie. */
+/* Navy pill chips for the big three. */
 .chip-navy {
     background-color: var(--node-marine);
-    color: var(--node-tekst-donker);
+    color: var(--node-dark-text);
     border-radius: 999px;
     padding: 0.6rem 1.4rem;
     display: inline-flex;
@@ -787,16 +788,20 @@ img.avatar-cirkel {
     font-size: 1.1rem;
 }
 
-/* Plaatsingentabel: vier kolommen met zachte scheidingslijnen. */
-.tabel-plaatsingen .rij-kop,
-.tabel-plaatsingen .rij {
+/* Placements table: four columns with soft dividing lines.
+   Named "placement-row", not "row": a bare ".row" would collide with
+   Bootstrap's global .row grid class, which sets its own margins that
+   this selector doesn't override, causing the rows to bleed outside
+   the card. */
+.placements-table .row-header,
+.placements-table .placement-row {
     display: grid;
     grid-template-columns: 1.3fr 1.3fr 0.7fr 0.8fr;
     gap: 0 1rem;
     align-items: center;
 }
 
-.tabel-plaatsingen .rij-kop {
+.placements-table .row-header {
     padding-bottom: 10px;
     font-size: 0.72rem;
     letter-spacing: 0.16em;
@@ -805,40 +810,40 @@ img.avatar-cirkel {
     border-bottom: 1px solid #E4E8E7;
 }
 
-.tabel-plaatsingen .rij {
+.placements-table .placement-row {
     padding: 0.85rem 0;
     border-bottom: 1px solid #F0F2F1;
     font-size: 0.95rem;
 }
 
-.tabel-plaatsingen .rij:last-child {
+.placements-table .placement-row:last-child {
     border-bottom: none;
 }
 
-.tabel-plaatsingen .glyph-planeet {
+.placements-table .glyph-planet {
     font-family: var(--node-font-display);
     font-size: 1.2rem;
     color: var(--node-marine);
 }
 
-.tabel-plaatsingen .glyph-teken {
+.placements-table .glyph-sign {
     font-family: var(--node-font-display);
     font-size: 1.05rem;
     color: #4E7C75;
 }
 
-/* "Chart signature"-vlak in salietint. */
-.kaart-signatuur {
-    background-color: var(--node-salie-tint);
+/* "Chart signature" area in sage tint. */
+.card-signature {
+    background-color: var(--node-sage-tint);
     border-radius: 12px;
     padding: 1.75rem 2.25rem;
 }
 
-.kaart-signatuur .kicker {
+.card-signature .kicker {
     color: #46615B;
 }
 
-.kaart-signatuur p {
+.card-signature p {
     font-family: var(--node-font-display);
     font-style: italic;
     font-size: 1.35rem;
@@ -847,7 +852,7 @@ img.avatar-cirkel {
     margin: 0;
 }
 
-/* ---------- Voettekst (marineblauw) ---------- */
+/* ---------- Footer (navy) ---------- */
 
 .footer-node {
     background-color: var(--node-marine);
@@ -864,9 +869,9 @@ img.avatar-cirkel {
     color: #F2F4F3;
 }
 
-.footer-node .logo-woordmerk {
+.footer-node .logo-wordmark {
     font-size: 1.35rem;
-    color: var(--node-tekst-donker);
+    color: var(--node-dark-text);
 }
 
 .footer-node .logo-o {

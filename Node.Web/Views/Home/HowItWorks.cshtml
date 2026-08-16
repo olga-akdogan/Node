@@ -3,46 +3,46 @@
 @using Node.Data.Models
 @inject SignInManager<ApplicationUser> SignInManager
 @{
-    ViewData["Title"] = Localizer["Nav_HoeHetWerkt"];
+    ViewData["Title"] = Localizer["Nav_HowItWorks"];
 }
 
 <div class="mx-auto" style="max-width: 40rem;">
-    <p class="kicker text-center mb-2">@Localizer["Nav_HoeHetWerkt"]</p>
-    <h1 class="text-center mb-5">@Html.Raw(Localizer["Hiw_Titel"])</h1>
+    <p class="kicker text-center mb-2">@Localizer["Nav_HowItWorks"]</p>
+    <h1 class="text-center mb-5">@Html.Raw(Localizer["Hiw_Title"])</h1>
 
-    <section class="rubriek mb-5 pb-2">
-        <span class="rubriek-nummer">01</span>
+    <section class="topic mb-5 pb-2">
+        <span class="topic-number">01</span>
         <p class="kicker mb-3">@Localizer["Hiw_S1Kicker"]</p>
-        <h2>@Localizer["Hiw_S1Titel"]</h2>
+        <h2>@Localizer["Hiw_S1Title"]</h2>
         <p class="text-muted">
-            @Localizer["Hiw_S1Tekst1"]
+            @Localizer["Hiw_S1Text1"]
         </p>
         <p class="text-muted mb-0">
-            @Localizer["Hiw_S1Tekst2"]
+            @Localizer["Hiw_S1Text2"]
         </p>
     </section>
 
-    <section class="rubriek mb-5 pb-2">
-        <span class="rubriek-nummer">02</span>
+    <section class="topic mb-5 pb-2">
+        <span class="topic-number">02</span>
         <p class="kicker mb-3">@Localizer["Hiw_S2Kicker"]</p>
-        <h2>@Localizer["Hiw_S2Titel"]</h2>
+        <h2>@Localizer["Hiw_S2Title"]</h2>
         <p class="text-muted">
-            @Localizer["Hiw_S2Tekst"]
+            @Localizer["Hiw_S2Text"]
         </p>
         <p class="pull-quote mb-0">
             @Html.Raw(Localizer["Hiw_S2Quote"])
         </p>
     </section>
 
-    <section class="rubriek mb-5 pb-2">
-        <span class="rubriek-nummer">03</span>
+    <section class="topic mb-5 pb-2">
+        <span class="topic-number">03</span>
         <p class="kicker mb-3">@Localizer["Hiw_S3Kicker"]</p>
-        <h2>@Localizer["Hiw_S3Titel"]</h2>
+        <h2>@Localizer["Hiw_S3Title"]</h2>
         <p class="text-muted">
-            @Localizer["Hiw_S3Tekst1"]
+            @Localizer["Hiw_S3Text1"]
         </p>
         <p class="text-muted">
-            @Localizer["Hiw_S3Tekst2"]
+            @Localizer["Hiw_S3Text2"]
         </p>
         <p class="pull-quote mb-0">
             @Localizer["Hiw_S3Quote"]
@@ -50,15 +50,15 @@
     </section>
 </div>
 
-<section class="hero-node blok-klein text-center">
+<section class="hero-node block-small text-center">
     <p class="kicker mb-3">Node</p>
-    <h2 class="hero-titel-klein">@Html.Raw(Localizer["Hiw_CtaTitel"])</h2>
+    <h2 class="hero-title-small">@Html.Raw(Localizer["Hiw_CtaTitle"])</h2>
     @if (!SignInManager.IsSignedIn(User))
     {
-        <a class="btn btn-hero mt-4" asp-controller="Account" asp-action="Register">@Localizer["Hiw_CtaBeginVerhaal"]</a>
+        <a class="btn btn-hero mt-4" asp-controller="Account" asp-action="Register">@Localizer["Hiw_CtaStartStory"]</a>
     }
     else
     {
-        <a class="btn btn-hero mt-4" asp-controller="Swipe" asp-action="Index">@Localizer["Nav_Ontdek"]</a>
+        <a class="btn btn-hero mt-4" asp-controller="Swipe" asp-action="Index">@Localizer["Nav_Discover"]</a>
     }
 </section>

@@ -1,8 +1,8 @@
 namespace Node.Data.Models.Enums;
 
 /// <summary>
-/// Geslacht van de gebruiker, gebruikt voor het eigen profiel én voor de
-/// partnervoorkeur (<see cref="PartnerPreference"/>).
+/// The user's gender, used both for their own profile and for the
+/// partner preference (<see cref="PartnerPreference"/>).
 /// </summary>
 public enum Gender
 {

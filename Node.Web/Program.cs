@@ -18,7 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' ontbreekt.");
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is missing.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -27,12 +27,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
-        // Inloggen kan pas nadat het e-mailadres bevestigd is.
+        // Logging in is only possible after the email address is confirmed.
         options.SignIn.RequireConfirmedEmail = true;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders() // Nodig voor e-mailbevestigingstokens.
-    .AddErrorDescriber<LokaleIdentityErrorDescriber>(); // Meertalige Identity-foutmeldingen.
+    .AddDefaultTokenProviders() // Needed for email confirmation tokens.
+    .AddErrorDescriber<LocalizedIdentityErrorDescriber>(); // Multilingual Identity error messages.
 
 
 builder.Services.ConfigureApplicationCookie(options =>
@@ -50,12 +50,12 @@ builder.Services.Configure<SecurityStampValidatorOptions>(options =>
 // AddJwtBearer only registers a second handler here; it does not change the
 // default scheme, so web pages keep using the cookie unless a controller
 // explicitly opts into "Bearer" via [Authorize(AuthenticationSchemes = ...)].
-var jwtSleutel = builder.Configuration["Jwt:Key"]
-    ?? throw new InvalidOperationException("Configuratie 'Jwt:Key' ontbreekt.");
+var jwtKey = builder.Configuration["Jwt:Key"]
+    ?? throw new InvalidOperationException("Configuration 'Jwt:Key' is missing.");
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]
-    ?? throw new InvalidOperationException("Configuratie 'Jwt:Issuer' ontbreekt.");
+    ?? throw new InvalidOperationException("Configuration 'Jwt:Issuer' is missing.");
 var jwtAudience = builder.Configuration["Jwt:Audience"]
-    ?? throw new InvalidOperationException("Configuratie 'Jwt:Audience' ontbreekt.");
+    ?? throw new InvalidOperationException("Configuration 'Jwt:Audience' is missing.");
 
 builder.Services
     .AddAuthentication()
@@ -69,7 +69,7 @@ builder.Services
             ValidAudience = jwtAudience,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSleutel)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
         };
     });
 
@@ -77,18 +77,18 @@ builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
 // GetStream Chat
 var streamApiKey = builder.Configuration["Stream:ApiKey"]
-    ?? throw new InvalidOperationException("Configuratie 'Stream:ApiKey' ontbreekt.");
+    ?? throw new InvalidOperationException("Configuration 'Stream:ApiKey' is missing.");
 var streamApiSecret = builder.Configuration["Stream:ApiSecret"]
-    ?? throw new InvalidOperationException("Configuratie 'Stream:ApiSecret' ontbreekt.");
+    ?? throw new InvalidOperationException("Configuration 'Stream:ApiSecret' is missing.");
 
 builder.Services.AddSingleton(new StreamClient(streamApiKey, streamApiSecret));
 // ChatClient expects generic GetStream.IClient-interface
 builder.Services.AddSingleton<IClient>(sp => sp.GetRequiredService<StreamClient>());
 builder.Services.AddSingleton<ChatClient>();
 
-// Claude API (Anthropic): matchinterpretaties op basis van beide horoscopen.
+// Claude API (Anthropic): match interpretations based on both natal charts.
 var anthropicApiKey = builder.Configuration["Anthropic:ApiKey"]
-    ?? throw new InvalidOperationException("Configuratie 'Anthropic:ApiKey' ontbreekt.");
+    ?? throw new InvalidOperationException("Configuration 'Anthropic:ApiKey' is missing.");
 builder.Services.AddSingleton(new AnthropicClient { ApiKey = anthropicApiKey });
 
 
@@ -104,19 +104,19 @@ builder.Services.AddScoped<IChartInterpretationService, ChartInterpretationServi
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IProfilePictureService, ProfilePictureService>();
 
-// Nominatim (OpenStreetMap) vereist een identificerende User-Agent per gebruiksvoorwaarden.
+// Nominatim (OpenStreetMap) requires an identifying User-Agent per its terms of use.
 builder.Services.AddHttpClient<IGeocodingService, GeocodingService>(client =>
 {
     client.BaseAddress = new Uri("https://nominatim.openstreetmap.org/");
     client.DefaultRequestHeaders.UserAgent.ParseAdd("Node-astrologie-datingapp/1.0 (examenproject EhB)");
 });
 
-// Meertaligheid: nl, en en fr zijn alle drie volledig vertaald; nl is de standaardtaal.
-// Geen ResourcesPath instellen: SharedResource.cs staat zelf al in de map
-// Resources/, en de .resx-bestanden staan ernaast in diezelfde map — dat is
-// exact de standaardconventie (resx-pad volgt de naamruimte van de klasse).
-// ResourcesPath = "Resources" zou hier een dubbele Resources/Resources/-map
-// verwachten en de vertalingen dus niet meer vinden.
+// Multilingualism: nl, en and fr are all three fully translated; nl is the default language.
+// No ResourcesPath set: SharedResource.cs itself already lives in the
+// Resources/ folder, and the .resx files sit right next to it in that same
+// folder — that's exactly the default convention (resx path follows the
+// class's namespace). ResourcesPath = "Resources" would expect a nested
+// Resources/Resources/ folder here and would no longer find the translations.
 builder.Services.AddLocalization();
 
 builder.Services
@@ -124,17 +124,17 @@ builder.Services
     .AddViewLocalization()
     .AddDataAnnotationsLocalization(options =>
     {
-        // Alle validatieattributen ([Required], [Display], ...) halen hun
-        // vertaalde tekst uit dezelfde gedeelde resource-bestanden, in plaats
-        // van een apart resx-bestand per ViewModel te vereisen.
+        // All validation attributes ([Required], [Display], ...) get their
+        // translated text from the same shared resource files, instead of
+        // requiring a separate resx file per view model.
         options.DataAnnotationLocalizerProvider = (_, factory) => factory.Create(typeof(SharedResource));
     });
 
-var ondersteundeTalen = new[] { "nl", "en", "fr" };
-var localisatieOpties = new RequestLocalizationOptions()
+var supportedLanguages = new[] { "nl", "en", "fr" };
+var localizationOptions = new RequestLocalizationOptions()
     .SetDefaultCulture("nl")
-    .AddSupportedCultures(ondersteundeTalen)
-    .AddSupportedUICultures(ondersteundeTalen);
+    .AddSupportedCultures(supportedLanguages)
+    .AddSupportedUICultures(supportedLanguages);
 
 var app = builder.Build();
 
@@ -144,7 +144,7 @@ using (var scope = app.Services.CreateScope())
     await DbSeeder.SeedAsync(scope.ServiceProvider);
 }
 
-// HTTP-pipeline config
+// HTTP pipeline config
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -153,9 +153,9 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Cultuur van het verzoek: eerst het cookie dat de taalkiezer zet, anders
-// (bij een eerste bezoek) de taalvoorkeur van de browser, met nl als terugval.
-app.UseRequestLocalization(localisatieOpties);
+// Culture of the request: first the cookie the language picker sets,
+// otherwise (on a first visit) the browser's language preference, falling back to nl.
+app.UseRequestLocalization(localizationOptions);
 
 app.UseRouting();
 
@@ -163,9 +163,9 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Eigen middleware: houdt de cookietoestemming bij (zie CookieConsentLog) en
-// verwerkt de banner-keuze rechtstreeks, zonder controller. Staat na
-// UseAuthentication zodat context.User al ingevuld is voor de log.
+// Custom middleware: tracks cookie consent (see CookieConsentLog) and
+// processes the banner choice directly, without a controller. Placed after
+// UseAuthentication so context.User is already populated for the log.
 app.UseCookieConsent();
 
 app.MapStaticAssets();

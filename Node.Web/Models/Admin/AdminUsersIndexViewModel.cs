@@ -6,16 +6,16 @@ namespace Node.Web.Models.Admin;
 /// </summary>
 public class AdminUsersIndexViewModel
 {
-    public IReadOnlyList<UserOverviewViewModel> Gebruikers { get; set; } = [];
+    public IReadOnlyList<UserOverviewViewModel> Users { get; set; } = [];
 
     /// <summary>All roles in the system, for the role filter dropdown.</summary>
-    public IReadOnlyList<string> AlleRollen { get; set; } = [];
+    public IReadOnlyList<string> AllRoles { get; set; } = [];
 
-    public string? Zoek { get; set; }
+    public string? Search { get; set; }
 
-    public string? Rol { get; set; }
+    public string? Role { get; set; }
 
     public string? Status { get; set; }
 
-    public string Sortering { get; set; } = "naam_asc";
+    public string Sort { get; set; } = "name_asc";
 }

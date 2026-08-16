@@ -45,22 +45,22 @@ public class ReportsController : ControllerBase
 
     /// <summary>
     /// Creates a report and, when one exists, immediately ends the active
-    /// match between reporter and reported user (see IMatchService.EindigMatchTussenAsync).
+    /// match between reporter and reported user (see IMatchService.EndMatchBetweenAsync).
     /// Members only, matching the web ReportController.
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = DbSeeder.RolLid)]
+    [Authorize(Roles = DbSeeder.RoleMember)]
     public async Task<IActionResult> Create(CreateReportRequest request)
     {
         var reporterId = _userManager.GetUserId(User)!;
         if (request.ReportedUserId == reporterId)
         {
-            ModelState.AddModelError(nameof(request.ReportedUserId), _localizer["Fout_KanZichzelfNietRapporteren"]);
+            ModelState.AddModelError(nameof(request.ReportedUserId), _localizer["Error_CannotReportYourself"]);
             return ValidationProblem(ModelState);
         }
 
-        var gerapporteerde = await _userManager.FindByIdAsync(request.ReportedUserId);
-        if (gerapporteerde is null)
+        var reportedUser = await _userManager.FindByIdAsync(request.ReportedUserId);
+        if (reportedUser is null)
         {
             return NotFound();
         }
@@ -73,18 +73,18 @@ public class ReportsController : ControllerBase
         });
         await _context.SaveChangesAsync();
 
-        await _matchService.EindigMatchTussenAsync(reporterId, request.ReportedUserId);
+        await _matchService.EndMatchBetweenAsync(reporterId, request.ReportedUserId);
 
-        _logger.LogInformation("Gebruiker {ReporterId} rapporteerde {ReportedId} (API).", reporterId, request.ReportedUserId);
+        _logger.LogInformation("User {ReporterId} reported {ReportedId} (API).", reporterId, request.ReportedUserId);
 
         return StatusCode(StatusCodes.Status201Created);
     }
 
     [HttpGet]
-    [Authorize(Roles = $"{DbSeeder.RolModerator},{DbSeeder.RolAdmin}")]
+    [Authorize(Roles = $"{DbSeeder.RoleModerator},{DbSeeder.RoleAdmin}")]
     public async Task<ActionResult<List<ReportOverviewViewModel>>> GetQueue()
     {
-        var meldingen = await _context.Reports
+        var reports = await _context.Reports
             .Include(r => r.ReporterUser)
             .Include(r => r.ReportedUser)
             .OrderByDescending(r => r.CreatedAt)
@@ -101,58 +101,58 @@ public class ReportsController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(meldingen);
+        return Ok(reports);
     }
 
     [HttpPost("{id}/resolve")]
-    [Authorize(Roles = $"{DbSeeder.RolModerator},{DbSeeder.RolAdmin}")]
+    [Authorize(Roles = $"{DbSeeder.RoleModerator},{DbSeeder.RoleAdmin}")]
     public async Task<IActionResult> Resolve(int id)
     {
-        var melding = await _context.Reports.FindAsync(id);
-        if (melding is null)
+        var report = await _context.Reports.FindAsync(id);
+        if (report is null)
         {
             return NotFound();
         }
 
-        melding.IsResolved = true;
+        report.IsResolved = true;
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Moderator {Moderator} handelde melding {Id} af (API).", User.Identity?.Name, id);
+        _logger.LogInformation("Moderator {Moderator} resolved report {Id} (API).", User.Identity?.Name, id);
 
         return NoContent();
     }
 
     /// <summary>Blocks the reported user's account and marks the report resolved. Moderator or Admin only.</summary>
     [HttpPost("{id}/block")]
-    [Authorize(Roles = $"{DbSeeder.RolModerator},{DbSeeder.RolAdmin}")]
+    [Authorize(Roles = $"{DbSeeder.RoleModerator},{DbSeeder.RoleAdmin}")]
     public async Task<IActionResult> BlockReportedUser(int id)
     {
-        var melding = await _context.Reports.FindAsync(id);
-        if (melding is null)
+        var report = await _context.Reports.FindAsync(id);
+        if (report is null)
         {
             return NotFound();
         }
 
-        var gerapporteerde = await _userManager.FindByIdAsync(melding.ReportedUserId);
-        if (gerapporteerde is null)
+        var reportedUser = await _userManager.FindByIdAsync(report.ReportedUserId);
+        if (reportedUser is null)
         {
             return NotFound();
         }
 
-        if (gerapporteerde.Id == _userManager.GetUserId(User))
+        if (reportedUser.Id == _userManager.GetUserId(User))
         {
-            return BadRequest(new { error = "Je kan jezelf niet blokkeren." });
+            return BadRequest(new { error = _localizer["Admin_CannotBlockYourself"].Value });
         }
 
-        gerapporteerde.IsBlocked = true;
-        await _userManager.UpdateAsync(gerapporteerde);
-        await _userManager.UpdateSecurityStampAsync(gerapporteerde);
+        reportedUser.IsBlocked = true;
+        await _userManager.UpdateAsync(reportedUser);
+        await _userManager.UpdateSecurityStampAsync(reportedUser);
 
-        melding.IsResolved = true;
+        report.IsResolved = true;
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("{Moderator} blokkeerde {Email} n.a.v. melding {Id} (API).",
-            User.Identity?.Name, gerapporteerde.Email, id);
+        _logger.LogInformation("{Moderator} blocked {Email} following report {Id} (API).",
+            User.Identity?.Name, reportedUser.Email, id);
 
         return NoContent();
     }

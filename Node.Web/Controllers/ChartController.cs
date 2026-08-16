@@ -8,11 +8,11 @@ using Node.Web.Services.Interfaces;
 namespace Node.Web.Controllers;
 
 /// <summary>
-/// "Mijn horoscoop" (ontwerp 04): het wiel, de grote drie en de
-/// plaatsingentabel van de ingelogde gebruiker. Enkel voor leden: Admin/Moderator
-/// zijn beheeraccounts, geen datingprofielen.
+/// "My chart": the wheel, the big three and the placements
+/// table of the logged-in user. Members only: Admin/Moderator are staff
+/// accounts, not dating profiles.
 /// </summary>
-[Authorize(Roles = DbSeeder.RolLid)]
+[Authorize(Roles = DbSeeder.RoleMember)]
 public class ChartController : Controller
 {
     private readonly IChartService _chartService;
@@ -27,13 +27,13 @@ public class ChartController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var horoscoop = await _chartService.GetHoroscoopAsync(_userManager.GetUserId(User)!);
-        if (horoscoop is null)
+        var horoscope = await _chartService.GetHoroscopeAsync(_userManager.GetUserId(User)!);
+        if (horoscope is null)
         {
-            // Nog geen berekende horoscoop: vriendelijk doorverwijzen.
-            return View("NogGeenHoroscoop");
+            // No calculated chart yet: redirect to a friendly placeholder.
+            return View("NoChartYet");
         }
 
-        return View(horoscoop);
+        return View(horoscope);
     }
 }

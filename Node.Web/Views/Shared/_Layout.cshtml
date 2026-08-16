@@ -1,7 +1,7 @@
 
 @{
-    var donkereNav = ViewData["DonkereNav"] as bool? == true;
-    var volleBreedte = ViewData["VolleBreedte"] as bool? == true;
+    var darkNav = ViewData["DarkNav"] as bool? == true;
+    var fullWidth = ViewData["FullWidth"] as bool? == true;
 }
 <!DOCTYPE html>
 <html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
@@ -19,48 +19,48 @@
     <link rel="stylesheet" href="~/Node.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header class="@(donkereNav ? "nav-donker" : "")">
+    <header class="@(darkNav ? "nav-dark" : "")">
         <nav class="navbar navbar-expand-sm navbar-node">
             <div class="container">
-                <a class="navbar-brand logo-woordmerk" asp-controller="Home" asp-action="Index">n<span class="logo-o"></span>de</a>
+                <a class="navbar-brand logo-wordmark" asp-controller="Home" asp-action="Index">n<span class="logo-o"></span>de</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="@Localizer["Nav_MenuTonenVerbergen"]">
+                        aria-expanded="false" aria-label="@Localizer["Nav_ToggleMenu"]">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav mx-auto">
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="HowItWorks">@Localizer["Nav_HoeHetWerkt"]</a>
+                            <a class="nav-link" asp-controller="Home" asp-action="HowItWorks">@Localizer["Nav_HowItWorks"]</a>
                         </li>
-                        @* Ontdek/Matches/Mijn horoscoop zijn datingfuncties voor leden;
-                           Admin en Moderator zijn beheeraccounts, geen datingprofielen. *@
+                        @* Discover/Matches/My horoscope are dating features for members;
+                           Admin and Moderator are staff accounts, not dating profiles. *@
                         @if (User.Identity?.IsAuthenticated == true && !User.IsInRole("Admin") && !User.IsInRole("Moderator"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Swipe" asp-action="Index">@Localizer["Nav_Ontdek"]</a>
+                                <a class="nav-link" asp-controller="Swipe" asp-action="Index">@Localizer["Nav_Discover"]</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Match" asp-action="Index">@Localizer["Nav_Matches"]</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Chart" asp-action="Index">@Localizer["Nav_MijnHoroscoop"]</a>
+                                <a class="nav-link" asp-controller="Chart" asp-action="Index">@Localizer["Nav_MyHoroscope"]</a>
                             </li>
                         }
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Admin" asp-action="Users">@Localizer["Nav_Gebruikersbeheer"]</a>
+                                <a class="nav-link" asp-controller="Admin" asp-action="Users">@Localizer["Nav_UserManagement"]</a>
                             </li>
                         }
                         @if (User.IsInRole("Moderator") || User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Moderation" asp-action="Index">@Localizer["Nav_Moderatie"]</a>
+                                <a class="nav-link" asp-controller="Moderation" asp-action="Index">@Localizer["Nav_Moderation"]</a>
                             </li>
                         }
                     </ul>
                     <div class="d-flex align-items-center gap-3">
-                        <partial name="_TaalKiezer" />
+                        <partial name="_LanguagePicker" />
                         <partial name="_NotificationBell" />
                         <partial name="_LoginPartial" />
                     </div>
@@ -68,29 +68,29 @@
             </div>
         </nav>
     </header>
-    <div class="pagina-inhoud">
+    <div class="page-content">
 
-        @if (TempData["Melding"] is string melding)
+        @if (TempData["Message"] is string message)
         {
             <div class="container mt-3">
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    @melding
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="@Localizer["Nav_Sluiten"]"></button>
+                    @message
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="@Localizer["Nav_Close"]"></button>
                 </div>
             </div>
         }
-        @if (TempData["Fout"] is string fout)
+        @if (TempData["Error"] is string errorMessage)
         {
             <div class="container mt-3">
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    @fout
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="@Localizer["Nav_Sluiten"]"></button>
+                    @errorMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="@Localizer["Nav_Close"]"></button>
                 </div>
             </div>
         }
-        @if (volleBreedte)
+        @if (fullWidth)
         {
-            @* Volle breedte: de pagina bouwt zelf haar secties op. *@
+            @* Full width: the page builds its own sections. *@
             <main role="main">
                 @RenderBody()
             </main>
@@ -107,15 +107,15 @@
 
     <footer class="footer-node">
         <div class="container d-flex flex-wrap align-items-center justify-content-between gap-3">
-            <span class="logo-woordmerk">n<span class="logo-o"></span>de</span>
+            <span class="logo-wordmark">n<span class="logo-o"></span>de</span>
             <span class="d-flex gap-4">
-                <a asp-controller="Home" asp-action="HowItWorks">@Localizer["Nav_HoeHetWerkt"]</a>
+                <a asp-controller="Home" asp-action="HowItWorks">@Localizer["Nav_HowItWorks"]</a>
             </span>
             <span>&copy; 2026 Node</span>
         </div>
     </footer>
 
-    @if (Context.Items["CookieConsentGegeven"] is false)
+    @if (Context.Items["CookieConsentGiven"] is false)
     {
         <partial name="_CookieBanner" />
     }

@@ -2,186 +2,191 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Node.Data.Data;
 using Node.Data.Models;
 using Node.Web.Models.Admin;
+using Node.Web.Resources;
 
 namespace Node.Web.Controllers;
 
 /// <summary>
-/// Gebruikersbeheer voor beheerders: rollen toekennen en
-/// afnemen, gebruikers blokkeren en deblokkeren. Alleen de rol Admin heeft
-/// toegang (autorisatie op de controller én in de menustructuur).
+/// User management for administrators: assigning and removing roles,
+/// blocking and unblocking users. Only the Admin role has access
+/// (authorization on the controller and in the menu structure).
 /// </summary>
-[Authorize(Roles = DbSeeder.RolAdmin)]
+[Authorize(Roles = DbSeeder.RoleAdmin)]
 public class AdminController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly ILogger<AdminController> _logger;
 
     public AdminController(
         UserManager<ApplicationUser> userManager,
         RoleManager<IdentityRole> roleManager,
+        IStringLocalizer<SharedResource> localizer,
         ILogger<AdminController> logger)
     {
         _userManager = userManager;
         _roleManager = roleManager;
+        _localizer = localizer;
         _logger = logger;
     }
 
     /// <summary>
-    /// Overzicht van alle gebruikers met hun rollen en blokkeerstatus, met
-    /// zoek-, rol- en statusfilter plus sortering op naam of e-mail.
+    /// Overview of all users with their roles and blocked status, with a
+    /// search/role/status filter plus sorting by name or email.
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> Users(string? zoek, string? rol, string? status, string sortering = "naam_asc")
+    public async Task<IActionResult> Users(string? search, string? role, string? status, string sort = "name_asc")
     {
-        var alleRollen = await _roleManager.Roles
+        var allRoles = await _roleManager.Roles
             .Select(r => r.Name!)
             .OrderBy(r => r)
             .ToListAsync();
 
-        var gebruikers = await _userManager.Users
+        var users = await _userManager.Users
             .OrderBy(u => u.DisplayName)
             .ToListAsync();
 
         var model = new List<UserOverviewViewModel>();
-        foreach (var gebruiker in gebruikers)
+        foreach (var user in users)
         {
-            var rollen = await _userManager.GetRolesAsync(gebruiker);
+            var userRoles = await _userManager.GetRolesAsync(user);
             model.Add(new UserOverviewViewModel
             {
-                Id = gebruiker.Id,
-                DisplayName = gebruiker.DisplayName,
-                Email = gebruiker.Email ?? string.Empty,
-                EmailConfirmed = gebruiker.EmailConfirmed,
-                IsBlocked = gebruiker.IsBlocked,
-                Roles = rollen,
-                AssignableRoles = alleRollen.Except(rollen).ToList(),
+                Id = user.Id,
+                DisplayName = user.DisplayName,
+                Email = user.Email ?? string.Empty,
+                EmailConfirmed = user.EmailConfirmed,
+                IsBlocked = user.IsBlocked,
+                Roles = userRoles,
+                AssignableRoles = allRoles.Except(userRoles).ToList(),
             });
         }
 
-        // Klein aantal gebruikers (demo-schaal): filteren en sorteren gebeurt
-        // hier in-memory op de al opgebouwde lijst, niet met een extra
-        // EF-query met een join op AspNetUserRoles.
-        IEnumerable<UserOverviewViewModel> gefilterd = model;
+        // Small number of users (demo scale): filtering and sorting happens
+        // here in-memory on the already-built list, not with an extra
+        // EF query joining AspNetUserRoles.
+        IEnumerable<UserOverviewViewModel> filtered = model;
 
-        if (!string.IsNullOrWhiteSpace(zoek))
+        if (!string.IsNullOrWhiteSpace(search))
         {
-            gefilterd = gefilterd.Where(g =>
-                g.DisplayName.Contains(zoek, StringComparison.OrdinalIgnoreCase) ||
-                g.Email.Contains(zoek, StringComparison.OrdinalIgnoreCase));
+            filtered = filtered.Where(g =>
+                g.DisplayName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                g.Email.Contains(search, StringComparison.OrdinalIgnoreCase));
         }
 
-        if (!string.IsNullOrWhiteSpace(rol))
+        if (!string.IsNullOrWhiteSpace(role))
         {
-            gefilterd = gefilterd.Where(g => g.Roles.Contains(rol));
+            filtered = filtered.Where(g => g.Roles.Contains(role));
         }
 
-        gefilterd = status switch
+        filtered = status switch
         {
-            "geblokkeerd" => gefilterd.Where(g => g.IsBlocked),
-            "actief" => gefilterd.Where(g => !g.IsBlocked),
-            _ => gefilterd,
+            "blocked" => filtered.Where(g => g.IsBlocked),
+            "active" => filtered.Where(g => !g.IsBlocked),
+            _ => filtered,
         };
 
-        gefilterd = sortering switch
+        filtered = sort switch
         {
-            "naam_desc" => gefilterd.OrderByDescending(g => g.DisplayName),
-            "email_asc" => gefilterd.OrderBy(g => g.Email),
-            "email_desc" => gefilterd.OrderByDescending(g => g.Email),
-            _ => gefilterd.OrderBy(g => g.DisplayName),
+            "name_desc" => filtered.OrderByDescending(g => g.DisplayName),
+            "email_asc" => filtered.OrderBy(g => g.Email),
+            "email_desc" => filtered.OrderByDescending(g => g.Email),
+            _ => filtered.OrderBy(g => g.DisplayName),
         };
 
         return View(new AdminUsersIndexViewModel
         {
-            Gebruikers = gefilterd.ToList(),
-            AlleRollen = alleRollen,
-            Zoek = zoek,
-            Rol = rol,
+            Users = filtered.ToList(),
+            AllRoles = allRoles,
+            Search = search,
+            Role = role,
             Status = status,
-            Sortering = sortering,
+            Sort = sort,
         });
     }
 
-    /// <summary>Blokkeert of deblokkeert een gebruiker.</summary>
+    /// <summary>Blocks or unblocks a user.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ToggleBlock(string id)
     {
-        var gebruiker = await _userManager.FindByIdAsync(id);
-        if (gebruiker is null)
+        var user = await _userManager.FindByIdAsync(id);
+        if (user is null)
         {
             return NotFound();
         }
 
-        // Een beheerder kan zichzelf niet blokkeren (anders sluit die zichzelf buiten).
-        if (gebruiker.Id == _userManager.GetUserId(User))
+        // An admin can't block themselves (that would lock them out).
+        if (user.Id == _userManager.GetUserId(User))
         {
-            TempData["Fout"] = "Je kan jezelf niet blokkeren.";
+            TempData["Error"] = _localizer["Admin_CannotBlockYourself"].Value;
             return RedirectToAction(nameof(Users));
         }
 
-        gebruiker.IsBlocked = !gebruiker.IsBlocked;
-        await _userManager.UpdateAsync(gebruiker);
+        user.IsBlocked = !user.IsBlocked;
+        await _userManager.UpdateAsync(user);
 
-        // Security stamp vernieuwen zodat een bestaande login-cookie van de
-        // geblokkeerde gebruiker snel ongeldig wordt (zie ook Program.cs).
-        await _userManager.UpdateSecurityStampAsync(gebruiker);
+        // Refresh the security stamp so an existing login cookie of the
+        // blocked user becomes invalid quickly (see also Program.cs).
+        await _userManager.UpdateSecurityStampAsync(user);
 
-        _logger.LogInformation("Beheerder {Admin} zette blokkering van {Email} op {Status}.",
-            User.Identity?.Name, gebruiker.Email, gebruiker.IsBlocked);
+        _logger.LogInformation("Admin {Admin} set block status of {Email} to {Status}.",
+            User.Identity?.Name, user.Email, user.IsBlocked);
 
-        TempData["Melding"] = gebruiker.IsBlocked
-            ? $"{gebruiker.DisplayName} is geblokkeerd."
-            : $"{gebruiker.DisplayName} is gedeblokkeerd.";
+        TempData["Message"] = user.IsBlocked
+            ? string.Format(_localizer["Admin_UserBlockedMessage"].Value, user.DisplayName)
+            : string.Format(_localizer["Admin_UserUnblockedMessage"].Value, user.DisplayName);
 
         return RedirectToAction(nameof(Users));
     }
 
-    /// <summary>Kent een rol toe aan een gebruiker.</summary>
+    /// <summary>Assigns a role to a user.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AddRole(string id, string rol)
+    public async Task<IActionResult> AddRole(string id, string role)
     {
-        var gebruiker = await _userManager.FindByIdAsync(id);
-        if (gebruiker is null || !await _roleManager.RoleExistsAsync(rol))
+        var user = await _userManager.FindByIdAsync(id);
+        if (user is null || !await _roleManager.RoleExistsAsync(role))
         {
             return NotFound();
         }
 
-        await _userManager.AddToRoleAsync(gebruiker, rol);
-        _logger.LogInformation("Beheerder {Admin} gaf rol {Rol} aan {Email}.",
-            User.Identity?.Name, rol, gebruiker.Email);
+        await _userManager.AddToRoleAsync(user, role);
+        _logger.LogInformation("Admin {Admin} gave role {Role} to {Email}.",
+            User.Identity?.Name, role, user.Email);
 
-        TempData["Melding"] = $"Rol {rol} toegekend aan {gebruiker.DisplayName}.";
+        TempData["Message"] = string.Format(_localizer["Admin_RoleAssignedMessage"].Value, role, user.DisplayName);
         return RedirectToAction(nameof(Users));
     }
 
-    /// <summary>Neemt een rol af van een gebruiker.</summary>
+    /// <summary>Removes a role from a user.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> RemoveRole(string id, string rol)
+    public async Task<IActionResult> RemoveRole(string id, string role)
     {
-        var gebruiker = await _userManager.FindByIdAsync(id);
-        if (gebruiker is null)
+        var user = await _userManager.FindByIdAsync(id);
+        if (user is null)
         {
             return NotFound();
         }
 
-        // Een beheerder kan de eigen Admin-rol niet afnemen.
-        if (gebruiker.Id == _userManager.GetUserId(User) && rol == DbSeeder.RolAdmin)
+        // An admin can't remove their own Admin role.
+        if (user.Id == _userManager.GetUserId(User) && role == DbSeeder.RoleAdmin)
         {
-            TempData["Fout"] = "Je kan je eigen Admin-rol niet afnemen.";
+            TempData["Error"] = _localizer["Admin_CannotRemoveOwnAdminRole"].Value;
             return RedirectToAction(nameof(Users));
         }
 
-        await _userManager.RemoveFromRoleAsync(gebruiker, rol);
-        _logger.LogInformation("Beheerder {Admin} nam rol {Rol} af van {Email}.",
-            User.Identity?.Name, rol, gebruiker.Email);
+        await _userManager.RemoveFromRoleAsync(user, role);
+        _logger.LogInformation("Admin {Admin} removed role {Role} from {Email}.",
+            User.Identity?.Name, role, user.Email);
 
-        TempData["Melding"] = $"Rol {rol} afgenomen van {gebruiker.DisplayName}.";
+        TempData["Message"] = string.Format(_localizer["Admin_RoleRemovedMessage"].Value, role, user.DisplayName);
         return RedirectToAction(nameof(Users));
     }
 }

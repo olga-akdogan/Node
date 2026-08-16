@@ -11,32 +11,32 @@ namespace Node.Web.Models.Api.Auth;
 /// </summary>
 public class RegisterRequest
 {
-    [Required(ErrorMessage = "Valid_EmailVerplicht")]
-    [EmailAddress(ErrorMessage = "Valid_EmailOngeldig")]
+    [Required(ErrorMessage = "Valid_EmailRequired")]
+    [EmailAddress(ErrorMessage = "Valid_EmailInvalid")]
     public string Email { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Valid_WachtwoordVerplicht")]
-    [StringLength(100, MinimumLength = 6, ErrorMessage = "Valid_WachtwoordLengte")]
+    [Required(ErrorMessage = "Valid_PasswordRequired")]
+    [StringLength(100, MinimumLength = 6, ErrorMessage = "Valid_PasswordLength")]
     public string Password { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Valid_WeergavenaamVerplicht")]
-    [MaxLength(80, ErrorMessage = "Valid_WeergavenaamMax")]
+    [Required(ErrorMessage = "Valid_DisplayNameRequired")]
+    [MaxLength(80, ErrorMessage = "Valid_DisplayNameMax")]
     public string DisplayName { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Valid_GeboortedatumVerplicht")]
+    [Required(ErrorMessage = "Valid_BirthDateRequired")]
     public DateOnly? BirthDate { get; set; }
 
-    [Required(ErrorMessage = "Valid_GeboortetijdVerplicht")]
+    [Required(ErrorMessage = "Valid_BirthTimeRequired")]
     public TimeOnly? BirthTime { get; set; }
 
-    [Required(ErrorMessage = "Valid_GeboorteplaatsVerplicht")]
-    [MaxLength(150, ErrorMessage = "Valid_GeboorteplaatsMax")]
+    [Required(ErrorMessage = "Valid_BirthPlaceRequired")]
+    [MaxLength(150, ErrorMessage = "Valid_BirthPlaceMax")]
     public string BirthPlace { get; set; } = string.Empty;
 
     [MaxLength(1000, ErrorMessage = "Valid_BioMax")]
     public string? Bio { get; set; }
 
-    [Required(ErrorMessage = "Valid_GeslachtVerplicht")]
+    [Required(ErrorMessage = "Valid_GenderRequired")]
     public Gender? Gender { get; set; }
 
     /// <summary>Together with <see cref="LooksForWomen"/>, determines who appears in the swipe deck (at least one required).</summary>

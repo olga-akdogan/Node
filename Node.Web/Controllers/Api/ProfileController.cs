@@ -49,27 +49,27 @@ public class ProfileController : ControllerBase
     [HttpGet("me")]
     public async Task<ActionResult<ProfileDto>> GetMe()
     {
-        var gebruiker = await _userManager.GetUserAsync(User);
-        if (gebruiker is null)
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
         {
             return NotFound();
         }
 
         var preferences = await _context.PartnerPreferences
-            .Where(p => p.UserId == gebruiker.Id)
+            .Where(p => p.UserId == user.Id)
             .Select(p => p.Gender)
             .ToListAsync();
 
         return Ok(new ProfileDto
         {
-            Email = gebruiker.Email ?? string.Empty,
-            DisplayName = gebruiker.DisplayName,
-            Bio = gebruiker.Bio,
-            BirthDate = gebruiker.BirthDate,
-            BirthTime = gebruiker.BirthTime,
-            BirthPlace = gebruiker.BirthPlace,
-            ProfilePictureUrl = gebruiker.ProfilePictureUrl,
-            Gender = gebruiker.Gender,
+            Email = user.Email ?? string.Empty,
+            DisplayName = user.DisplayName,
+            Bio = user.Bio,
+            BirthDate = user.BirthDate,
+            BirthTime = user.BirthTime,
+            BirthPlace = user.BirthPlace,
+            ProfilePictureUrl = user.ProfilePictureUrl,
+            Gender = user.Gender,
             LooksForMen = preferences.Contains(Gender.Male),
             LooksForWomen = preferences.Contains(Gender.Female),
         });
@@ -79,18 +79,18 @@ public class ProfileController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<ProfileDto>> UpdateMe([FromForm] UpdateProfileRequest request)
     {
-        if (request.ProfilePicture is not null && !_profilePictureService.ToegestaneTypes.ContainsKey(request.ProfilePicture.ContentType))
+        if (request.ProfilePicture is not null && !_profilePictureService.AllowedTypes.ContainsKey(request.ProfilePicture.ContentType))
         {
-            ModelState.AddModelError(nameof(request.ProfilePicture), _localizer["Fout_AfbeeldingType"]);
+            ModelState.AddModelError(nameof(request.ProfilePicture), _localizer["Error_ImageType"]);
         }
-        else if (request.ProfilePicture is not null && request.ProfilePicture.Length > _profilePictureService.MaxGrootteBytes)
+        else if (request.ProfilePicture is not null && request.ProfilePicture.Length > _profilePictureService.MaxSizeBytes)
         {
-            ModelState.AddModelError(nameof(request.ProfilePicture), _localizer["Fout_AfbeeldingGrootte"]);
+            ModelState.AddModelError(nameof(request.ProfilePicture), _localizer["Error_ImageSize"]);
         }
 
         if (!request.LooksForMen && !request.LooksForWomen)
         {
-            ModelState.AddModelError(string.Empty, _localizer["Valid_KiesMinstensEenVoorkeur"]);
+            ModelState.AddModelError(string.Empty, _localizer["Valid_ChooseAtLeastOnePreference"]);
         }
 
         if (!ModelState.IsValid)
@@ -98,75 +98,75 @@ public class ProfileController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var gebruiker = await _userManager.GetUserAsync(User);
-        if (gebruiker is null)
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
         {
             return NotFound();
         }
 
-        // De horoscoop hangt af van geboortedatum, -tijd én -plaats: enkel
-        // opnieuw berekenen (en eventueel opnieuw geocoderen) wanneer één van
-        // die drie effectief wijzigt, niet bij elke profielwijziging.
-        var plaatsGewijzigd = !string.Equals(gebruiker.BirthPlace, request.BirthPlace, StringComparison.Ordinal);
-        var geboortegegevensGewijzigd =
-            gebruiker.BirthDate != request.BirthDate!.Value ||
-            gebruiker.BirthTime != request.BirthTime!.Value ||
-            plaatsGewijzigd;
+        // The natal chart depends on birth date, time AND place: only
+        // recalculate (and re-geocode if needed) when one of those three
+        // actually changes, not on every profile edit.
+        var placeChanged = !string.Equals(user.BirthPlace, request.BirthPlace, StringComparison.Ordinal);
+        var birthDataChanged =
+            user.BirthDate != request.BirthDate!.Value ||
+            user.BirthTime != request.BirthTime!.Value ||
+            placeChanged;
 
-        if (plaatsGewijzigd)
+        if (placeChanged)
         {
-            var coordinaten = await _geocodingService.ZoekCoordinatenAsync(request.BirthPlace);
-            if (coordinaten is null)
+            var coordinates = await _geocodingService.FindCoordinatesAsync(request.BirthPlace);
+            if (coordinates is null)
             {
-                ModelState.AddModelError(nameof(request.BirthPlace), _localizer["Fout_GeboorteplaatsNietGevonden"]);
+                ModelState.AddModelError(nameof(request.BirthPlace), _localizer["Error_BirthPlaceNotFound"]);
                 return ValidationProblem(ModelState);
             }
 
-            gebruiker.BirthLatitude = coordinaten.Value.Latitude;
-            gebruiker.BirthLongitude = coordinaten.Value.Longitude;
+            user.BirthLatitude = coordinates.Value.Latitude;
+            user.BirthLongitude = coordinates.Value.Longitude;
         }
 
-        gebruiker.DisplayName = request.DisplayName;
-        gebruiker.Bio = request.Bio;
-        gebruiker.BirthDate = request.BirthDate!.Value;
-        gebruiker.BirthTime = request.BirthTime!.Value;
-        gebruiker.BirthPlace = request.BirthPlace;
-        gebruiker.Gender = request.Gender!.Value;
+        user.DisplayName = request.DisplayName;
+        user.Bio = request.Bio;
+        user.BirthDate = request.BirthDate!.Value;
+        user.BirthTime = request.BirthTime!.Value;
+        user.BirthPlace = request.BirthPlace;
+        user.Gender = request.Gender!.Value;
 
         if (request.ProfilePicture is not null)
         {
-            gebruiker.ProfilePictureUrl = await _profilePictureService.BewaarAsync(gebruiker.Id, request.ProfilePicture);
+            user.ProfilePictureUrl = await _profilePictureService.SaveAsync(user.Id, request.ProfilePicture);
         }
 
-        var resultaat = await _userManager.UpdateAsync(gebruiker);
-        if (!resultaat.Succeeded)
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
         {
-            foreach (var fout in resultaat.Errors)
+            foreach (var error in result.Errors)
             {
-                ModelState.AddModelError(string.Empty, fout.Description);
+                ModelState.AddModelError(string.Empty, error.Description);
             }
 
             return ValidationProblem(ModelState);
         }
 
-        await ReplacePartnerPreferencesAsync(gebruiker.Id, request.LooksForMen, request.LooksForWomen);
+        await ReplacePartnerPreferencesAsync(user.Id, request.LooksForMen, request.LooksForWomen);
 
-        if (geboortegegevensGewijzigd)
+        if (birthDataChanged)
         {
-            var bestaandeHoroscoop = await _context.NatalCharts.FirstOrDefaultAsync(n => n.UserId == gebruiker.Id);
-            if (bestaandeHoroscoop is not null)
+            var existingChart = await _context.NatalCharts.FirstOrDefaultAsync(n => n.UserId == user.Id);
+            if (existingChart is not null)
             {
-                _context.NatalCharts.Remove(bestaandeHoroscoop);
+                _context.NatalCharts.Remove(existingChart);
             }
 
-            var nieuweHoroscoop = _natalChartCalculator.Calculate(gebruiker);
-            _context.NatalCharts.Add(nieuweHoroscoop);
+            var newChart = _natalChartCalculator.Calculate(user);
+            _context.NatalCharts.Add(newChart);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Horoscoop van {Email} opnieuw berekend na wijziging van de geboortegegevens (API).", gebruiker.Email);
+            _logger.LogInformation("Natal chart for {Email} recalculated after birth data change (API).", user.Email);
         }
 
-        _logger.LogInformation("Gebruiker {Email} paste het eigen profiel aan (API).", gebruiker.Email);
+        _logger.LogInformation("User {Email} updated their own profile (API).", user.Email);
 
         return await GetMe();
     }

@@ -1,0 +1,14 @@
+@* Language picker: posts to CultureController.Change and returns to the same page.
+   Independent of the Localizer, since language names are always shown in their own language. *@
+@{
+    var currentUrl = Context.Request.Path + Context.Request.QueryString;
+    var currentLanguage = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+}
+<form asp-controller="Culture" asp-action="Change" method="post" class="language-picker d-flex align-items-center gap-1">
+    <input type="hidden" name="returnUrl" value="@currentUrl" />
+    <button type="submit" name="culture" value="nl" class="language-button @(currentLanguage == "nl" ? "language-active" : "")">NL</button>
+    <span class="language-separator">&middot;</span>
+    <button type="submit" name="culture" value="en" class="language-button @(currentLanguage == "en" ? "language-active" : "")">EN</button>
+    <span class="language-separator">&middot;</span>
+    <button type="submit" name="culture" value="fr" class="language-button @(currentLanguage == "fr" ? "language-active" : "")">FR</button>
+</form>

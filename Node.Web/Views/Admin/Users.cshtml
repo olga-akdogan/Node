@@ -1,49 +1,49 @@
-@* Gebruikersbeheer: rollen toekennen/afnemen en
-   gebruikers (de)blokkeren. Alleen bereikbaar voor de rol Admin. *@
+@* User management: assign/remove roles and
+   block/unblock users. Only reachable for the Admin role. *@
 @model Node.Web.Models.Admin.AdminUsersIndexViewModel
 @{
-    ViewData["Title"] = Localizer["Nav_Gebruikersbeheer"];
+    ViewData["Title"] = Localizer["Nav_UserManagement"];
 }
 
 <h1>@ViewData["Title"]</h1>
-<p class="text-muted">@string.Format(Localizer["Admin_AantalGebruikers"], Model.Gebruikers.Count)</p>
+<p class="text-muted">@string.Format(Localizer["Admin_UserCount"], Model.Users.Count)</p>
 
 <form method="get" class="row g-2 align-items-end mb-3">
     <div class="col-auto">
-        <label for="zoek" class="form-label small">@Localizer["Admin_Zoeken"]</label>
-        <input type="search" id="zoek" name="zoek" value="@Model.Zoek" class="form-control form-control-sm"
-               placeholder="@Localizer["Admin_ZoekenPlaceholder"]" />
+        <label for="search" class="form-label small">@Localizer["Admin_Search"]</label>
+        <input type="search" id="search" name="search" value="@Model.Search" class="form-control form-control-sm"
+               placeholder="@Localizer["Admin_SearchPlaceholder"]" />
     </div>
     <div class="col-auto">
-        <label for="rol" class="form-label small">@Localizer["Admin_Rollen"]</label>
-        <select id="rol" name="rol" class="form-select form-select-sm">
-            <option value="">@Localizer["Admin_AlleRollen"]</option>
-            @foreach (var r in Model.AlleRollen)
+        <label for="role" class="form-label small">@Localizer["Admin_Roles"]</label>
+        <select id="role" name="role" class="form-select form-select-sm">
+            <option value="">@Localizer["Admin_AllRoles"]</option>
+            @foreach (var r in Model.AllRoles)
             {
-                <option value="@r" selected="@(r == Model.Rol ? "selected" : null)">@r</option>
+                <option value="@r" selected="@(r == Model.Role ? "selected" : null)">@r</option>
             }
         </select>
     </div>
     <div class="col-auto">
         <label for="status" class="form-label small">@Localizer["Admin_Status"]</label>
         <select id="status" name="status" class="form-select form-select-sm">
-            <option value="">@Localizer["Admin_AlleStatussen"]</option>
-            <option value="actief" selected="@("actief" == Model.Status ? "selected" : null)">@Localizer["Admin_Actief"]</option>
-            <option value="geblokkeerd" selected="@("geblokkeerd" == Model.Status ? "selected" : null)">@Localizer["Admin_Geblokkeerd"]</option>
+            <option value="">@Localizer["Admin_AllStatuses"]</option>
+            <option value="active" selected="@("active" == Model.Status ? "selected" : null)">@Localizer["Admin_Active"]</option>
+            <option value="blocked" selected="@("blocked" == Model.Status ? "selected" : null)">@Localizer["Admin_Blocked"]</option>
         </select>
     </div>
     <div class="col-auto">
-        <label for="sortering" class="form-label small">@Localizer["Admin_Sorteren"]</label>
-        <select id="sortering" name="sortering" class="form-select form-select-sm">
-            <option value="naam_asc" selected="@("naam_asc" == Model.Sortering ? "selected" : null)">@Localizer["Admin_SorteerNaamAZ"]</option>
-            <option value="naam_desc" selected="@("naam_desc" == Model.Sortering ? "selected" : null)">@Localizer["Admin_SorteerNaamZA"]</option>
-            <option value="email_asc" selected="@("email_asc" == Model.Sortering ? "selected" : null)">@Localizer["Admin_SorteerEmailAZ"]</option>
-            <option value="email_desc" selected="@("email_desc" == Model.Sortering ? "selected" : null)">@Localizer["Admin_SorteerEmailZA"]</option>
+        <label for="sort" class="form-label small">@Localizer["Admin_Sort"]</label>
+        <select id="sort" name="sort" class="form-select form-select-sm">
+            <option value="name_asc" selected="@("name_asc" == Model.Sort ? "selected" : null)">@Localizer["Admin_SortNameAZ"]</option>
+            <option value="name_desc" selected="@("name_desc" == Model.Sort ? "selected" : null)">@Localizer["Admin_SortNameZA"]</option>
+            <option value="email_asc" selected="@("email_asc" == Model.Sort ? "selected" : null)">@Localizer["Admin_SortEmailAZ"]</option>
+            <option value="email_desc" selected="@("email_desc" == Model.Sort ? "selected" : null)">@Localizer["Admin_SortEmailZA"]</option>
         </select>
     </div>
     <div class="col-auto">
-        <button type="submit" class="btn btn-sm btn-primary">@Localizer["Admin_Filteren"]</button>
-        <a asp-action="Users" class="btn btn-sm btn-outline-secondary">@Localizer["Admin_FilterWissen"]</a>
+        <button type="submit" class="btn btn-sm btn-primary">@Localizer["Admin_Filter"]</button>
+        <a asp-action="Users" class="btn btn-sm btn-outline-secondary">@Localizer["Admin_ClearFilter"]</a>
     </div>
 </form>
 
@@ -51,68 +51,68 @@
     <table class="table table-striped align-middle">
         <thead>
             <tr>
-                <th>@Localizer["Admin_Naam"]</th>
+                <th>@Localizer["Admin_Name"]</th>
                 <th>@Localizer["Admin_Email"]</th>
-                <th>@Localizer["Admin_Rollen"]</th>
+                <th>@Localizer["Admin_Roles"]</th>
                 <th>@Localizer["Admin_Status"]</th>
-                <th class="text-end">@Localizer["Admin_Acties"]</th>
+                <th class="text-end">@Localizer["Admin_Actions"]</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var gebruiker in Model.Gebruikers)
+            @foreach (var user in Model.Users)
             {
                 <tr>
-                    <td>@gebruiker.DisplayName</td>
+                    <td>@user.DisplayName</td>
                     <td>
-                        @gebruiker.Email
-                        @if (!gebruiker.EmailConfirmed)
+                        @user.Email
+                        @if (!user.EmailConfirmed)
                         {
-                            <span class="badge text-bg-warning" title="@Localizer["Admin_NietBevestigdTitle"]">@Localizer["Admin_NietBevestigdBadge"]</span>
+                            <span class="badge text-bg-warning" title="@Localizer["Admin_UnconfirmedTitle"]">@Localizer["Admin_UnconfirmedBadge"]</span>
                         }
                     </td>
                     <td>
-                        @foreach (var rol in gebruiker.Roles)
+                        @foreach (var role in user.Roles)
                         {
                             <form class="d-inline" asp-action="RemoveRole" method="post"
-                                  onsubmit="return confirm('@string.Format(Localizer["Admin_RolAfnemenBevestiging"], rol, gebruiker.DisplayName)');">
-                                <input type="hidden" name="id" value="@gebruiker.Id" />
-                                <input type="hidden" name="rol" value="@rol" />
-                                @* Klikken op het kruisje neemt de rol af. *@
+                                  onsubmit="return confirm('@string.Format(Localizer["Admin_RemoveRoleConfirmation"], role, user.DisplayName)');">
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <input type="hidden" name="role" value="@role" />
+                                @* Clicking the cross removes the role. *@
                                 <button type="submit" class="btn btn-sm badge text-bg-secondary border-0"
-                                        title="@Localizer["Admin_RolAfnemenTitle"]">
-                                    @rol &times;
+                                        title="@Localizer["Admin_RemoveRoleTitle"]">
+                                    @role &times;
                                 </button>
                             </form>
                         }
-                        @if (gebruiker.AssignableRoles.Any())
+                        @if (user.AssignableRoles.Any())
                         {
                             <form class="d-inline-flex gap-1 mt-1" asp-action="AddRole" method="post">
-                                <input type="hidden" name="id" value="@gebruiker.Id" />
-                                <select name="rol" class="form-select form-select-sm w-auto" aria-label="@Localizer["Admin_RolKiezen"]">
-                                    @foreach (var rol in gebruiker.AssignableRoles)
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <select name="role" class="form-select form-select-sm w-auto" aria-label="@Localizer["Admin_ChooseRole"]">
+                                    @foreach (var role in user.AssignableRoles)
                                     {
-                                        <option value="@rol">@rol</option>
+                                        <option value="@role">@role</option>
                                     }
                                 </select>
-                                <button type="submit" class="btn btn-sm btn-outline-primary">@Localizer["Admin_Toekennen"]</button>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">@Localizer["Admin_Assign"]</button>
                             </form>
                         }
                     </td>
                     <td>
-                        @if (gebruiker.IsBlocked)
+                        @if (user.IsBlocked)
                         {
-                            <span class="badge text-bg-danger">@Localizer["Admin_Geblokkeerd"]</span>
+                            <span class="badge text-bg-danger">@Localizer["Admin_Blocked"]</span>
                         }
                         else
                         {
-                            <span class="badge text-bg-success">@Localizer["Admin_Actief"]</span>
+                            <span class="badge text-bg-success">@Localizer["Admin_Active"]</span>
                         }
                     </td>
                     <td class="text-end">
                         <form class="d-inline" asp-action="ToggleBlock" method="post">
-                            <input type="hidden" name="id" value="@gebruiker.Id" />
-                            <button type="submit" class="btn btn-sm @(gebruiker.IsBlocked ? "btn-outline-success" : "btn-outline-danger")">
-                                @(gebruiker.IsBlocked ? Localizer["Admin_Deblokkeren"] : Localizer["Admin_Blokkeren"])
+                            <input type="hidden" name="id" value="@user.Id" />
+                            <button type="submit" class="btn btn-sm @(user.IsBlocked ? "btn-outline-success" : "btn-outline-danger")">
+                                @(user.IsBlocked ? Localizer["Admin_Unblock"] : Localizer["Admin_Block"])
                             </button>
                         </form>
                     </td>

@@ -14,7 +14,7 @@ namespace Node.Web.Controllers;
 /// (currently: the chat screen). Members only, same as the chat/match
 /// features it's filed from — Admin/Moderator have no matches to report from.
 /// </summary>
-[Authorize(Roles = DbSeeder.RolLid)]
+[Authorize(Roles = DbSeeder.RoleMember)]
 public class ReportController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -49,25 +49,25 @@ public class ReportController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(string reportedUserId, string reason, int? matchId)
     {
-        var terugBijFout = matchId.HasValue
+        var returnOnError = matchId.HasValue
             ? RedirectToAction("Chat", "Match", new { id = matchId })
             : RedirectToAction("Index", "Home");
 
         var reporterId = _userManager.GetUserId(User)!;
         if (reportedUserId == reporterId)
         {
-            TempData["Fout"] = _localizer["Fout_KanZichzelfNietRapporteren"].Value;
-            return terugBijFout;
+            TempData["Error"] = _localizer["Error_CannotReportYourself"].Value;
+            return returnOnError;
         }
 
         if (string.IsNullOrWhiteSpace(reason))
         {
-            TempData["Fout"] = _localizer["Valid_RedenVerplicht"].Value;
-            return terugBijFout;
+            TempData["Error"] = _localizer["Valid_ReasonRequired"].Value;
+            return returnOnError;
         }
 
-        var gerapporteerde = await _userManager.FindByIdAsync(reportedUserId);
-        if (gerapporteerde is null)
+        var reportedUser = await _userManager.FindByIdAsync(reportedUserId);
+        if (reportedUser is null)
         {
             return NotFound();
         }
@@ -80,11 +80,11 @@ public class ReportController : Controller
         });
         await _context.SaveChangesAsync();
 
-        await _matchService.EindigMatchTussenAsync(reporterId, reportedUserId);
+        await _matchService.EndMatchBetweenAsync(reporterId, reportedUserId);
 
-        _logger.LogInformation("Gebruiker {ReporterId} rapporteerde {ReportedId}.", reporterId, reportedUserId);
+        _logger.LogInformation("User {ReporterId} reported {ReportedId}.", reporterId, reportedUserId);
 
-        TempData["Melding"] = _localizer["Report_Verstuurd"].Value;
+        TempData["Message"] = _localizer["Report_Sent"].Value;
         return RedirectToAction("Index", "Match");
     }
 }

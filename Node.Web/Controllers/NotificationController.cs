@@ -9,12 +9,12 @@ using Node.Web.Services.Interfaces;
 
 namespace Node.Web.Controllers;
 
-/// <summary>The logged-in user's notifications (currently: "X liked you" and unread messages).</summary>
-[Authorize(Roles = DbSeeder.RolLid)]
+/// <summary>The logged-in user's notifications </summary>
+[Authorize(Roles = DbSeeder.RoleMember)]
 public class NotificationController : Controller
 {
     /// <summary>Fetched from the service before filtering, so a type filter still has a full pool to pick from.</summary>
-    private const int OpgehaaldAantal = 50;
+    private const int FetchCount = 50;
 
     private readonly INotificationService _notificationService;
     private readonly UserManager<ApplicationUser> _userManager;
@@ -25,30 +25,30 @@ public class NotificationController : Controller
         _userManager = userManager;
     }
 
-    /// <summary>Overzicht van de meldingen, met filter op type en sortering op datum.</summary>
-    /// <param name="type">Null/leeg = alle types; anders "Like" of "Message".</param>
-    /// <param name="sortering">"nieuw" (standaard) of "oud".</param>
+    /// <summary>Overview of the notifications, with a type filter and date sort.</summary>
+    /// <param name="type">Null/empty = all types; otherwise "Like" or "Message".</param>
+    /// <param name="sort">"new" (default) or "old".</param>
     [HttpGet]
-    public async Task<IActionResult> Index(string? type, string sortering = "nieuw")
+    public async Task<IActionResult> Index(string? type, string sort = "new")
     {
         var userId = _userManager.GetUserId(User)!;
-        var notifications = await _notificationService.GetRecentAsync(userId, OpgehaaldAantal);
+        var notifications = await _notificationService.GetRecentAsync(userId, FetchCount);
 
         // Viewing the page counts as reading: clear the unread badge.
         await _notificationService.MarkAllReadAsync(userId);
 
-        IEnumerable<NotificationViewModel> gefilterd = notifications;
-        if (!string.IsNullOrWhiteSpace(type) && Enum.TryParse<NotificationType>(type, out var typeWaarde))
+        IEnumerable<NotificationViewModel> filtered = notifications;
+        if (!string.IsNullOrWhiteSpace(type) && Enum.TryParse<NotificationType>(type, out var parsedType))
         {
-            gefilterd = gefilterd.Where(n => n.Type == typeWaarde);
+            filtered = filtered.Where(n => n.Type == parsedType);
         }
 
-        gefilterd = sortering == "oud"
-            ? gefilterd.OrderBy(n => n.CreatedAt)
-            : gefilterd.OrderByDescending(n => n.CreatedAt);
+        filtered = sort == "old"
+            ? filtered.OrderBy(n => n.CreatedAt)
+            : filtered.OrderByDescending(n => n.CreatedAt);
 
         ViewData["Type"] = type;
-        ViewData["Sortering"] = sortering;
-        return View(gefilterd.ToList());
+        ViewData["Sort"] = sort;
+        return View(filtered.ToList());
     }
 }

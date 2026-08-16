@@ -6,16 +6,16 @@ using Node.Data.Models;
 namespace Node.Web.Middleware;
 
 /// <summary>
-/// Eigen middleware (geen controller): houdt bij of een bezoeker al een
-/// cookiekeuze maakte, en verwerkt die keuze rechtstreeks op het pad
-/// <c>POST /cookieconsent/kies</c> — inclusief het wegschrijven naar
-/// <see cref="CookieConsentLog"/>, zodat aantoonbaar is wanneer en vanwaar
-/// iemand toestemming gaf of weigerde.
+/// Custom middleware (no controller): tracks whether a visitor already made
+/// a cookie choice, and processes that choice directly on the path
+/// <c>POST /cookieconsent/choose</c> — including writing to
+/// <see cref="CookieConsentLog"/>, so it's provable when and from where
+/// someone gave or refused consent.
 /// </summary>
 public class CookieConsentMiddleware
 {
     public const string ConsentCookieName = "node-cookie-consent";
-    private const string KeuzePad = "/cookieconsent/kies";
+    private const string ChoicePath = "/cookieconsent/choose";
 
     private readonly RequestDelegate _next;
 
@@ -25,28 +25,28 @@ public class CookieConsentMiddleware
     }
 
     /// <summary>
-    /// Extra parameters na <see cref="HttpContext"/> worden door ASP.NET Core
-    /// per verzoek uit de DI-container gehaald — zo kan deze middleware de
-    /// (scoped) DbContext en de antiforgery-dienst gebruiken zonder dat de
-    /// middlewareklasse zelf scoped hoeft te zijn.
+    /// Extra parameters after <see cref="HttpContext"/> are resolved by ASP.NET
+    /// Core from the DI container per request — this lets the middleware use
+    /// the (scoped) DbContext and the antiforgery service without the
+    /// middleware class itself needing to be scoped.
     /// </summary>
     public async Task InvokeAsync(HttpContext context, ApplicationDbContext db, IAntiforgery antiforgery)
     {
         if (HttpMethods.IsPost(context.Request.Method)
-            && context.Request.Path.Equals(KeuzePad, StringComparison.OrdinalIgnoreCase))
+            && context.Request.Path.Equals(ChoicePath, StringComparison.OrdinalIgnoreCase))
         {
-            await VerwerkKeuzeAsync(context, db, antiforgery);
-            return; // Kort-sluiten: dit pad gaat nooit door naar MVC.
+            await ProcessChoiceAsync(context, db, antiforgery);
+            return; // Short-circuit: this path never continues to MVC.
         }
 
-        // Vlag voor de layout: heeft deze bezoeker al een keuze gemaakt?
-        // (_Layout.cshtml toont de cookiebanner enkel wanneer dit false is.)
-        context.Items["CookieConsentGegeven"] = context.Request.Cookies.ContainsKey(ConsentCookieName);
+        // Flag for the layout: has this visitor already made a choice?
+        // (_Layout.cshtml only shows the cookie banner when this is false.)
+        context.Items["CookieConsentGiven"] = context.Request.Cookies.ContainsKey(ConsentCookieName);
 
         await _next(context);
     }
 
-    private static async Task VerwerkKeuzeAsync(HttpContext context, ApplicationDbContext db, IAntiforgery antiforgery)
+    private static async Task ProcessChoiceAsync(HttpContext context, ApplicationDbContext db, IAntiforgery antiforgery)
     {
         try
         {
@@ -59,12 +59,12 @@ public class CookieConsentMiddleware
         }
 
         var form = await context.Request.ReadFormAsync();
-        var geaccepteerd = form["keuze"] == "accepteren";
+        var accepted = form["choice"] == "accept";
 
-        context.Response.Cookies.Append(ConsentCookieName, geaccepteerd ? "1" : "0", new CookieOptions
+        context.Response.Cookies.Append(ConsentCookieName, accepted ? "1" : "0", new CookieOptions
         {
             Expires = DateTimeOffset.UtcNow.AddYears(1),
-            IsEssential = true, // De cookie zelf onthoudt net de toestemming, dus mag altijd gezet worden.
+            IsEssential = true, // The cookie itself just remembers the consent, so it may always be set.
             HttpOnly = true,
             SameSite = SameSiteMode.Lax,
         });
@@ -74,18 +74,18 @@ public class CookieConsentMiddleware
             UserId = context.User.Identity?.IsAuthenticated == true
                 ? context.User.FindFirstValue(ClaimTypes.NameIdentifier)
                 : null,
-            HasAcceptedCookies = geaccepteerd,
+            HasAcceptedCookies = accepted,
             IpAddress = context.Connection.RemoteIpAddress?.ToString(),
             UserAgent = context.Request.Headers.UserAgent.ToString(),
         });
         await db.SaveChangesAsync();
 
-        var terugUrl = form["terugUrl"].ToString();
-        context.Response.Redirect(string.IsNullOrEmpty(terugUrl) ? "/" : terugUrl);
+        var returnUrl = form["returnUrl"].ToString();
+        context.Response.Redirect(string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl);
     }
 }
 
-/// <summary>Registratie-extensie, naar de gangbare ASP.NET Core-conventie voor middleware.</summary>
+/// <summary>Registration extension, following the common ASP.NET Core convention for middleware.</summary>
 public static class CookieConsentMiddlewareExtensions
 {
     public static IApplicationBuilder UseCookieConsent(this IApplicationBuilder app) =>

@@ -1,78 +1,77 @@
-@* Ontdek-pagina naar het voorbeeld van Tinder/Bumble: één profielkaart
-   tegelijk met een pas- en like-knop. De volgende kaart en de beoordeling
-   verlopen via AJAX zonder paginaherlaad. *@
+@* Discover page in the style of Tinder/Bumble: one profile card at a time
+   with a pass and like button. The next card and the rating both happen via
+   AJAX without a page reload. *@
 @model Node.Web.Models.Swiping.SwipeCardViewModel?
 @{
-    ViewData["Title"] = Localizer["Nav_Ontdek"];
+    ViewData["Title"] = Localizer["Nav_Discover"];
 }
 
 <div class="deck mx-auto">
-    <p class="kicker text-center mb-4">@Localizer["Nav_Ontdek"]</p>
+    <p class="kicker text-center mb-4">@Localizer["Nav_Discover"]</p>
 
-    @* Antiforgery-token voor de AJAX-POST naar Beoordeel. *@
+    @* Antiforgery token for the AJAX POST to Rate. *@
     @Html.AntiForgeryToken()
 
-    <div id="kaart-houder">
+    <div id="card-holder">
         @if (Model is null)
         {
-            <partial name="_StapelLeeg" />
+            <partial name="_StackEmpty" />
         }
         else
         {
-            <partial name="_SwipeKaart" model="Model" />
+            <partial name="_SwipeCard" model="Model" />
         }
     </div>
 
-    @* Matchmelding: verborgen tot er een wederzijdse like is. *@
-    <div id="match-melding" class="match-overlay text-center d-none">
+    @* Match notification: hidden until there's a mutual like. *@
+    <div id="match-notice" class="match-overlay text-center d-none">
         <p class="kicker mb-3">@Localizer["Swipe_MatchKicker"]</p>
-        <h2>@Localizer["Swipe_MatchTitel"]</h2>
-        <p class="mb-4">@Localizer["Swipe_MatchTekst"]</p>
-        <a id="match-chat-link" class="btn btn-hero me-3" href="#">@Localizer["Swipe_StuurBericht"]</a>
-        <a href="#" id="verder-swipen" class="tekstlink">@Localizer["Swipe_VerderSwipen"]</a>
+        <h2>@Localizer["Swipe_MatchTitle"]</h2>
+        <p class="mb-4">@Localizer["Swipe_MatchText"]</p>
+        <a id="match-chat-link" class="btn btn-hero me-3" href="#">@Localizer["Swipe_SendMessage"]</a>
+        <a href="#" id="keep-swiping" class="text-link">@Localizer["Swipe_KeepSwiping"]</a>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        // Swipe-logica: beoordeel via AJAX en laad de volgende kaart als
-        // HTML-fragment.
+        // Swipe logic: rate via AJAX and load the next card as an HTML fragment.
         (function () {
             const token = $('input[name="__RequestVerificationToken"]').val();
 
-            // Volgende kaart ophalen (partial view) en tonen.
-            function laadVolgende() {
-                $('#match-melding').addClass('d-none');
-                $('#kaart-houder').removeClass('d-none')
-                    .load('@Url.Action("VolgendeKaart", "Swipe")');
+            // Fetch the next card (partial view) and show it.
+            function loadNext() {
+                $('#match-notice').addClass('d-none');
+                $('#card-holder').removeClass('d-none')
+                    .load('@Url.Action("NextCard", "Swipe")');
             }
 
-            // Like of pass doorsturen voor de kaart die nu zichtbaar is.
-            function beoordeel(isLike) {
-                const kaart = $('#kaart-houder [data-user-id]');
-                if (kaart.length === 0) { return; }
+            // Send the like or pass for the card that's currently visible.
+            function rate(isLike) {
+                const card = $('#card-holder [data-user-id]');
+                if (card.length === 0) { return; }
 
-                $.post('@Url.Action("Beoordeel", "Swipe")', {
-                    targetUserId: kaart.data('user-id'),
+                $.post('@Url.Action("Rate", "Swipe")', {
+                    targetUserId: card.data('user-id'),
                     isLike: isLike,
                     __RequestVerificationToken: token
                 }).done(function (res) {
                     if (res.isMatch) {
-                        // Matchmelding tonen i.p.v. meteen de volgende kaart.
+                        // Show the match notice instead of the next card right away.
                         $('#match-chat-link').attr('href',
                             '@Url.Action("Chat", "Match")/' + res.matchId);
-                        $('#kaart-houder').addClass('d-none');
-                        $('#match-melding').removeClass('d-none');
+                        $('#card-holder').addClass('d-none');
+                        $('#match-notice').removeClass('d-none');
                     } else {
-                        laadVolgende();
+                        loadNext();
                     }
                 });
             }
 
-            // Knoppen zitten in de partial en wisselen, dus events op de houder.
-            $('#kaart-houder').on('click', '.actieknop-pass', function () { beoordeel(false); });
-            $('#kaart-houder').on('click', '.actieknop-like', function () { beoordeel(true); });
-            $('#verder-swipen').on('click', function (e) { e.preventDefault(); laadVolgende(); });
+            // Buttons live in the partial and get swapped out, so bind events on the holder.
+            $('#card-holder').on('click', '.action-button-pass', function () { rate(false); });
+            $('#card-holder').on('click', '.action-button-like', function () { rate(true); });
+            $('#keep-swiping').on('click', function (e) { e.preventDefault(); loadNext(); });
         })();
     </script>
 }

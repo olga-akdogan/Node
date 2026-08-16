@@ -2,12 +2,12 @@ using Node.Web.Models.Chart;
 
 namespace Node.Web.Services.Interfaces;
 
-/// <summary>De horoscooppagina van een gebruiker samenstellen.</summary>
+/// <summary>Assembles a user's natal chart page.</summary>
 public interface IChartService
 {
     /// <summary>
-    /// Bouwt het volledige horoscoopoverzicht van de gebruiker.
-    /// Null wanneer er (nog) geen berekende horoscoop bestaat.
+    /// Builds the user's full natal chart overview.
+    /// Null when no chart has been calculated (yet).
     /// </summary>
-    Task<HoroscoopViewModel?> GetHoroscoopAsync(string userId);
+    Task<HoroscopeViewModel?> GetHoroscopeAsync(string userId);
 }

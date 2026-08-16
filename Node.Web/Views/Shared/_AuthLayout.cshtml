@@ -1,6 +1,6 @@
-@* Layout voor de auth-schermen (ontwerp 02): volledig scherm, gesplitst in
-   een donker paneel links en het formulier rechts — zonder navigatiebalk
-   en voettekst. *@
+@* Layout for the auth screens (design 02): full screen, split into
+   a dark panel on the left and the form on the right — without a nav bar
+   or footer. *@
 <!DOCTYPE html>
 <html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
@@ -14,22 +14,22 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
-    <div class="auth-scherm">
-        <div class="auth-paneel-donker">
-            <a class="logo-woordmerk" asp-controller="Home" asp-action="Index">n<span class="logo-o"></span>de</a>
-            <div class="auth-citaat">@Localizer["Auth_Citaat"]</div>
+    <div class="auth-screen">
+        <div class="auth-panel-dark">
+            <a class="logo-wordmark" asp-controller="Home" asp-action="Index">n<span class="logo-o"></span>de</a>
+            <div class="auth-quote">@Localizer["Auth_Quote"]</div>
         </div>
-        <div class="auth-paneel-vorm">
-            <div class="auth-taalkiezer-hoek">
-                <partial name="_TaalKiezer" />
+        <div class="auth-panel-form">
+            <div class="auth-language-picker-corner">
+                <partial name="_LanguagePicker" />
             </div>
-            <main role="main" class="auth-vorm">
+            <main role="main" class="auth-form">
                 @RenderBody()
             </main>
         </div>
     </div>
 
-    @if (Context.Items["CookieConsentGegeven"] is false)
+    @if (Context.Items["CookieConsentGiven"] is false)
     {
         <partial name="_CookieBanner" />
     }

@@ -16,7 +16,7 @@ namespace Node.Web.Controllers.Api;
 
 /// <summary>
 /// API equivalent of <see cref="Node.Web.Controllers.AccountController"/> for
-/// the MAUI companion app: same registration/login rules (email verification,
+/// the MAUI app: same registration/login rules (email verification,
 /// blocked-account check, auto-assigned "Lid" role) but returns a JWT instead
 /// of setting the Identity cookie.
 /// </summary>
@@ -59,7 +59,7 @@ public class AuthController : ControllerBase
     {
         if (!request.LooksForMen && !request.LooksForWomen)
         {
-            ModelState.AddModelError(string.Empty, _localizer["Valid_KiesMinstensEenVoorkeur"]);
+            ModelState.AddModelError(string.Empty, _localizer["Valid_ChooseAtLeastOnePreference"]);
         }
 
         if (!ModelState.IsValid)
@@ -67,14 +67,14 @@ public class AuthController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var coordinaten = await _geocodingService.ZoekCoordinatenAsync(request.BirthPlace);
-        if (coordinaten is null)
+        var coordinates = await _geocodingService.FindCoordinatesAsync(request.BirthPlace);
+        if (coordinates is null)
         {
-            ModelState.AddModelError(nameof(request.BirthPlace), _localizer["Fout_GeboorteplaatsNietGevonden"]);
+            ModelState.AddModelError(nameof(request.BirthPlace), _localizer["Error_BirthPlaceNotFound"]);
             return ValidationProblem(ModelState);
         }
 
-        var gebruiker = new ApplicationUser
+        var user = new ApplicationUser
         {
             UserName = request.Email,
             Email = request.Email,
@@ -83,32 +83,32 @@ public class AuthController : ControllerBase
             BirthDate = request.BirthDate!.Value,
             BirthTime = request.BirthTime!.Value,
             BirthPlace = request.BirthPlace,
-            BirthLatitude = coordinaten.Value.Latitude,
-            BirthLongitude = coordinaten.Value.Longitude,
+            BirthLatitude = coordinates.Value.Latitude,
+            BirthLongitude = coordinates.Value.Longitude,
             Gender = request.Gender!.Value,
         };
 
-        var resultaat = await _userManager.CreateAsync(gebruiker, request.Password);
-        if (!resultaat.Succeeded)
+        var result = await _userManager.CreateAsync(user, request.Password);
+        if (!result.Succeeded)
         {
-            foreach (var fout in resultaat.Errors)
+            foreach (var error in result.Errors)
             {
-                ModelState.AddModelError(string.Empty, fout.Description);
+                ModelState.AddModelError(string.Empty, error.Description);
             }
 
             return ValidationProblem(ModelState);
         }
 
-        await _userManager.AddToRoleAsync(gebruiker, DbSeeder.RolLid);
-        _logger.LogInformation("Nieuwe gebruiker geregistreerd via API: {Email}.", request.Email);
+        await _userManager.AddToRoleAsync(user, DbSeeder.RoleMember);
+        _logger.LogInformation("New user registered via API: {Email}.", request.Email);
 
-        AddPartnerPreferences(gebruiker.Id, request.LooksForMen, request.LooksForWomen);
+        AddPartnerPreferences(user.Id, request.LooksForMen, request.LooksForWomen);
 
-        var horoscoop = _natalChartCalculator.Calculate(gebruiker);
-        _context.NatalCharts.Add(horoscoop);
+        var natalChart = _natalChartCalculator.Calculate(user);
+        _context.NatalCharts.Add(natalChart);
         await _context.SaveChangesAsync();
 
-        await VerstuurVerificatieEmailAsync(gebruiker);
+        await SendVerificationEmailAsync(user);
 
         // Email verification is required before login, so no token yet: the
         // app should show the same "check your inbox" message as the web flow.
@@ -123,40 +123,40 @@ public class AuthController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var gebruiker = await _userManager.FindByEmailAsync(request.Email);
-        if (gebruiker is null)
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user is null)
         {
-            return Unauthorized(new { error = _localizer["Fout_OngeldigeInloggegevens"].Value });
+            return Unauthorized(new { error = _localizer["Error_InvalidLoginCredentials"].Value });
         }
 
-        if (gebruiker.IsBlocked)
+        if (user.IsBlocked)
         {
-            _logger.LogWarning("Geblokkeerde gebruiker probeerde via API in te loggen: {Email}.", request.Email);
-            return Unauthorized(new { error = _localizer["Fout_AccountGeblokkeerd"].Value });
+            _logger.LogWarning("Blocked user attempted to log in via API: {Email}.", request.Email);
+            return Unauthorized(new { error = _localizer["Error_AccountBlocked"].Value });
         }
 
-        if (!await _userManager.CheckPasswordAsync(gebruiker, request.Password))
+        if (!await _userManager.CheckPasswordAsync(user, request.Password))
         {
-            return Unauthorized(new { error = _localizer["Fout_OngeldigeInloggegevens"].Value });
+            return Unauthorized(new { error = _localizer["Error_InvalidLoginCredentials"].Value });
         }
 
-        if (!await _userManager.IsEmailConfirmedAsync(gebruiker))
+        if (!await _userManager.IsEmailConfirmedAsync(user))
         {
-            return Unauthorized(new { error = _localizer["Fout_EmailNietBevestigd"].Value });
+            return Unauthorized(new { error = _localizer["Error_EmailNotConfirmed"].Value });
         }
 
-        var (token, verlooptOp) = await _jwtTokenService.CreateTokenAsync(gebruiker);
-        var rollen = await _userManager.GetRolesAsync(gebruiker);
+        var (token, expiresAt) = await _jwtTokenService.CreateTokenAsync(user);
+        var roles = await _userManager.GetRolesAsync(user);
 
-        _logger.LogInformation("Gebruiker ingelogd via API: {Email}.", request.Email);
+        _logger.LogInformation("User logged in via API: {Email}.", request.Email);
 
         return Ok(new AuthResponse
         {
             Token = token,
-            ExpiresAtUtc = verlooptOp,
-            UserId = gebruiker.Id,
-            DisplayName = gebruiker.DisplayName,
-            Roles = rollen,
+            ExpiresAtUtc = expiresAt,
+            UserId = user.Id,
+            DisplayName = user.DisplayName,
+            Roles = roles,
         });
     }
 
@@ -179,24 +179,24 @@ public class AuthController : ControllerBase
     /// itself (the account already exists at this point): log it instead of
     /// letting it bubble, same as the AccountController web equivalent.
     /// </summary>
-    private async Task VerstuurVerificatieEmailAsync(ApplicationUser gebruiker)
+    private async Task SendVerificationEmailAsync(ApplicationUser user)
     {
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(gebruiker);
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         var link = Url.Action("ConfirmEmail", "Account",
-            new { userId = gebruiker.Id, code },
+            new { userId = user.Id, code },
             protocol: Request.Scheme)!;
 
         try
         {
             await _emailService.SendAsync(
-                gebruiker.Email!,
+                user.Email!,
                 "Bevestig je e-mailadres bij Node",
                 $"<p>Welkom bij Node!</p><p><a href=\"{link}\">Klik hier om je e-mailadres te bevestigen</a>.</p>");
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Versturen van de verificatie-e-mail naar {Email} is mislukt (API).", gebruiker.Email);
+            _logger.LogWarning(ex, "Sending the verification email to {Email} failed (API).", user.Email);
         }
     }
 }

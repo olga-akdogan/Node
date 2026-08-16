@@ -3,19 +3,19 @@ using Node.Web.Models.Swiping;
 namespace Node.Web.Services.Interfaces;
 
 /// <summary>
-/// Het ontdekken en beoordelen van kandidaten (de swipe-stapel).
+/// Discovering and rating candidates (the swipe stack).
 /// </summary>
 public interface ISwipeService
 {
     /// <summary>
-    /// Zoekt de volgende kandidaat voor de ingelogde gebruiker: een lid dat
-    /// nog niet beoordeeld werd. Null wanneer de stapel leeg is.
+    /// Finds the next candidate for the logged-in user: a member who hasn't
+    /// been rated yet. Null when the stack is empty.
     /// </summary>
-    Task<SwipeCardViewModel?> GetVolgendeKandidaatAsync(string userId);
+    Task<SwipeCardViewModel?> GetNextCandidateAsync(string userId);
 
     /// <summary>
-    /// Registreert een like of pass. Bij een wederzijdse like ontstaat een
-    /// match; het resultaat geeft aan of dat gebeurd is.
+    /// Registers a like or pass. A mutual like results in a match; the
+    /// result indicates whether that happened.
     /// </summary>
-    Task<(bool IsMatch, int? MatchId)> BeoordeelAsync(string swiperUserId, string targetUserId, bool isLike);
+    Task<(bool IsMatch, int? MatchId)> RateAsync(string swiperUserId, string targetUserId, bool isLike);
 }

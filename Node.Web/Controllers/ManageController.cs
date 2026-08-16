@@ -14,8 +14,8 @@ using Node.Web.Services.Interfaces;
 namespace Node.Web.Controllers;
 
 /// <summary>
-/// Gebruikersparametrisatie: de ingelogde gebruiker beheert
-/// hier de eigen profielvelden, profielfoto en het wachtwoord.
+/// User parametrization: the logged-in user manages
+/// their own profile fields, profile picture and password here.
 /// </summary>
 [Authorize]
 public class ManageController : Controller
@@ -52,26 +52,26 @@ public class ManageController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var gebruiker = await _userManager.GetUserAsync(User);
-        if (gebruiker is null)
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
         {
             return NotFound();
         }
 
         var preferences = await _context.PartnerPreferences
-            .Where(p => p.UserId == gebruiker.Id)
+            .Where(p => p.UserId == user.Id)
             .Select(p => p.Gender)
             .ToListAsync();
 
         var model = new ManageProfileViewModel
         {
-            DisplayName = gebruiker.DisplayName,
-            Bio = gebruiker.Bio,
-            BirthDate = gebruiker.BirthDate,
-            BirthTime = gebruiker.BirthTime,
-            BirthPlace = gebruiker.BirthPlace,
-            HuidigeProfielFotoUrl = gebruiker.ProfilePictureUrl,
-            Gender = gebruiker.Gender,
+            DisplayName = user.DisplayName,
+            Bio = user.Bio,
+            BirthDate = user.BirthDate,
+            BirthTime = user.BirthTime,
+            BirthPlace = user.BirthPlace,
+            CurrentProfilePictureUrl = user.ProfilePictureUrl,
+            Gender = user.Gender,
             LooksForMen = preferences.Contains(Gender.Male),
             LooksForWomen = preferences.Contains(Gender.Female),
         };
@@ -83,18 +83,18 @@ public class ManageController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Index(ManageProfileViewModel model)
     {
-        if (model.ProfilePicture is not null && !_profilePictureService.ToegestaneTypes.ContainsKey(model.ProfilePicture.ContentType))
+        if (model.ProfilePicture is not null && !_profilePictureService.AllowedTypes.ContainsKey(model.ProfilePicture.ContentType))
         {
-            ModelState.AddModelError(nameof(model.ProfilePicture), _localizer["Fout_AfbeeldingType"]);
+            ModelState.AddModelError(nameof(model.ProfilePicture), _localizer["Error_ImageType"]);
         }
-        else if (model.ProfilePicture is not null && model.ProfilePicture.Length > _profilePictureService.MaxGrootteBytes)
+        else if (model.ProfilePicture is not null && model.ProfilePicture.Length > _profilePictureService.MaxSizeBytes)
         {
-            ModelState.AddModelError(nameof(model.ProfilePicture), _localizer["Fout_AfbeeldingGrootte"]);
+            ModelState.AddModelError(nameof(model.ProfilePicture), _localizer["Error_ImageSize"]);
         }
 
         if (!model.LooksForMen && !model.LooksForWomen)
         {
-            ModelState.AddModelError(string.Empty, _localizer["Valid_KiesMinstensEenVoorkeur"]);
+            ModelState.AddModelError(string.Empty, _localizer["Valid_ChooseAtLeastOnePreference"]);
         }
 
         if (!ModelState.IsValid)
@@ -102,79 +102,79 @@ public class ManageController : Controller
             return View(model);
         }
 
-        var gebruiker = await _userManager.GetUserAsync(User);
-        if (gebruiker is null)
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
         {
             return NotFound();
         }
 
-        model.HuidigeProfielFotoUrl = gebruiker.ProfilePictureUrl;
+        model.CurrentProfilePictureUrl = user.ProfilePictureUrl;
 
-        // De horoscoop hangt af van geboortedatum, -tijd én -plaats: enkel
-        // opnieuw berekenen (en eventueel opnieuw geocoderen) wanneer één van
-        // die drie effectief wijzigt, niet bij elke profielwijziging.
-        var plaatsGewijzigd = !string.Equals(gebruiker.BirthPlace, model.BirthPlace, StringComparison.Ordinal);
-        var geboortegegevensGewijzigd =
-            gebruiker.BirthDate != model.BirthDate!.Value ||
-            gebruiker.BirthTime != model.BirthTime!.Value ||
-            plaatsGewijzigd;
+        // The natal chart depends on birth date, time AND place: only
+        // recalculate (and re-geocode if needed) when one of those three
+        // actually changes, not on every profile edit.
+        var placeChanged = !string.Equals(user.BirthPlace, model.BirthPlace, StringComparison.Ordinal);
+        var birthDataChanged =
+            user.BirthDate != model.BirthDate!.Value ||
+            user.BirthTime != model.BirthTime!.Value ||
+            placeChanged;
 
-        if (plaatsGewijzigd)
+        if (placeChanged)
         {
-            var coordinaten = await _geocodingService.ZoekCoordinatenAsync(model.BirthPlace);
-            if (coordinaten is null)
+            var coordinates = await _geocodingService.FindCoordinatesAsync(model.BirthPlace);
+            if (coordinates is null)
             {
-                ModelState.AddModelError(nameof(model.BirthPlace), _localizer["Fout_GeboorteplaatsNietGevonden"]);
+                ModelState.AddModelError(nameof(model.BirthPlace), _localizer["Error_BirthPlaceNotFound"]);
                 return View(model);
             }
 
-            gebruiker.BirthLatitude = coordinaten.Value.Latitude;
-            gebruiker.BirthLongitude = coordinaten.Value.Longitude;
+            user.BirthLatitude = coordinates.Value.Latitude;
+            user.BirthLongitude = coordinates.Value.Longitude;
         }
 
-        gebruiker.DisplayName = model.DisplayName;
-        gebruiker.Bio = model.Bio;
-        gebruiker.BirthDate = model.BirthDate!.Value;
-        gebruiker.BirthTime = model.BirthTime!.Value;
-        gebruiker.BirthPlace = model.BirthPlace;
-        gebruiker.Gender = model.Gender!.Value;
+        user.DisplayName = model.DisplayName;
+        user.Bio = model.Bio;
+        user.BirthDate = model.BirthDate!.Value;
+        user.BirthTime = model.BirthTime!.Value;
+        user.BirthPlace = model.BirthPlace;
+        user.Gender = model.Gender!.Value;
 
         if (model.ProfilePicture is not null)
         {
-            gebruiker.ProfilePictureUrl = await _profilePictureService.BewaarAsync(gebruiker.Id, model.ProfilePicture);
-            model.HuidigeProfielFotoUrl = gebruiker.ProfilePictureUrl;
+            user.ProfilePictureUrl = await _profilePictureService.SaveAsync(user.Id, model.ProfilePicture);
+            model.CurrentProfilePictureUrl = user.ProfilePictureUrl;
         }
 
-        var resultaat = await _userManager.UpdateAsync(gebruiker);
-        if (!resultaat.Succeeded)
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
         {
-            foreach (var fout in resultaat.Errors)
+            foreach (var error in result.Errors)
             {
-                ModelState.AddModelError(string.Empty, fout.Description);
+                ModelState.AddModelError(string.Empty, error.Description);
             }
 
             return View(model);
         }
 
-        await ReplacePartnerPreferencesAsync(gebruiker.Id, model.LooksForMen, model.LooksForWomen);
+        await ReplacePartnerPreferencesAsync(user.Id, model.LooksForMen, model.LooksForWomen);
 
-        if (geboortegegevensGewijzigd)
+        if (birthDataChanged)
         {
-            var bestaandeHoroscoop = await _context.NatalCharts.FirstOrDefaultAsync(n => n.UserId == gebruiker.Id);
-            if (bestaandeHoroscoop is not null)
+            var existingChart = await _context.NatalCharts.FirstOrDefaultAsync(n => n.UserId == user.Id);
+            if (existingChart is not null)
             {
-                _context.NatalCharts.Remove(bestaandeHoroscoop);
+                _context.NatalCharts.Remove(existingChart);
             }
 
-            var nieuweHoroscoop = _natalChartCalculator.Calculate(gebruiker);
-            _context.NatalCharts.Add(nieuweHoroscoop);
+            var newChart = _natalChartCalculator.Calculate(user);
+            _context.NatalCharts.Add(newChart);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Horoscoop van {Email} opnieuw berekend na wijziging van de geboortegegevens.", gebruiker.Email);
+            _logger.LogInformation("Natal chart for {Email} recalculated after birth data change.", user.Email);
         }
 
-        _logger.LogInformation("Gebruiker {Email} paste het eigen profiel aan.", gebruiker.Email);
-        TempData["Melding"] = _localizer["Melding_ProfielOpgeslagen"].Value;
+        _logger.LogInformation("User {Email} updated their own profile.", user.Email);
+        TempData["Message"] = _localizer["Success_ProfileSaved"].Value;
         return RedirectToAction(nameof(Index));
     }
 
@@ -209,30 +209,30 @@ public class ManageController : Controller
             return View(model);
         }
 
-        var gebruiker = await _userManager.GetUserAsync(User);
-        if (gebruiker is null)
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
         {
             return NotFound();
         }
 
-        var resultaat = await _userManager.ChangePasswordAsync(
-            gebruiker, model.CurrentPassword, model.NewPassword);
+        var result = await _userManager.ChangePasswordAsync(
+            user, model.CurrentPassword, model.NewPassword);
 
-        if (!resultaat.Succeeded)
+        if (!result.Succeeded)
         {
-            foreach (var fout in resultaat.Errors)
+            foreach (var error in result.Errors)
             {
-                ModelState.AddModelError(string.Empty, fout.Description);
+                ModelState.AddModelError(string.Empty, error.Description);
             }
 
             return View(model);
         }
 
-        // Opnieuw aanmelden zodat de bestaande cookie geldig blijft na de wijziging.
-        await _signInManager.RefreshSignInAsync(gebruiker);
-        _logger.LogInformation("Gebruiker {Email} wijzigde het wachtwoord.", gebruiker.Email);
+        // Re-sign-in so the existing cookie stays valid after the change.
+        await _signInManager.RefreshSignInAsync(user);
+        _logger.LogInformation("User {Email} changed their password.", user.Email);
 
-        TempData["Melding"] = _localizer["Melding_WachtwoordGewijzigd"].Value;
+        TempData["Message"] = _localizer["Success_PasswordChanged"].Value;
         return RedirectToAction(nameof(Index));
     }
 }

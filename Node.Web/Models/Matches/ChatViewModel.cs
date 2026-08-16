@@ -1,10 +1,10 @@
 namespace Node.Web.Models.Matches;
 
 /// <summary>
-/// Het chatscherm van één match. De berichten zelf staan niet meer in onze
-/// databank: de view verbindt in de browser rechtstreeks met GetStream Chat
-/// via deze gegevens (API-sleutel is publiek, het token is kort geldig en
-/// enkel bruikbaar door de ingelogde gebruiker).
+/// The chat screen for one match. The messages themselves no longer live in
+/// our database: the view connects directly to GetStream Chat in the browser
+/// using this data (the API key is public, the token is short-lived and only
+/// usable by the logged-in user).
 /// </summary>
 public class ChatViewModel
 {
@@ -16,10 +16,10 @@ public class ChatViewModel
 
     public string? CompatibilityExplanation { get; set; }
 
-    /// <summary>GetStream API-sleutel (publiek, geen geheim).</summary>
+    /// <summary>GetStream API key (public, not a secret).</summary>
     public string StreamApiKey { get; set; } = string.Empty;
 
-    /// <summary>Kort geldig GetStream-token voor de ingelogde gebruiker.</summary>
+    /// <summary>Short-lived GetStream token for the logged-in user.</summary>
     public string StreamUserToken { get; set; } = string.Empty;
 
     public string CurrentUserId { get; set; } = string.Empty;

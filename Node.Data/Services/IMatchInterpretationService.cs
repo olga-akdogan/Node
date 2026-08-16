@@ -3,10 +3,10 @@ using Node.Data.Models;
 namespace Node.Data.Services;
 
 /// <summary>
-/// Schrijft de leesbare uitleg bij een match met Claude (Anthropic), op basis
-/// van de volledige horoscopen van beide gebruikers. De compatibiliteitsscore
-/// zelf blijft deterministisch (<see cref="DemoSynastrie"/> in Node.Data.Data);
-/// dit levert enkel de bijhorende tekst.
+/// Writes the readable explanation for a match with Claude (Anthropic),
+/// based on both users' full natal charts. The compatibility score itself
+/// stays deterministic (<see cref="Node.Data.Data.DemoSynastry"/>); this only
+/// supplies the accompanying text.
 /// </summary>
 public interface IMatchInterpretationService
 {
@@ -17,9 +17,9 @@ public interface IMatchInterpretationService
     /// Match.CompatibilityExplanationLanguage.
     /// </summary>
     /// <param name="language">ISO 639-1 code of the requested language (e.g. "nl", "en", "fr").</param>
-    Task<string> SchrijfInterpretatieAsync(
-        ApplicationUser gebruikerA, NatalChart chartA,
-        ApplicationUser gebruikerB, NatalChart chartB,
-        int compatibiliteitsScore,
+    Task<string> WriteMatchInterpretationAsync(
+        ApplicationUser userA, NatalChart chartA,
+        ApplicationUser userB, NatalChart chartB,
+        int compatibilityScore,
         string language);
 }

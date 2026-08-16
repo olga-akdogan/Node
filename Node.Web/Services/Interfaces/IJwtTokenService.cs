@@ -6,5 +6,5 @@ namespace Node.Web.Services.Interfaces;
 public interface IJwtTokenService
 {
     /// <summary>Creates a signed token for the user, embedding their id, email and current roles.</summary>
-    Task<(string Token, DateTime ExpiresAtUtc)> CreateTokenAsync(ApplicationUser gebruiker);
+    Task<(string Token, DateTime ExpiresAtUtc)> CreateTokenAsync(ApplicationUser user);
 }

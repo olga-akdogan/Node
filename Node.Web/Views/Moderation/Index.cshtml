@@ -1,25 +1,25 @@
-@* Meldingenwachtrij: gerapporteerde gebruikers bekijken en afhandelen.
-   Bereikbaar voor de rollen Moderator en Admin. *@
+@* Report queue: viewing and handling reported users.
+   Reachable for the Moderator and Admin roles. *@
 @model IReadOnlyList<Node.Web.Models.Moderation.ReportOverviewViewModel>
 @{
-    ViewData["Title"] = Localizer["Nav_Moderatie"];
-    var alleenOnopgelost = (bool)(ViewData["AlleenOnopgelost"] ?? true);
+    ViewData["Title"] = Localizer["Nav_Moderation"];
+    var unresolvedOnly = (bool)(ViewData["UnresolvedOnly"] ?? true);
 }
 
 <h1>@ViewData["Title"]</h1>
-<p class="text-muted">@string.Format(Localizer["Moderation_AantalMeldingen"], Model.Count)</p>
+<p class="text-muted">@string.Format(Localizer["Moderation_ReportCount"], Model.Count)</p>
 
 <form method="get" class="mb-3">
     <div class="form-check">
-        <input type="checkbox" id="alleenOnopgelost" name="alleenOnopgelost" value="true" class="form-check-input"
-               checked="@(alleenOnopgelost ? "checked" : null)" onchange="this.form.submit()" />
-        <label for="alleenOnopgelost" class="form-check-label">@Localizer["Moderation_AlleenOnopgelost"]</label>
+        <input type="checkbox" id="unresolvedOnly" name="unresolvedOnly" value="true" class="form-check-input"
+               checked="@(unresolvedOnly ? "checked" : null)" onchange="this.form.submit()" />
+        <label for="unresolvedOnly" class="form-check-label">@Localizer["Moderation_UnresolvedOnly"]</label>
     </div>
 </form>
 
 @if (Model.Count == 0)
 {
-    <p class="text-muted">@Localizer["Moderation_GeenMeldingen"]</p>
+    <p class="text-muted">@Localizer["Moderation_NoReports"]</p>
 }
 else
 {
@@ -27,55 +27,55 @@ else
         <table class="table table-striped align-middle">
             <thead>
                 <tr>
-                    <th>@Localizer["Moderation_Melder"]</th>
-                    <th>@Localizer["Moderation_Gerapporteerde"]</th>
-                    <th>@Localizer["Moderation_Reden"]</th>
-                    <th>@Localizer["Moderation_Datum"]</th>
+                    <th>@Localizer["Moderation_Reporter"]</th>
+                    <th>@Localizer["Moderation_ReportedUser"]</th>
+                    <th>@Localizer["Moderation_Reason"]</th>
+                    <th>@Localizer["Moderation_Date"]</th>
                     <th>@Localizer["Admin_Status"]</th>
-                    <th>@Localizer["Admin_Blokkeren"]</th>
-                    <th class="text-end">@Localizer["Admin_Acties"]</th>
+                    <th>@Localizer["Admin_Block"]</th>
+                    <th class="text-end">@Localizer["Admin_Actions"]</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var melding in Model)
+                @foreach (var report in Model)
                 {
                     <tr>
-                        <td>@melding.ReporterDisplayName</td>
-                        <td>@melding.ReportedDisplayName</td>
-                        <td>@melding.Reason</td>
-                        <td>@melding.CreatedAt.ToString("d")</td>
+                        <td>@report.ReporterDisplayName</td>
+                        <td>@report.ReportedDisplayName</td>
+                        <td>@report.Reason</td>
+                        <td>@report.CreatedAt.ToString("d")</td>
                         <td>
-                            @if (melding.IsResolved)
+                            @if (report.IsResolved)
                             {
-                                <span class="badge text-bg-success">@Localizer["Moderation_Afgehandeld"]</span>
+                                <span class="badge text-bg-success">@Localizer["Moderation_Resolved"]</span>
                             }
                             else
                             {
-                                <span class="badge text-bg-warning">@Localizer["Moderation_Onopgelost"]</span>
+                                <span class="badge text-bg-warning">@Localizer["Moderation_Unresolved"]</span>
                             }
                         </td>
                         <td>
-                            @if (melding.ReportedUserIsBlocked)
+                            @if (report.ReportedUserIsBlocked)
                             {
-                                <span class="badge text-bg-danger">@Localizer["Admin_Geblokkeerd"]</span>
+                                <span class="badge text-bg-danger">@Localizer["Admin_Blocked"]</span>
                             }
                         </td>
                         <td class="text-end">
-                            @if (!melding.IsResolved)
+                            @if (!report.IsResolved)
                             {
                                 <form asp-action="Resolve" method="post" class="d-inline">
-                                    <input type="hidden" name="id" value="@melding.Id" />
-                                    <input type="hidden" name="alleenOnopgelost" value="@alleenOnopgelost" />
-                                    <button type="submit" class="btn btn-sm btn-outline-primary">@Localizer["Moderation_AlsAfgehandeldMarkeren"]</button>
+                                    <input type="hidden" name="id" value="@report.Id" />
+                                    <input type="hidden" name="unresolvedOnly" value="@unresolvedOnly" />
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">@Localizer["Moderation_MarkAsResolved"]</button>
                                 </form>
                             }
-                            @if (!melding.ReportedUserIsBlocked)
+                            @if (!report.ReportedUserIsBlocked)
                             {
                                 <form asp-action="BlockReportedUser" method="post" class="d-inline"
-                                      onsubmit="return confirm('@string.Format(Localizer["Moderation_BlokkerenBevestiging"], melding.ReportedDisplayName)');">
-                                    <input type="hidden" name="id" value="@melding.Id" />
-                                    <input type="hidden" name="alleenOnopgelost" value="@alleenOnopgelost" />
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">@Localizer["Moderation_GebruikerBlokkeren"]</button>
+                                      onsubmit="return confirm('@string.Format(Localizer["Moderation_BlockConfirmation"], report.ReportedDisplayName)');">
+                                    <input type="hidden" name="id" value="@report.Id" />
+                                    <input type="hidden" name="unresolvedOnly" value="@unresolvedOnly" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">@Localizer["Moderation_BlockUser"]</button>
                                 </form>
                             }
                         </td>
