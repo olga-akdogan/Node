@@ -9,8 +9,12 @@ using Node.Web.Services.Interfaces;
 
 namespace Node.Web.Controllers;
 
-/// <summary>Reporting misconduct from any web page that shows another member (currently: the chat screen).</summary>
-[Authorize]
+/// <summary>
+/// Reporting misconduct from any web page that shows another member
+/// (currently: the chat screen). Members only, same as the chat/match
+/// features it's filed from — Admin/Moderator have no matches to report from.
+/// </summary>
+[Authorize(Roles = DbSeeder.RolLid)]
 public class ReportController : Controller
 {
     private readonly ApplicationDbContext _context;

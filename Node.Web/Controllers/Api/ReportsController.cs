@@ -14,11 +14,9 @@ using Node.Web.Services.Interfaces;
 namespace Node.Web.Controllers.Api;
 
 /// <summary>
-/// Reporting misconduct and the moderation queue. There is no web-page
-/// equivalent yet (the Report model was seeded but never given a UI), so this
-/// controller is built directly from the model rather than mirrored from an
-/// existing MVC controller. Any signed-in user can file a report; only
-/// Moderator/Admin can see and resolve the queue.
+/// Reporting misconduct and the moderation queue, mirroring the web
+/// ReportController/ModerationController. Members can file a report; only
+/// Moderator/Admin can see, resolve, or block from the queue.
 /// </summary>
 [ApiController]
 [Route("api/reports")]
@@ -48,8 +46,10 @@ public class ReportsController : ControllerBase
     /// <summary>
     /// Creates a report and, when one exists, immediately ends the active
     /// match between reporter and reported user (see IMatchService.EindigMatchTussenAsync).
+    /// Members only, matching the web ReportController.
     /// </summary>
     [HttpPost]
+    [Authorize(Roles = DbSeeder.RolLid)]
     public async Task<IActionResult> Create(CreateReportRequest request)
     {
         var reporterId = _userManager.GetUserId(User)!;

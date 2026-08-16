@@ -370,6 +370,21 @@
   <data name="Notification_Message" xml:space="preserve">
     <value>{0} t'a envoyé un message.</value>
   </data>
+  <data name="Notification_Type" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="Notification_AlleTypes" xml:space="preserve">
+    <value>Tous les types</value>
+  </data>
+  <data name="Notification_TypeLike" xml:space="preserve">
+    <value>Likes</value>
+  </data>
+  <data name="Notification_TypeMessage" xml:space="preserve">
+    <value>Messages</value>
+  </data>
+  <data name="Notification_SorteerOud" xml:space="preserve">
+    <value>Plus ancien d'abord</value>
+  </data>
   <data name="Chat_GesprekLaden" xml:space="preserve">
     <value>Chargement de la conversation…</value>
   </data>

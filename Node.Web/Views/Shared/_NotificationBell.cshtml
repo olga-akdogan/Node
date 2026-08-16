@@ -1,5 +1,7 @@
 @* Bell icon in the navbar: links to the notifications page and shows the
-   unread count. Renders nothing when the user isn't signed in. *@
+   unread count. Renders nothing when the user isn't signed in, or is
+   Admin/Moderator — those are staff accounts that can't generate or receive
+   like/message notifications since they're excluded from the dating features. *@
 @using Microsoft.AspNetCore.Identity
 @using Node.Data.Models
 @using Node.Web.Services.Interfaces
@@ -7,7 +9,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject INotificationService NotificationService
 
-@if (SignInManager.IsSignedIn(User))
+@if (SignInManager.IsSignedIn(User) && !User.IsInRole("Admin") && !User.IsInRole("Moderator"))
 {
     var userId = UserManager.GetUserId(User)!;
     var unreadCount = await NotificationService.GetUnreadCountAsync(userId);

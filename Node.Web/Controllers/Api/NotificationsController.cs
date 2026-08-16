@@ -2,16 +2,20 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Node.Data.Data;
 using Node.Data.Models;
 using Node.Web.Models.Notifications;
 using Node.Web.Services.Interfaces;
 
 namespace Node.Web.Controllers.Api;
 
-/// <summary>API equivalent of <see cref="Node.Web.Controllers.NotificationController"/> for the MAUI app.</summary>
+/// <summary>
+/// API equivalent of <see cref="Node.Web.Controllers.NotificationController"/> for the
+/// MAUI app. Members only, same as the web page.
+/// </summary>
 [ApiController]
 [Route("api/notifications")]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = DbSeeder.RolLid)]
 public class NotificationsController : ControllerBase
 {
     private readonly INotificationService _notificationService;
