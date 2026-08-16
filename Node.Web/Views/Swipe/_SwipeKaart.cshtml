@@ -39,7 +39,10 @@
 
             @if (!string.IsNullOrWhiteSpace(Model.Bio))
             {
-                <p class="text-muted mb-0">@Model.Bio</p>
+                <div class="border-top pt-3">
+                    <p class="kicker mb-1">@Localizer["Veld_Bio"]</p>
+                    <p class="mb-0">@Model.Bio</p>
+                </div>
             }
         </div>
     </div>

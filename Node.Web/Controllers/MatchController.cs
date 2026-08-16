@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Node.Data.Data;
 using Node.Data.Models;
 using Node.Web.Services.Interfaces;
 
@@ -9,9 +10,10 @@ namespace Node.Web.Controllers;
 /// <summary>
 /// Match overview and chat. The chat screen connects directly to GetStream
 /// Chat in the browser; this controller only supplies the match data and the
-/// GetStream token needed to set up that connection.
+/// GetStream token needed to set up that connection. Members only: Admin and
+/// Moderator are staff accounts, not dating profiles.
 /// </summary>
-[Authorize]
+[Authorize(Roles = DbSeeder.RolLid)]
 public class MatchController : Controller
 {
     private readonly IMatchService _matchService;

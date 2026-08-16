@@ -493,6 +493,18 @@
   <data name="Moderation_AfgehandeldMelding" xml:space="preserve">
     <value>Signalement marqué comme résolu.</value>
   </data>
+  <data name="Report_Knop" xml:space="preserve">
+    <value>Signaler</value>
+  </data>
+  <data name="Report_ModalTitel" xml:space="preserve">
+    <value>Signaler {0}</value>
+  </data>
+  <data name="Report_Versturen" xml:space="preserve">
+    <value>Envoyer le signalement</value>
+  </data>
+  <data name="Report_Verstuurd" xml:space="preserve">
+    <value>Ton signalement a été envoyé.</value>
+  </data>
   <data name="Error_Boodschap" xml:space="preserve">
     <value>Une erreur s'est produite lors du traitement de ta demande.</value>
   </data>

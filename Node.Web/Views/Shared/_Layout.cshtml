@@ -32,7 +32,9 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="HowItWorks">@Localizer["Nav_HoeHetWerkt"]</a>
                         </li>
-                        @if (User.Identity?.IsAuthenticated == true)
+                        @* Ontdek/Matches/Mijn horoscoop zijn datingfuncties voor leden;
+                           Admin en Moderator zijn beheeraccounts, geen datingprofielen. *@
+                        @if (User.Identity?.IsAuthenticated == true && !User.IsInRole("Admin") && !User.IsInRole("Moderator"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Swipe" asp-action="Index">@Localizer["Nav_Ontdek"]</a>

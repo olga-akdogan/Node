@@ -1,7 +1,7 @@
-@* Chatscherm met tekstballonnen (eigen berichten rechts, zoals bij
-   Tinder/Bumble). De berichten komen niet van onze server: de browser
-   verbindt hier rechtstreeks met GetStream Chat via stream-chat-js en houdt
-   het gesprek live bij (nieuwe berichten verschijnen zonder herladen). *@
+@* Chat screen with speech bubbles (own messages on the right, like
+   Tinder/Bumble). Messages don't come from our server: the browser connects
+   directly to GetStream Chat here via stream-chat-js and keeps the
+   conversation live (new messages appear without a reload). *@
 @model Node.Web.Models.Matches.ChatViewModel
 @{
     ViewData["Title"] = Model.OtherDisplayName;
@@ -10,12 +10,41 @@
 <div class="mx-auto" style="max-width: 44rem;">
     <div class="d-flex align-items-baseline justify-content-between border-bottom pb-3 mb-3">
         <div>
-            <a class="kicker text-decoration-none" asp-action="Index">&larr; Matches</a>
-            <h1 class="mb-0 mt-1">@Model.OtherDisplayName</h1>
+            <a class="kicker text-decoration-none" asp-action="Index">&larr; @Localizer["Match_Titel"]</a>
+            <h1 class="mb-0 mt-1">
+                @Model.OtherDisplayName
+                <button type="button" class="btn btn-sm btn-outline-danger ms-2" data-bs-toggle="modal" data-bs-target="#meldModal">
+                    @Localizer["Report_Knop"]
+                </button>
+            </h1>
         </div>
         <div class="text-end">
             <span class="score-cijfer">@Model.CompatibilityScore</span>
-            <p class="kicker mb-0">Match-score</p>
+            <p class="kicker mb-0">@Localizer["SwipeKaart_MatchScore"]</p>
+        </div>
+    </div>
+
+    @* Melding indienen over deze gebruiker: reden intypen, versturen gaat via ReportController.Create. *@
+    <div class="modal fade" id="meldModal" tabindex="-1" aria-labelledby="meldModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-controller="Report" asp-action="Create" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="meldModalLabel">@string.Format(Localizer["Report_ModalTitel"], Model.OtherDisplayName)</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Nav_Sluiten"]"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="reportedUserId" value="@Model.OtherUserId" />
+                        <input type="hidden" name="matchId" value="@Model.MatchId" />
+                        <label for="meldReden" class="form-label">@Localizer["Moderation_Reden"]</label>
+                        <textarea id="meldReden" name="reason" class="form-control" rows="3" maxlength="1000" required></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">@Localizer["Nav_Sluiten"]</button>
+                        <button type="submit" class="btn btn-danger">@Localizer["Report_Versturen"]</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -30,13 +59,13 @@
          data-current-user-id="@Model.CurrentUserId"
          data-other-user-id="@Model.OtherUserId">
         <div id="berichten" class="chat-venster mb-3">
-            <p class="text-muted small text-center">Gesprek laden&hellip;</p>
+            <p class="text-muted small text-center">@Localizer["Chat_GesprekLaden"]</p>
         </div>
 
         <form id="chat-formulier" class="d-flex gap-2">
             <input type="text" id="chat-invoer" class="form-control"
-                   placeholder="Schrijf een bericht" maxlength="1000" autocomplete="off" />
-            <button type="submit" class="btn btn-primary">Verstuur</button>
+                   placeholder="@Localizer["Chat_SchrijfBericht"]" maxlength="1000" autocomplete="off" />
+            <button type="submit" class="btn btn-primary">@Localizer["Chat_Verstuur"]</button>
         </form>
     </div>
 </div>
@@ -44,8 +73,8 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/stream-chat@8.57.4/dist/browser.full-bundle.min.js"></script>
     <script>
-        // Chat-logica met GetStream: verbinden, bestaande berichten tonen en
-        // live meeluisteren naar nieuwe berichten van de andere gebruiker.
+        // Chat logic with GetStream: connect, show existing messages and
+        // listen live for new messages from the other user.
         (async function () {
             const app = document.getElementById('chat-app');
             const venster = document.getElementById('berichten');
@@ -56,9 +85,9 @@
             const client = StreamChat.getInstance(app.dataset.apiKey);
             await client.connectUser({ id: eigenGebruikerId }, app.dataset.userToken);
 
-            // Kanaal zonder expliciete id: GetStream leidt de id af uit de
-            // ledenlijst, zodat dezelfde twee gebruikers altijd hetzelfde
-            // gesprek terugvinden.
+            // Channel without an explicit id: GetStream derives the id from
+            // the member list, so the same two users always find the same
+            // conversation.
             const channel = client.channel('messaging', {
                 members: [eigenGebruikerId, app.dataset.otherUserId],
             });

@@ -2,16 +2,20 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Node.Data.Data;
 using Node.Data.Models;
 using Node.Web.Models.Matches;
 using Node.Web.Services.Interfaces;
 
 namespace Node.Web.Controllers.Api;
 
-/// <summary>API equivalent of <see cref="Node.Web.Controllers.MatchController"/>: match overview and chat handoff for the MAUI app.</summary>
+/// <summary>
+/// API equivalent of <see cref="Node.Web.Controllers.MatchController"/>: match overview
+/// and chat handoff for the MAUI app. Members only, same as the web page.
+/// </summary>
 [ApiController]
 [Route("api/matches")]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = DbSeeder.RolLid)]
 public class MatchesController : ControllerBase
 {
     private readonly IMatchService _matchService;

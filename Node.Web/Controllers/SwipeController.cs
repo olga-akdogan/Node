@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Node.Data.Data;
 using Node.Data.Models;
 using Node.Web.Services.Interfaces;
 
@@ -9,9 +10,10 @@ namespace Node.Web.Controllers;
 /// <summary>
 /// De ontdek-pagina (naar het voorbeeld van Tinder/Bumble): één kandidaat
 /// tegelijk, beoordelen met like of pass. De volgende kaart wordt via AJAX
-/// geladen zonder dat de pagina herlaadt.
+/// geladen zonder dat de pagina herlaadt. Enkel voor leden: Admin/Moderator
+/// zijn beheeraccounts, geen datingprofielen.
 /// </summary>
-[Authorize]
+[Authorize(Roles = DbSeeder.RolLid)]
 public class SwipeController : Controller
 {
     private readonly ISwipeService _swipeService;

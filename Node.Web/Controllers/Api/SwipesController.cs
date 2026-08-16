@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Node.Data.Data;
 using Node.Data.Models;
 using Node.Web.Models.Api.Swiping;
 using Node.Web.Models.Swiping;
@@ -9,10 +10,13 @@ using Node.Web.Services.Interfaces;
 
 namespace Node.Web.Controllers.Api;
 
-/// <summary>API equivalent of <see cref="Node.Web.Controllers.SwipeController"/>: the discover stack for the MAUI app.</summary>
+/// <summary>
+/// API equivalent of <see cref="Node.Web.Controllers.SwipeController"/>: the discover
+/// stack for the MAUI app. Members only, same as the web page.
+/// </summary>
 [ApiController]
 [Route("api/swipes")]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = DbSeeder.RolLid)]
 public class SwipesController : ControllerBase
 {
     private readonly ISwipeService _swipeService;

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Node.Data.Data;
 using Node.Data.Models;
 using Node.Web.Services.Interfaces;
 
@@ -8,9 +9,10 @@ namespace Node.Web.Controllers;
 
 /// <summary>
 /// "Mijn horoscoop" (ontwerp 04): het wiel, de grote drie en de
-/// plaatsingentabel van de ingelogde gebruiker.
+/// plaatsingentabel van de ingelogde gebruiker. Enkel voor leden: Admin/Moderator
+/// zijn beheeraccounts, geen datingprofielen.
 /// </summary>
-[Authorize]
+[Authorize(Roles = DbSeeder.RolLid)]
 public class ChartController : Controller
 {
     private readonly IChartService _chartService;
