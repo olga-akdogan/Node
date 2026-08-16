@@ -9,7 +9,7 @@ using Node.Data.Services;
 namespace Node.Data.Data;
 
 /// <summary>
-/// Uitgebreide seeding bij het opstarten van een (gedeeltelijk) lege databank.
+/// Uitgebreide seeding bij het opstarten van een lege databank.
 /// Alles is deterministisch zodat elke run dezelfde
 /// demogegevens oplevert: rollen, gebruikers, horoscopen met posities,
 /// swipes, matches en meldingen.
