@@ -1,12 +1,51 @@
 @* Gebruikersbeheer: rollen toekennen/afnemen en
    gebruikers (de)blokkeren. Alleen bereikbaar voor de rol Admin. *@
-@model IReadOnlyList<Node.Web.Models.Admin.UserOverviewViewModel>
+@model Node.Web.Models.Admin.AdminUsersIndexViewModel
 @{
     ViewData["Title"] = Localizer["Nav_Gebruikersbeheer"];
 }
 
 <h1>@ViewData["Title"]</h1>
-<p class="text-muted">@string.Format(Localizer["Admin_AantalGebruikers"], Model.Count)</p>
+<p class="text-muted">@string.Format(Localizer["Admin_AantalGebruikers"], Model.Gebruikers.Count)</p>
+
+<form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-auto">
+        <label for="zoek" class="form-label small">@Localizer["Admin_Zoeken"]</label>
+        <input type="search" id="zoek" name="zoek" value="@Model.Zoek" class="form-control form-control-sm"
+               placeholder="@Localizer["Admin_ZoekenPlaceholder"]" />
+    </div>
+    <div class="col-auto">
+        <label for="rol" class="form-label small">@Localizer["Admin_Rollen"]</label>
+        <select id="rol" name="rol" class="form-select form-select-sm">
+            <option value="">@Localizer["Admin_AlleRollen"]</option>
+            @foreach (var r in Model.AlleRollen)
+            {
+                <option value="@r" selected="@(r == Model.Rol ? "selected" : null)">@r</option>
+            }
+        </select>
+    </div>
+    <div class="col-auto">
+        <label for="status" class="form-label small">@Localizer["Admin_Status"]</label>
+        <select id="status" name="status" class="form-select form-select-sm">
+            <option value="">@Localizer["Admin_AlleStatussen"]</option>
+            <option value="actief" selected="@("actief" == Model.Status ? "selected" : null)">@Localizer["Admin_Actief"]</option>
+            <option value="geblokkeerd" selected="@("geblokkeerd" == Model.Status ? "selected" : null)">@Localizer["Admin_Geblokkeerd"]</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <label for="sortering" class="form-label small">@Localizer["Admin_Sorteren"]</label>
+        <select id="sortering" name="sortering" class="form-select form-select-sm">
+            <option value="naam_asc" selected="@("naam_asc" == Model.Sortering ? "selected" : null)">@Localizer["Admin_SorteerNaamAZ"]</option>
+            <option value="naam_desc" selected="@("naam_desc" == Model.Sortering ? "selected" : null)">@Localizer["Admin_SorteerNaamZA"]</option>
+            <option value="email_asc" selected="@("email_asc" == Model.Sortering ? "selected" : null)">@Localizer["Admin_SorteerEmailAZ"]</option>
+            <option value="email_desc" selected="@("email_desc" == Model.Sortering ? "selected" : null)">@Localizer["Admin_SorteerEmailZA"]</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-sm btn-primary">@Localizer["Admin_Filteren"]</button>
+        <a asp-action="Users" class="btn btn-sm btn-outline-secondary">@Localizer["Admin_FilterWissen"]</a>
+    </div>
+</form>
 
 <div class="table-responsive">
     <table class="table table-striped align-middle">
@@ -20,7 +59,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var gebruiker in Model)
+            @foreach (var gebruiker in Model.Gebruikers)
             {
                 <tr>
                     <td>@gebruiker.DisplayName</td>

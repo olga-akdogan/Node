@@ -174,6 +174,11 @@ public class AuthController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// A transient SMTP failure must not crash the registration request
+    /// itself (the account already exists at this point): log it instead of
+    /// letting it bubble, same as the AccountController web equivalent.
+    /// </summary>
     private async Task VerstuurVerificatieEmailAsync(ApplicationUser gebruiker)
     {
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(gebruiker);
@@ -182,9 +187,16 @@ public class AuthController : ControllerBase
             new { userId = gebruiker.Id, code },
             protocol: Request.Scheme)!;
 
-        await _emailService.SendAsync(
-            gebruiker.Email!,
-            "Bevestig je e-mailadres bij Node",
-            $"<p>Welkom bij Node!</p><p><a href=\"{link}\">Klik hier om je e-mailadres te bevestigen</a>.</p>");
+        try
+        {
+            await _emailService.SendAsync(
+                gebruiker.Email!,
+                "Bevestig je e-mailadres bij Node",
+                $"<p>Welkom bij Node!</p><p><a href=\"{link}\">Klik hier om je e-mailadres te bevestigen</a>.</p>");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Versturen van de verificatie-e-mail naar {Email} is mislukt (API).", gebruiker.Email);
+        }
     }
 }

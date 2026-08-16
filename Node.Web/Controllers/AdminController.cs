@@ -30,9 +30,12 @@ public class AdminController : Controller
         _logger = logger;
     }
 
-    /// <summary>Overzicht van alle gebruikers met hun rollen en blokkeerstatus.</summary>
+    /// <summary>
+    /// Overzicht van alle gebruikers met hun rollen en blokkeerstatus, met
+    /// zoek-, rol- en statusfilter plus sortering op naam of e-mail.
+    /// </summary>
     [HttpGet]
-    public async Task<IActionResult> Users()
+    public async Task<IActionResult> Users(string? zoek, string? rol, string? status, string sortering = "naam_asc")
     {
         var alleRollen = await _roleManager.Roles
             .Select(r => r.Name!)
@@ -59,7 +62,47 @@ public class AdminController : Controller
             });
         }
 
-        return View(model);
+        // Klein aantal gebruikers (demo-schaal): filteren en sorteren gebeurt
+        // hier in-memory op de al opgebouwde lijst, niet met een extra
+        // EF-query met een join op AspNetUserRoles.
+        IEnumerable<UserOverviewViewModel> gefilterd = model;
+
+        if (!string.IsNullOrWhiteSpace(zoek))
+        {
+            gefilterd = gefilterd.Where(g =>
+                g.DisplayName.Contains(zoek, StringComparison.OrdinalIgnoreCase) ||
+                g.Email.Contains(zoek, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(rol))
+        {
+            gefilterd = gefilterd.Where(g => g.Roles.Contains(rol));
+        }
+
+        gefilterd = status switch
+        {
+            "geblokkeerd" => gefilterd.Where(g => g.IsBlocked),
+            "actief" => gefilterd.Where(g => !g.IsBlocked),
+            _ => gefilterd,
+        };
+
+        gefilterd = sortering switch
+        {
+            "naam_desc" => gefilterd.OrderByDescending(g => g.DisplayName),
+            "email_asc" => gefilterd.OrderBy(g => g.Email),
+            "email_desc" => gefilterd.OrderByDescending(g => g.Email),
+            _ => gefilterd.OrderBy(g => g.DisplayName),
+        };
+
+        return View(new AdminUsersIndexViewModel
+        {
+            Gebruikers = gefilterd.ToList(),
+            AlleRollen = alleRollen,
+            Zoek = zoek,
+            Rol = rol,
+            Status = status,
+            Sortering = sortering,
+        });
     }
 
     /// <summary>Blokkeert of deblokkeert een gebruiker.</summary>

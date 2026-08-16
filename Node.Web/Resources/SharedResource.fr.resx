@@ -349,6 +349,15 @@
   <data name="Match_OngelezenTitle" xml:space="preserve">
     <value>{0} non lu(s)</value>
   </data>
+  <data name="Match_Sorteren" xml:space="preserve">
+    <value>Trier par</value>
+  </data>
+  <data name="Match_SorteerRecent" xml:space="preserve">
+    <value>Plus récent</value>
+  </data>
+  <data name="Match_SorteerScore" xml:space="preserve">
+    <value>Score le plus élevé</value>
+  </data>
   <data name="Notification_Titel" xml:space="preserve">
     <value>Notifications</value>
   </data>
@@ -420,6 +429,39 @@
   </data>
   <data name="Admin_Blokkeren" xml:space="preserve">
     <value>Bloquer</value>
+  </data>
+  <data name="Admin_Zoeken" xml:space="preserve">
+    <value>Rechercher</value>
+  </data>
+  <data name="Admin_ZoekenPlaceholder" xml:space="preserve">
+    <value>Nom ou e-mail...</value>
+  </data>
+  <data name="Admin_AlleRollen" xml:space="preserve">
+    <value>Tous les rôles</value>
+  </data>
+  <data name="Admin_AlleStatussen" xml:space="preserve">
+    <value>Tous les statuts</value>
+  </data>
+  <data name="Admin_Sorteren" xml:space="preserve">
+    <value>Trier par</value>
+  </data>
+  <data name="Admin_SorteerNaamAZ" xml:space="preserve">
+    <value>Nom (A-Z)</value>
+  </data>
+  <data name="Admin_SorteerNaamZA" xml:space="preserve">
+    <value>Nom (Z-A)</value>
+  </data>
+  <data name="Admin_SorteerEmailAZ" xml:space="preserve">
+    <value>E-mail (A-Z)</value>
+  </data>
+  <data name="Admin_SorteerEmailZA" xml:space="preserve">
+    <value>E-mail (Z-A)</value>
+  </data>
+  <data name="Admin_Filteren" xml:space="preserve">
+    <value>Filtrer</value>
+  </data>
+  <data name="Admin_FilterWissen" xml:space="preserve">
+    <value>Réinitialiser</value>
   </data>
   <data name="Error_Boodschap" xml:space="preserve">
     <value>Une erreur s'est produite lors du traitement de ta demande.</value>

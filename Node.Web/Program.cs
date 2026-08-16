@@ -110,7 +110,7 @@ builder.Services.AddHttpClient<IGeocodingService, GeocodingService>(client =>
     client.DefaultRequestHeaders.UserAgent.ParseAdd("Node-astrologie-datingapp/1.0 (examenproject EhB)");
 });
 
-// Meertaligheid: nl en en volledig vertaald, fr grotendeels; nl is de standaardtaal.
+// Meertaligheid: nl, en en fr zijn alle drie volledig vertaald; nl is de standaardtaal.
 // Geen ResourcesPath instellen: SharedResource.cs staat zelf al in de map
 // Resources/, en de .resx-bestanden staan ernaast in diezelfde map — dat is
 // exact de standaardconventie (resx-pad volgt de naamruimte van de klasse).

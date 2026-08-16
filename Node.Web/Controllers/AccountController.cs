@@ -235,7 +235,9 @@ public class AccountController : Controller
 
     /// <summary>
     /// Genereert de bevestigingstoken, bouwt de absolute link en verstuurt de
-    /// verificatie-e-mail.
+    /// verificatie-e-mail. Een tijdelijke SMTP-storing mag de registratie zelf
+    /// (het account bestaat dan al) niet laten crashen: de fout wordt gelogd
+    /// in plaats van door te bubbelen, zoals ook bij de Claude-oproepen gebeurt.
     /// </summary>
     private async Task VerstuurVerificatieEmailAsync(ApplicationUser gebruiker)
     {
@@ -244,9 +246,16 @@ public class AccountController : Controller
         var link = Url.Action(nameof(ConfirmEmail), "Account",
             new { userId = gebruiker.Id, code }, protocol: Request.Scheme)!;
 
-        await _emailService.SendAsync(
-            gebruiker.Email!,
-            "Bevestig je e-mailadres bij Node",
-            $"<p>Welkom bij Node!</p><p><a href=\"{link}\">Klik hier om je e-mailadres te bevestigen</a>.</p>");
+        try
+        {
+            await _emailService.SendAsync(
+                gebruiker.Email!,
+                "Bevestig je e-mailadres bij Node",
+                $"<p>Welkom bij Node!</p><p><a href=\"{link}\">Klik hier om je e-mailadres te bevestigen</a>.</p>");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Versturen van de verificatie-e-mail naar {Email} is mislukt.", gebruiker.Email);
+        }
     }
 }

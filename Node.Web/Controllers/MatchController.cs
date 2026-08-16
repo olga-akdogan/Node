@@ -7,9 +7,9 @@ using Node.Web.Services.Interfaces;
 namespace Node.Web.Controllers;
 
 /// <summary>
-/// Matchoverzicht en chat. Het chatscherm verbindt in de browser rechtstreeks
-/// met GetStream Chat; deze controller levert enkel de matchgegevens en het
-/// GetStream-token om die verbinding op te zetten.
+/// Match overview and chat. The chat screen connects directly to GetStream
+/// Chat in the browser; this controller only supplies the match data and the
+/// GetStream token needed to set up that connection.
 /// </summary>
 [Authorize]
 public class MatchController : Controller
@@ -24,10 +24,19 @@ public class MatchController : Controller
     }
 
     /// <summary>Overzicht van alle actieve matches van de ingelogde gebruiker.</summary>
+    /// <param name="sortering">"recent" (standaard, meest recente gesprek eerst) of "score" (hoogste compatibiliteit eerst).</param>
     [HttpGet]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string sortering = "recent")
     {
         var matches = await _matchService.GetMatchesVoorGebruikerAsync(_userManager.GetUserId(User)!);
+
+        if (sortering == "score")
+        {
+            matches = matches.OrderByDescending(m => m.CompatibilityScore).ToList();
+        }
+        // "recent" is al de volgorde die de service teruggeeft: niets te doen.
+
+        ViewData["Sortering"] = sortering;
         return View(matches);
     }
 

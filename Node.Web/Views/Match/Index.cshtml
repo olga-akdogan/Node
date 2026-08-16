@@ -22,6 +22,13 @@
     }
     else
     {
+        <form method="get" class="d-flex justify-content-end mb-3">
+            <label class="visually-hidden" for="sortering">@Localizer["Match_Sorteren"]</label>
+            <select id="sortering" name="sortering" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+                <option value="recent" selected="@(((string?)ViewData["Sortering"] == "recent") ? "selected" : null)">@Localizer["Match_SorteerRecent"]</option>
+                <option value="score" selected="@(((string?)ViewData["Sortering"] == "score") ? "selected" : null)">@Localizer["Match_SorteerScore"]</option>
+            </select>
+        </form>
         <div class="match-lijst">
             @foreach (var match in Model)
             {
