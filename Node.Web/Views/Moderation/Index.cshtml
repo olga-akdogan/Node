@@ -32,6 +32,7 @@ else
                     <th>@Localizer["Moderation_Reden"]</th>
                     <th>@Localizer["Moderation_Datum"]</th>
                     <th>@Localizer["Admin_Status"]</th>
+                    <th>@Localizer["Admin_Blokkeren"]</th>
                     <th class="text-end">@Localizer["Admin_Acties"]</th>
                 </tr>
             </thead>
@@ -53,6 +54,12 @@ else
                                 <span class="badge text-bg-warning">@Localizer["Moderation_Onopgelost"]</span>
                             }
                         </td>
+                        <td>
+                            @if (melding.ReportedUserIsBlocked)
+                            {
+                                <span class="badge text-bg-danger">@Localizer["Admin_Geblokkeerd"]</span>
+                            }
+                        </td>
                         <td class="text-end">
                             @if (!melding.IsResolved)
                             {
@@ -60,6 +67,15 @@ else
                                     <input type="hidden" name="id" value="@melding.Id" />
                                     <input type="hidden" name="alleenOnopgelost" value="@alleenOnopgelost" />
                                     <button type="submit" class="btn btn-sm btn-outline-primary">@Localizer["Moderation_AlsAfgehandeldMarkeren"]</button>
+                                </form>
+                            }
+                            @if (!melding.ReportedUserIsBlocked)
+                            {
+                                <form asp-action="BlockReportedUser" method="post" class="d-inline"
+                                      onsubmit="return confirm('@string.Format(Localizer["Moderation_BlokkerenBevestiging"], melding.ReportedDisplayName)');">
+                                    <input type="hidden" name="id" value="@melding.Id" />
+                                    <input type="hidden" name="alleenOnopgelost" value="@alleenOnopgelost" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">@Localizer["Moderation_GebruikerBlokkeren"]</button>
                                 </form>
                             }
                         </td>

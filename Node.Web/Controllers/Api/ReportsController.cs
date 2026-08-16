@@ -9,6 +9,7 @@ using Node.Data.Models;
 using Node.Web.Models.Api.Reports;
 using Node.Web.Models.Moderation;
 using Node.Web.Resources;
+using Node.Web.Services.Interfaces;
 
 namespace Node.Web.Controllers.Api;
 
@@ -26,21 +27,28 @@ public class ReportsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IMatchService _matchService;
     private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly ILogger<ReportsController> _logger;
 
     public ReportsController(
         ApplicationDbContext context,
         UserManager<ApplicationUser> userManager,
+        IMatchService matchService,
         IStringLocalizer<SharedResource> localizer,
         ILogger<ReportsController> logger)
     {
         _context = context;
         _userManager = userManager;
+        _matchService = matchService;
         _localizer = localizer;
         _logger = logger;
     }
 
+    /// <summary>
+    /// Creates a report and, when one exists, immediately ends the active
+    /// match between reporter and reported user (see IMatchService.EindigMatchTussenAsync).
+    /// </summary>
     [HttpPost]
     public async Task<IActionResult> Create(CreateReportRequest request)
     {
@@ -65,6 +73,8 @@ public class ReportsController : ControllerBase
         });
         await _context.SaveChangesAsync();
 
+        await _matchService.EindigMatchTussenAsync(reporterId, request.ReportedUserId);
+
         _logger.LogInformation("Gebruiker {ReporterId} rapporteerde {ReportedId} (API).", reporterId, request.ReportedUserId);
 
         return StatusCode(StatusCodes.Status201Created);
@@ -84,6 +94,7 @@ public class ReportsController : ControllerBase
                 ReporterDisplayName = r.ReporterUser!.DisplayName,
                 ReportedUserId = r.ReportedUserId,
                 ReportedDisplayName = r.ReportedUser!.DisplayName,
+                ReportedUserIsBlocked = r.ReportedUser!.IsBlocked,
                 Reason = r.Reason,
                 IsResolved = r.IsResolved,
                 CreatedAt = r.CreatedAt,
@@ -107,6 +118,41 @@ public class ReportsController : ControllerBase
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Moderator {Moderator} handelde melding {Id} af (API).", User.Identity?.Name, id);
+
+        return NoContent();
+    }
+
+    /// <summary>Blocks the reported user's account and marks the report resolved. Moderator or Admin only.</summary>
+    [HttpPost("{id}/block")]
+    [Authorize(Roles = $"{DbSeeder.RolModerator},{DbSeeder.RolAdmin}")]
+    public async Task<IActionResult> BlockReportedUser(int id)
+    {
+        var melding = await _context.Reports.FindAsync(id);
+        if (melding is null)
+        {
+            return NotFound();
+        }
+
+        var gerapporteerde = await _userManager.FindByIdAsync(melding.ReportedUserId);
+        if (gerapporteerde is null)
+        {
+            return NotFound();
+        }
+
+        if (gerapporteerde.Id == _userManager.GetUserId(User))
+        {
+            return BadRequest(new { error = "Je kan jezelf niet blokkeren." });
+        }
+
+        gerapporteerde.IsBlocked = true;
+        await _userManager.UpdateAsync(gerapporteerde);
+        await _userManager.UpdateSecurityStampAsync(gerapporteerde);
+
+        melding.IsResolved = true;
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("{Moderator} blokkeerde {Email} n.a.v. melding {Id} (API).",
+            User.Identity?.Name, gerapporteerde.Email, id);
 
         return NoContent();
     }

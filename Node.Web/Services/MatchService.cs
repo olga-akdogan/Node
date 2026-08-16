@@ -138,8 +138,27 @@ public class MatchService : IMatchService
         await _context.SaveChangesAsync();
     }
 
+    public async Task EindigMatchTussenAsync(string userAId, string userBId)
+    {
+        var match = await _context.Matches.FirstOrDefaultAsync(m =>
+            m.Status == MatchStatus.Active &&
+            ((m.User1Id == userAId && m.User2Id == userBId) ||
+             (m.User1Id == userBId && m.User2Id == userAId)));
+
+        if (match is null)
+        {
+            return; // Niet (meer) gematcht: niets te doen.
+        }
+
+        match.Status = MatchStatus.Unmatched;
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Match {MatchId} beëindigd tussen {UserA} en {UserB}.", match.Id, userAId, userBId);
+    }
+
     /// <summary>
-    /// Looks up the match, but only when the user is a participant in it.
+    /// Looks up the match, but only when it's still active and the user is a
+    /// participant in it.
     /// </summary>
     private async Task<Match?> ZoekMatchVanDeelnemerAsync(int matchId, string userId)
     {
@@ -147,6 +166,7 @@ public class MatchService : IMatchService
             .Include(m => m.User1)
             .Include(m => m.User2)
             .FirstOrDefaultAsync(m => m.Id == matchId
+                                      && m.Status == MatchStatus.Active
                                       && (m.User1Id == userId || m.User2Id == userId));
     }
 }

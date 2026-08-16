@@ -505,6 +505,15 @@
   <data name="Report_Verstuurd" xml:space="preserve">
     <value>Your report has been sent.</value>
   </data>
+  <data name="Moderation_GebruikerBlokkeren" xml:space="preserve">
+    <value>Block user</value>
+  </data>
+  <data name="Moderation_BlokkerenBevestiging" xml:space="preserve">
+    <value>Block {0}? This user will no longer be able to log in.</value>
+  </data>
+  <data name="Moderation_GeblokkeerdMelding" xml:space="preserve">
+    <value>User blocked and report marked as resolved.</value>
+  </data>
   <data name="Error_Boodschap" xml:space="preserve">
     <value>An error occurred while processing your request.</value>
   </data>

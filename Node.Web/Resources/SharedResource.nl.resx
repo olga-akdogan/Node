@@ -505,6 +505,15 @@
   <data name="Report_Verstuurd" xml:space="preserve">
     <value>Je melding is verstuurd.</value>
   </data>
+  <data name="Moderation_GebruikerBlokkeren" xml:space="preserve">
+    <value>Gebruiker blokkeren</value>
+  </data>
+  <data name="Moderation_BlokkerenBevestiging" xml:space="preserve">
+    <value>{0} blokkeren? Deze gebruiker kan dan niet meer inloggen.</value>
+  </data>
+  <data name="Moderation_GeblokkeerdMelding" xml:space="preserve">
+    <value>Gebruiker geblokkeerd en melding gemarkeerd als afgehandeld.</value>
+  </data>
   <data name="Error_Boodschap" xml:space="preserve">
     <value>Er is een fout opgetreden bij het verwerken van je aanvraag.</value>
   </data>

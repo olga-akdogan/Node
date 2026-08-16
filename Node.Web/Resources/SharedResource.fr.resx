@@ -505,6 +505,15 @@
   <data name="Report_Verstuurd" xml:space="preserve">
     <value>Ton signalement a été envoyé.</value>
   </data>
+  <data name="Moderation_GebruikerBlokkeren" xml:space="preserve">
+    <value>Bloquer l'utilisateur</value>
+  </data>
+  <data name="Moderation_BlokkerenBevestiging" xml:space="preserve">
+    <value>Bloquer {0} ? Cet utilisateur ne pourra plus se connecter.</value>
+  </data>
+  <data name="Moderation_GeblokkeerdMelding" xml:space="preserve">
+    <value>Utilisateur bloqué et signalement marqué comme résolu.</value>
+  </data>
   <data name="Error_Boodschap" xml:space="preserve">
     <value>Une erreur s'est produite lors du traitement de ta demande.</value>
   </data>

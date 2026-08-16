@@ -3,19 +3,27 @@ using Node.Web.Models.Matches;
 namespace Node.Web.Services.Interfaces;
 
 /// <summary>
-/// Matches en het bijbehorende chatgesprek van de ingelogde gebruiker.
-/// Alle methoden controleren dat de gebruiker deelnemer van de match is.
-/// De chatberichten zelf komen van GetStream Chat, niet uit onze databank.
+/// Matches and the logged-in user's associated chat conversation.
+/// Every method checks that the user is a participant in the match.
+/// The chat messages themselves come from GetStream Chat, not our database.
 /// </summary>
 public interface IMatchService
 {
-    /// <summary>Alle actieve matches van de gebruiker, recentste gesprek eerst.</summary>
+    /// <summary>All active matches of the user, most recent conversation first.</summary>
     Task<List<MatchOverviewViewModel>> GetMatchesVoorGebruikerAsync(string userId);
 
     /// <summary>
-    /// Het chatscherm van één match: matchgegevens plus een GetStream-token
-    /// waarmee de browser rechtstreeks met het gesprek verbindt. Null wanneer
-    /// de match niet bestaat of de gebruiker geen deelnemer is.
+    /// The chat screen for one match: match data plus a GetStream token the
+    /// browser uses to connect directly to the conversation. Null when the
+    /// match doesn't exist, isn't active anymore, or the user isn't a participant.
     /// </summary>
     Task<ChatViewModel?> GetChatAsync(int matchId, string userId);
+
+    /// <summary>
+    /// Ends the active match (if any) between these two users, so neither can
+    /// open its chat anymore. No-op if they aren't currently matched. Used
+    /// when one of them reports the other, so the reporter isn't stuck
+    /// chatting with someone they just reported while it's reviewed.
+    /// </summary>
+    Task EindigMatchTussenAsync(string userAId, string userBId);
 }

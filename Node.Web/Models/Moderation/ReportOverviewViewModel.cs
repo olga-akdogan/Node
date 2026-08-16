@@ -11,6 +11,8 @@ public class ReportOverviewViewModel
 
     public string ReportedDisplayName { get; set; } = string.Empty;
 
+    public bool ReportedUserIsBlocked { get; set; }
+
     public string Reason { get; set; } = string.Empty;
 
     public bool IsResolved { get; set; }
