@@ -7,20 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Alle EF Core- en Identity-pakketten op dezelfde 9.0.x versie houden. -->
+    <!-- Keep all EF Core and Identity packages on the same 9.0.x version. -->
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.7" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Astrologie-engine: Swiss Ephemeris (planeetposities en huizen). -->
+    <!-- Astrology engine: Swiss Ephemeris (planet positions and houses). -->
     <PackageReference Include="SwissEphNet" Version="2.8.0.2" />
-    <!-- Geboorteplaats (lat/lng) omzetten naar een IANA-tijdzone-id. -->
+    <!-- Convert birthplace (lat/lng) to an IANA time zone id. -->
     <PackageReference Include="GeoTimeZone" Version="6.1.0" />
-    <!-- Historisch correcte tijdzone-omrekening (incl. oude DST-regels) via de TZDB. -->
+    <!-- Historically correct time zone conversion (incl. old DST rules) via the TZDB. -->
     <PackageReference Include="NodaTime" Version="3.3.3" />
-    <!-- Anthropic Claude API: AI-geschreven matchinterpretaties op basis van beide horoscopen. -->
+    <!-- Anthropic Claude API: AI-written match interpretations based on both horoscopes. -->
     <PackageReference Include="Anthropic" Version="12.40.0" />
   </ItemGroup>
 

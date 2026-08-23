@@ -112,6 +112,9 @@ them:
 
 This maps to the `Agent` / `AgentConversation` / `AgentMessage` not yet implemented.
 
+Another future development would be to automatically screen bio descriptions and chat 
+conversations for hate speech and other inappropriate content. 
+
 ## (AI) sources used
 
 - Anthropic (Claude code)
@@ -121,3 +124,4 @@ This maps to the `Agent` / `AgentConversation` / `AgentMessage` not yet implemen
 - Lesmateriaal
 - Several GitHub repos (https://github.com/topics/dating-app)
 - API-documentation (SwissEphNet, GetStream, Anthropic API, Nominatim/OpenStreetMap)
+- Discussions with Senior Developers (inspiration to use Getstream)
